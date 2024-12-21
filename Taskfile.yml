@@ -1,0 +1,130 @@
+version: '3'
+
+includes:
+  lib:
+    taskfile: ./modules/elements/zibal/Taskfile.yaml
+    optional: true
+    flatten: true
+
+env:
+  CONTAINER_NAME: elemrv_container
+  SOC: ElemRV
+  FPGA_FAMILY: ecp5
+  FPGA_DEVICE: um5g-45k
+  FPGA_PACKAGE: CABGA554
+  FPGA_FREQUENCY: 50
+  OPENFPGALOADER_BOARD: ecpix5_r03
+  PDK: ihp-sg13g2
+  PDK_ROOT: "{{ .PWD }}/pdks/IHP-Open-PDK/"
+  KLAYOUT_HOME: "{{ .PWD }}/pdks/IHP-Open-PDK/ihp-sg13g2/libs.tech/klayout/"
+  NAFARR_BASE: "{{ .PWD }}/modules/elements/nafarr/"
+  ZIBAL_BASE: "{{ .PWD }}/modules/elements/zibal/"
+  BUILD_ROOT: "{{ .ZIBAL_BASE }}/build/"
+  OPENROAD_FLOW_ROOT: "{{ .PWD }}/tools/OpenROAD-flow-scripts/flow"
+  CONTAINER_ENV: "-e SOC={{ .SOC }} -e FPGA_FAMILY={{ .FPGA_FAMILY }} -e FPGA_DEVICE={{ .FPGA_DEVICE }} -e FPGA_PACKAGE={{ .FPGA_PACKAGE }} -e FPGA_FREQUENCY={{ .FPGA_FREQUENCY }} -e PDK={{ .PDK }} -e PDK_ROOT={{ .PDK_ROOT }} -e KLAYOUT_HOME={{ .KLAYOUT_HOME }} -e BUILD_ROOT={{ .BUILD_ROOT }}"
+
+
+tasks:
+  project-prepare:
+    desc: Sets up a virtual environment, installs tools, and initializes project dependencies.
+    cmds:
+      - virtualenv venv
+      - venv/bin/pip3 install podman-compose==1.0.6
+      - curl https://storage.googleapis.com/git-repo-downloads/repo > repo
+      - chmod a+rx repo
+      - ./repo init -u https://github.com/SteffenReith/ElemRV.git -b {{if .branch}}{{.branch}}{{else}}main{{end}} -m manifest.xml
+
+  build-container:
+    desc: Creates a container with all necessary host requirements pre-installed.
+    cmds:
+      - venv/bin/podman-compose build
+  repo-sync:
+    desc: Downloads and synchronizes all required dependencies.
+    cmds:
+      - ./repo sync
+  install:
+    desc: Installs all dependencies and prepares the project for FPGA and chip workflows.
+    cmds:
+      - task: project-prepare
+      - task: build-container
+      - task: repo-sync
+    vars:
+      branch: "main"
+
+  fpga-prepare:
+    desc: Produces the Verilog file and metadata needed for FPGA operations.
+    cmds:
+      - task: lib-generate
+        vars:
+          board: "ECPIX5"
+          package: "elemrv"
+  fpga-synthesize:
+    desc: Generates the FPGA bitstream by synthesizing the design.
+    cmds:
+      - task: lib-synthesize-fpga
+        vars:
+          board: "ECPIX5"
+          vendor: "Lattice"
+  fpga-flash:
+    desc: Programs the FPGA with the generated bitstream.
+    cmds:
+      - task: lib-flash-bitstream
+        vars:
+          board: "ECPIX5"
+
+  prepare:
+    desc: Generates all necessary source files and metadata for chip layout creation.
+    cmds:
+      - task: lib-generate
+        vars:
+          board: "SG13G2"
+          package: "elemrv"
+      - task: lib-sealring
+        vars:
+          board: "SG13G2"
+
+  layout:
+    desc: Creates the physical layout of the chip.
+    cmds:
+      - task: lib-layout
+        vars:
+          board: "SG13G2"
+
+  filler:
+    desc: Inserts filler cells into the layout to ensure proper chip functionality.
+    cmds:
+      - task: lib-filler
+        vars:
+          board: "SG13G2"
+  run-drc:
+    desc: Performs Design Rule Checks and reports violations; use 'level=minimal' for a basic check.
+    cmds:
+      - task: lib-run-drc
+        vars:
+          board: "SG13G2"
+  view-drc:
+    desc: Displays DRC results in KLayout; 'level=minimal' opens minimal deck results.
+    cmds:
+      - task: lib-view-drc
+        vars:
+          board: "SG13G2"
+  view-openroad:
+    desc: Loads the layout into OpenROAD for further analysis or modification.
+    cmds:
+      - task: lib-view-openroad
+        vars:
+          board: "SG13G2"
+  view-klayout:
+    desc: Opens the chip layout in KLayout for inspection.
+    cmds:
+      - task: lib-view-klayout
+        vars:
+          board: "SG13G2"
+
+  default:
+    desc: Executes the full IHP SG13G2 RTL-to-GDSII flow and validates the layout afterwards.
+    cmds:
+      - task: prepare
+      - task: layout
+      - task: filler
+      - task: run-drc

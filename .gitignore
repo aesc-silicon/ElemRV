@@ -1,0 +1,12 @@
+build/
+modules/
+oss-cad-suite/
+pdks/
+project/
+simWorkspace/
+target/
+tools/
+.repo/
+.task/
+repo
+*.blend*

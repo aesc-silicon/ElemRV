@@ -1,0 +1,20 @@
+---
+version: '3'
+volumes:
+  sbt-cache:
+  ivy2-cache:
+  cache:
+services:
+  elements:
+    image: dnltz/elements:v1.1
+    container_name: elemrv_container
+    environment:
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - /home:/home
+      - ivy2-cache:/root/.ivy2
+      - sbt-cache:/root/.sbt
+      - cache:/root/.cache
+      - $XAUTHORITY:$XAUTHORITY:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+    command: ["sleep", "infinity"]

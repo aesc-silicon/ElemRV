@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<manifest>
+	<remote fetch="https://github.com" name="github" />
+
+	<default remote="github" sync-j="8" />
+
+	<project name="aesc-silicon/elements-nafarr" path="modules/elements/nafarr" revision="627f70ec179a7689fa7e10a181f1e20b2296d299" />
+	<project name="aesc-silicon/elements-zibal" path="modules/elements/zibal" revision="1e85ab047a83d28a0ab1342d444c5195f69012c6" />
+	<project name="SpinalHDL/SpinalCrypto" path="modules/elements/SpinalCrypto" revision="f2a4ae9db5e9434c5589d0651efec8719103498e" />
+	<project name="aesc-silicon/elements-vexriscv" path="modules/elements/vexriscv" revision="7f2bccbef256b3ad40fb8dc8ba08a266f9c6256b" />
+	<project name="dnltz/OpenROAD-flow-scripts" path="tools/OpenROAD-flow-scripts" revision="ca58fa08674771460a273507602d9dd597714b6b" />
+	<project name="aesc-silicon/gdsiistl" path="tools/gdsiistl" revision="5884b20565a765f10918eedc0787a2beb6a682fd" />
+	<project name="IHP-GmbH/IHP-Open-PDK" sync-s="true" path="pdks/IHP-Open-PDK" revision="4c6508d03a3078b21c737d04fae5dccec9aa590f" />
+</manifest>
