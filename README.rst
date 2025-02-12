@@ -18,6 +18,29 @@ Features
 * **Memory**: Supports up to one HyperRAM chip and executes code from external SPI Flash in XIP mode.
 * **Interfaces**: Includes common low-speed interfaces such as GPIO, UART, I2C, SPI, and programmable I/Os.
 
+Layout Rendering
+################
+
+View of standard cells with the power distribution network.
+
+.. image:: images/chip_gates.webp
+  :alt: ElemRV Chip Layout
+
+Top view of standard cells.
+
+.. image:: images/chip_topview.webp
+  :alt: ElemRV Chip Layout
+
+A closer look at the power and ground I/O cells located in the I/O ring.
+
+.. image:: images/chip_io.webp
+  :alt: ElemRV Chip Layout
+
+Another look at the I/O ring with the ``ElemRV`` label.
+
+.. image:: images/chip_label.webp
+  :alt: ElemRV Chip Layout
+
 Installation
 ############
 

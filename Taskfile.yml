@@ -7,6 +7,7 @@ includes:
     flatten: true
 
 env:
+  GCC: "/opt/elements/zephyr-sdk-0.17.0/riscv64-zephyr-elf/bin/riscv64-zephyr-elf"
   CONTAINER_NAME: elemrv_container
   SOC: ElemRV
   FPGA_FAMILY: ecp5
@@ -32,7 +33,7 @@ tasks:
       - venv/bin/pip3 install podman-compose==1.0.6
       - curl https://storage.googleapis.com/git-repo-downloads/repo > repo
       - chmod a+rx repo
-      - ./repo init -u https://github.com/SteffenReith/ElemRV.git -b {{if .branch}}{{.branch}}{{else}}main{{end}} -m manifest.xml
+      - ./repo init -u https://github.com/aesc-silicon/ElemRV.git -b {{if .branch}}{{.branch}}{{else}}main{{end}} -m manifest.xml
 
   build-container:
     desc: Creates a container with all necessary host requirements pre-installed.
@@ -96,28 +97,39 @@ tasks:
       - task: lib-filler
         vars:
           board: "SG13G2"
+
   run-drc:
     desc: Performs Design Rule Checks and reports violations; use 'level=minimal' for a basic check.
     cmds:
       - task: lib-run-drc
         vars:
           board: "SG13G2"
+
   view-drc:
     desc: Displays DRC results in KLayout; 'level=minimal' opens minimal deck results.
     cmds:
       - task: lib-view-drc
         vars:
           board: "SG13G2"
+
   view-openroad:
     desc: Loads the layout into OpenROAD for further analysis or modification.
     cmds:
       - task: lib-view-openroad
         vars:
           board: "SG13G2"
+
   view-klayout:
     desc: Opens the chip layout in KLayout for inspection.
     cmds:
       - task: lib-view-klayout
+        vars:
+          board: "SG13G2"
+
+  check-logs:
+    desc: Checks the build directory for warnings or errors in the logs.
+    cmds:
+      - task: lib-check-logs
         vars:
           board: "SG13G2"
 
@@ -128,3 +140,4 @@ tasks:
       - task: layout
       - task: filler
       - task: run-drc
+      - task: check-logs
