@@ -5,8 +5,8 @@ on:
     branches: [ main ]
     paths:
       - 'build.sbt'
-      - '.github/'
-      - 'hardware/'
+      - '.github/**'
+      - 'hardware/**'
       - 'manifest.xml'
       - 'podmnan-compose*yml'
       - 'Taskfile.yml'
@@ -43,4 +43,6 @@ jobs:
 
     - name: RUN maximal DRC
       run: |
-        IS_HEADLESS=true task run-drc level=minimal
+        IS_HEADLESS=true task run-drc level=minimal > drc.log
+        grep -v '0 error(s)' drc.log
+        grep 'Number of DRC errors: 0' drc.log
