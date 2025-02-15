@@ -48,8 +48,8 @@ This project uses Taskfile as its task runner tool. You can install Taskfile usi
 
 - Install Taskfile and virtualenv::
 
-        sudo snap install task --classic
         sudo apt install virtualenv curl podman
+        sudo sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
 
 - Set up the project::
 
