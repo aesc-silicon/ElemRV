@@ -28,6 +28,13 @@ case class SG13G2Board() extends Component {
       val rxd = inout(Analog(Bool))
     }
     val gpioStatus = Vec(inout(Analog(Bool())), 4)
+    val hyperbus = new Bundle {
+      val cs = inout(Analog(Bool))
+      val ck = inout(Analog(Bool))
+      val reset = inout(Analog(Bool))
+      val rwds = inout(Analog(Bool))
+      val dq = Vec(inout(Analog(Bool())), 8)
+    }
     val spi = new Bundle {
       val cs = inout(Analog(Bool))
       val sck = inout(Analog(Bool))
@@ -59,14 +66,24 @@ case class SG13G2Board() extends Component {
   }
 
   val w956a8mbya = W956A8MBYA()
-  w956a8mbya.ck <> top.io.hyperbus.ck.PAD
-  w956a8mbya.ckN := False
+  w956a8mbya.io.ck := io.hyperbus.ck
+  w956a8mbya.io.ckN := analogFalse
   for (index <- 0 until top.io.hyperbus.dq.length) {
-    w956a8mbya.dq(index) <> top.io.hyperbus.dq(index).PAD
+    w956a8mbya.io.dqIn(index) := io.hyperbus.dq(index)
+    io.hyperbus.dq(index) := w956a8mbya.io.dqOut(index)
   }
-  w956a8mbya.rwds <> top.io.hyperbus.rwds.PAD
-  w956a8mbya.csN <> top.io.hyperbus.cs(0).PAD
-  w956a8mbya.resetN <> top.io.hyperbus.reset.PAD
+  w956a8mbya.io.rwdsIn := io.hyperbus.rwds
+  io.hyperbus.rwds := w956a8mbya.io.rwdsOut
+  w956a8mbya.io.csN := io.hyperbus.cs
+  w956a8mbya.io.resetN := io.hyperbus.reset
+
+  io.hyperbus.cs := top.io.hyperbus.cs(0).PAD
+  io.hyperbus.ck := top.io.hyperbus.ck.PAD
+  io.hyperbus.reset := top.io.hyperbus.reset.PAD
+  io.hyperbus.rwds <> top.io.hyperbus.rwds.PAD
+  for (index <- 0 until top.io.hyperbus.dq.length) {
+    io.hyperbus.dq(index) <> top.io.hyperbus.dq(index).PAD
+  }
 
   val spiNor = MT25Q()
   spiNor.io.clock := io.clock
@@ -75,7 +92,6 @@ case class SG13G2Board() extends Component {
   spiNor.io.chipSelect := io.spi.cs
   spiNor.io.dataIn := io.spi.mosi
   top.io.spi.dq(1).PAD := spiNor.io.dataOut
-
   io.spi.cs := top.io.spi.cs(0).PAD
   io.spi.sck := top.io.spi.sck.PAD
   io.spi.mosi := top.io.spi.dq(0).PAD
@@ -245,7 +261,7 @@ object SG13G2Generate extends ElementsApp {
 object SG13G2Simulate extends ElementsApp {
   val compiled = elementsConfig.genFPGASimConfig.compile {
     val board = SG13G2Board()
-    BinTools.initRam(board.spiNor.deviceOut.data, elementsConfig.zephyrBinary)
+    BinTools.initRam(board.spiNor.deviceOut.data, elementsConfig.bootromBinary)
     board
   }
   simType match {

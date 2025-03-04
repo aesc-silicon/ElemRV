@@ -28,6 +28,13 @@ case class ECPIX5Board() extends Component {
       val rxd = inout(Analog(Bool))
     }
     val gpioStatus = Vec(inout(Analog(Bool())), 4)
+    val hyperbus = new Bundle {
+      val cs = inout(Analog(Bool))
+      val ck = inout(Analog(Bool))
+      val reset = inout(Analog(Bool))
+      val rwds = inout(Analog(Bool))
+      val dq = Vec(inout(Analog(Bool())), 8)
+    }
     val spi = new Bundle {
       val cs = inout(Analog(Bool))
       val sck = inout(Analog(Bool))
@@ -52,17 +59,24 @@ case class ECPIX5Board() extends Component {
   }
 
   val w956a8mbya = W956A8MBYA()
-  w956a8mbya.ck <> top.io.hyperbus.ck.PAD
-  w956a8mbya.ckN <> top.io.hyperbus.ckN.PAD
+  w956a8mbya.io.ck := io.hyperbus.ck
+  w956a8mbya.io.ckN := analogFalse
   for (index <- 0 until top.io.hyperbus.dq.length) {
-    w956a8mbya.dq(index) <> top.io.hyperbus.dq(index).PAD
+    w956a8mbya.io.dqIn(index) := io.hyperbus.dq(index)
+    io.hyperbus.dq(index) := w956a8mbya.io.dqOut(index)
   }
-  w956a8mbya.rwds <> top.io.hyperbus.rwds.PAD
-  w956a8mbya.csN <> top.io.hyperbus.cs(0).PAD
-  w956a8mbya.resetN <> top.io.hyperbus.reset.PAD
-  top.io.hyperbus.cs(1).PAD := analogFalse
-  top.io.hyperbus.cs(2).PAD := analogFalse
-  top.io.hyperbus.cs(3).PAD := analogFalse
+  w956a8mbya.io.rwdsIn := io.hyperbus.rwds
+  io.hyperbus.rwds := w956a8mbya.io.rwdsOut
+  w956a8mbya.io.csN := io.hyperbus.cs
+  w956a8mbya.io.resetN := io.hyperbus.reset
+
+  io.hyperbus.cs := top.io.hyperbus.cs(0).PAD
+  io.hyperbus.ck := top.io.hyperbus.ck.PAD
+  io.hyperbus.reset := top.io.hyperbus.reset.PAD
+  io.hyperbus.rwds <> top.io.hyperbus.rwds.PAD
+  for (index <- 0 until top.io.hyperbus.dq.length) {
+    io.hyperbus.dq(index) <> top.io.hyperbus.dq(index).PAD
+  }
 
   val spiNor = MT25Q()
   spiNor.io.clock := io.clock
