@@ -17,4 +17,5 @@ services:
       - cache:/root/.cache
       - $XAUTHORITY:$XAUTHORITY:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:ro
+      - /dev/:/dev/
     command: ["sleep", "infinity"]
