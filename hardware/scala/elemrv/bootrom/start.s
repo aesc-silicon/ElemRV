@@ -6,14 +6,15 @@ _head:
 	jal	gpio_set_pin
 
 	jal	_init_regs
-	jal	_init_memc
+	#jal	_init_memc
 	jal	_init_bss
 
 	li	a0, 0
 	jal	gpio_set_pin
 
+	jal	_relocate
 	# Jump to application
-	li	ra, 0xa0010000
+	li	ra, 0x90000000
 	ret
 
 _init_regs:
@@ -92,7 +93,7 @@ relocate_loop_end:
 # Basic driver for debugging
 
 gpio_set_pin:
-	li	t0, 0xf0001000
-	sw	a0, 0(t0)
-	sw	a0, 4(t0)
+	li	t0, 0xf0000000
+	sw	a0, 0x10(t0)
+	sw	a0, 0x14(t0)
 	ret

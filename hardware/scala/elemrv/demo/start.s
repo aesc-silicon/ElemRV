@@ -11,6 +11,7 @@ _head:
 	jal	gpio_set_pin
 
 	jal	_init_bss
+
 	li	sp, 0x90010000
 	j	_kernel
 
@@ -112,7 +113,7 @@ interrupt_disable:
 # Basic driver for debugging
 
 gpio_set_pin:
-	li	t0, 0xf0001000
-	sw	a0, 0(t0)
-	sw	a0, 4(t0)
+	li	t0, 0xf0000000
+	sw	a0, 0x10(t0)
+	sw	a0, 0x14(t0)
 	ret

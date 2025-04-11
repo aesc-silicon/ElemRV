@@ -21,14 +21,15 @@ void isr_handle(unsigned int mcause)
 
 	if (uart_irq_rx_ready(&uart)) {
 		uart_irq_rx_disable(&uart);
+		plic_irq_claim(&plic, UART0CTRL_IRQ);
 
 		while (uart_getc(&uart, &chr) == 0) {
 			uart_putc(&uart, chr);
 		}
 
 		uart_irq_rx_enable(&uart);
-		plic_irq_claim(&plic, PLIC_UART_IRQ);
 	}
+
 	if (gpio_irq_ready(&gpio, 3, GPIO_IRQ_FALLING_EDGE)) {
 		gpio_irq_disable(&gpio, 3, GPIO_IRQ_FALLING_EDGE);
 
@@ -47,7 +48,7 @@ void isr_handle(unsigned int mcause)
 		uart_putc(&uart, '\n');
 
 		gpio_irq_enable(&gpio, 3, GPIO_IRQ_FALLING_EDGE);
-		plic_irq_claim(&plic, PLIC_GPIO_IRQ);
+		plic_irq_claim(&plic, GPIO0CTRL_IRQ);
 	}
 
 	interrupt_enable();
@@ -56,34 +57,34 @@ void isr_handle(unsigned int mcause)
 void _kernel(void)
 {
 	struct mtimer_driver mtimer;
-	unsigned char banner[17 + 1] = "\r\nElemRV 1.0\r\n>- ";
+	unsigned char banner[19 + 1] = "\r\nElemRV-N 0.2\r\n>- ";
 
-	gpio_init(&gpio, GPIO_BASE_ADDR);
-	uart_init(&uart, UART_BASE_ADDR,
-		  UART_CALC_FREQUENCY(UART_FREQ, UART_BAUD, 8));
-	mtimer_init(&mtimer, MTIMER_BASE_ADDR);
-	plic_init(&plic, PLIC_BASE_ADDR);
+	gpio_init(&gpio, GPIO0CTRL_BASE);
+	mtimer_init(&mtimer, MTIMERCTRL_BASE);
+	plic_init(&plic, PLICCTRL_BASE);
+	uart_init(&uart, UART0CTRL_BASE,
+		  UART_CALC_FREQUENCY(UART0CTRL_FREQ, UART0CTRL_BAUD, 8));
 
 	init_trap();
 	interrupt_enable();
-	plic_irq_enable(&plic, PLIC_UART_IRQ);
-	plic_irq_enable(&plic, PLIC_GPIO_IRQ);
+	plic_irq_enable(&plic, UART0CTRL_IRQ);
+	plic_irq_enable(&plic, GPIO0CTRL_IRQ);
 
 	gpio_dir_set(&gpio, 0);
 	uart_puts(&uart, banner);
 	uart_irq_rx_enable(&uart);
-	gpio_irq_enable(&gpio, 3, GPIO_IRQ_FALLING_EDGE);
+	//gpio_irq_enable(&gpio, 3, GPIO_IRQ_FALLING_EDGE);
 
 	while(1) {
 		// ON - 150ms - OFF - 50ms - ON - 150ms - OFF - 1000ms
 		gpio_value_set(&gpio, 0);
-		mtimer_sleep32(&mtimer, TIMER_MS(MTIMER_FREQ, 150));
+		mtimer_sleep32(&mtimer, TIMER_MS(MTIMERCTRL_FREQ, 150));
 		gpio_value_clr(&gpio, 0);
-		mtimer_sleep32(&mtimer, TIMER_MS(MTIMER_FREQ, 50));
+		mtimer_sleep32(&mtimer, TIMER_MS(MTIMERCTRL_FREQ, 50));
 		gpio_value_set(&gpio, 0);
-		mtimer_sleep32(&mtimer, TIMER_MS(MTIMER_FREQ, 150));
+		mtimer_sleep32(&mtimer, TIMER_MS(MTIMERCTRL_FREQ, 150));
 		gpio_value_clr(&gpio, 0);
-		mtimer_sleep32(&mtimer, TIMER_MS(MTIMER_FREQ, 1000));
+		mtimer_sleep32(&mtimer, TIMER_MS(MTIMERCTRL_FREQ, 1000));
 		gpio_value_set(&gpio, 0);
 	}
 
