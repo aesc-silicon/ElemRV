@@ -9,9 +9,10 @@ import nafarr.system.reset.ResetControllerCtrl._
 import nafarr.system.clock._
 import nafarr.system.clock.ClockControllerCtrl._
 import nafarr.blackboxes.lattice.ecp5._
+import nafarr.memory.ocram.ihp.sg13g2.Axi4SharedIhpOnChipRam
 
 import zibal.misc._
-import zibal.platform.Hydrogen
+import zibal.platform.Nitrogen
 import zibal.board.{KitParameter, BoardParameter}
 import zibal.sim.hyperram.W956A8MBYA
 import zibal.sim.MT25Q
@@ -23,11 +24,6 @@ case class ECPIX5Board() extends Component {
   val io = new Bundle {
     val clock = inout(Analog(Bool))
     val reset = inout(Analog(Bool))
-    val uartStd = new Bundle {
-      val txd = inout(Analog(Bool))
-      val rxd = inout(Analog(Bool))
-    }
-    val gpioStatus = Vec(inout(Analog(Bool())), 4)
     val hyperbus = new Bundle {
       val cs = inout(Analog(Bool))
       val ck = inout(Analog(Bool))
@@ -41,6 +37,7 @@ case class ECPIX5Board() extends Component {
       val mosi = inout(Analog(Bool))
       val miso = inout(Analog(Bool))
     }
+    val pins = Vec(inout(Analog(Bool())), 20)
   }
 
   val top = ECPIX5Top()
@@ -50,13 +47,6 @@ case class ECPIX5Board() extends Component {
   analogTrue := True
 
   top.io.clock.PAD := io.clock
-
-  top.io.uartStd.rxd.PAD := io.uartStd.rxd
-  io.uartStd.txd := top.io.uartStd.txd.PAD
-
-  for (index <- 0 until top.io.gpioStatus.length) {
-    io.gpioStatus(index) <> top.io.gpioStatus(index).PAD
-  }
 
   val w956a8mbya = W956A8MBYA()
   w956a8mbya.io.ck := io.hyperbus.ck
@@ -91,11 +81,15 @@ case class ECPIX5Board() extends Component {
   io.spi.mosi := top.io.spi.dq(0).PAD
   top.io.spi.dq(1).PAD := io.spi.miso
 
+  for (index <- 0 until top.io.pins.length) {
+    io.pins(index) <> top.io.pins(index).PAD
+  }
+
   for (index <- 0 until top.io.ledPullDown.length) {
     top.io.ledPullDown(index).PAD := analogFalse
   }
 
-  val baudPeriod = top.soc.socParameter.uartStd.init.getBaudPeriod()
+  val baudPeriod = top.soc.socParameter.uart0.init.getBaudPeriod()
 
   def simHook() {
     for ((domain, index) <- top.soc.parameter.getKitParameter.clocks.zipWithIndex) {
@@ -108,20 +102,21 @@ case class ECPIX5Board() extends Component {
 case class ECPIX5Top() extends Component {
   val resets = List[ResetParameter](ResetParameter("system", 128), ResetParameter("debug", 128))
   val clocks = List[ClockParameter](
-    ClockParameter("system", 25 MHz, "system"),
+    ClockParameter("system", 20 MHz, "system"),
     ClockParameter("debug", 10 MHz, "debug", synchronousWith = "system")
   )
   val hyperbusPartitions = List[(BigInt, Boolean)](
     (8 MB, true),
-    (8 MB, false),
-    (8 MB, false),
-    (8 MB, false)
+    (8 MB, true),
+    (8 MB, true),
+    (8 MB, true)
   )
   val kitParameter = KitParameter(resets, clocks)
   val boardParameter = ECPIX5.Parameter(kitParameter, ECPIX5.SystemClock.frequency)
   val socParameter = ElemRV.Parameter(boardParameter)
-  val parameter = Hydrogen.Parameter(
+  val parameter = Nitrogen.Parameter(
     socParameter,
+    1 kB,
     8 MB,
     hyperbusPartitions,
     (resetCtrl: ResetControllerCtrl, _, clock: Bool) => { resetCtrl.buildXilinx(clock) },
@@ -132,23 +127,27 @@ case class ECPIX5Top() extends Component {
         List("system", "debug"),
         2,
         1,
-        10
+        8
       )
+    },
+    (ramSize: BigInt) => {
+      val ram = Axi4SharedIhpOnChipRam.OnePort1024x8(
+        dataWidth = 32,
+        byteCount = ramSize,
+        idWidth = 4
+      )
+      (ram, ram.io.axi, ram.engine.ram)
     }
   )
 
   val io = new Bundle {
     val clock = LatticeCmosIo(ECPIX5.SystemClock.clock).clock(ECPIX5.SystemClock.frequency)
-    val uartStd = new Bundle {
-      val txd = LatticeCmosIo(ECPIX5.UartStd.txd)
-      val rxd = LatticeCmosIo(ECPIX5.UartStd.rxd)
+    val jtag = new Bundle {
+      val tms = LatticeCmosIo(ECPIX5.Pmods.Pmod1.pin2)
+      val tdi = LatticeCmosIo(ECPIX5.Pmods.Pmod1.pin3)
+      val tdo = LatticeCmosIo(ECPIX5.Pmods.Pmod1.pin0)
+      val tck = LatticeCmosIo(ECPIX5.Pmods.Pmod1.pin1)
     }
-    val gpioStatus = Vec(
-      LatticeCmosIo(ECPIX5.LEDs.LD5.blue),
-      LatticeCmosIo(ECPIX5.LEDs.LD6.red),
-      LatticeCmosIo(ECPIX5.LEDs.LD7.green),
-      LatticeCmosIo(ECPIX5.Buttons.sw0)
-    )
     val hyperbus = new Bundle {
       val cs = Vec(
         LatticeCmosIo(ECPIX5.Pmods.Pmod5.pin1),
@@ -177,10 +176,34 @@ case class ECPIX5Top() extends Component {
       )
       val dq = Vec(
         LatticeCmosIo(ECPIX5.Pmods.Pmod6.pin1).slewRateFast,
-        LatticeCmosIo(ECPIX5.Pmods.Pmod6.pin2).slewRateFast
+        LatticeCmosIo(ECPIX5.Pmods.Pmod6.pin2).slewRateFast,
+        LatticeCmosIo(ECPIX5.Pmods.Pmod6.pin6).slewRateFast,
+        LatticeCmosIo(ECPIX5.Pmods.Pmod6.pin7).slewRateFast
       )
       val sck = LatticeCmosIo(ECPIX5.Pmods.Pmod6.pin3).slewRateFast
     }
+    val pins = Vec(
+      LatticeCmosIo(ECPIX5.LEDs.LD5.blue),
+      LatticeCmosIo(ECPIX5.LEDs.LD6.red),
+      LatticeCmosIo(ECPIX5.LEDs.LD7.green),
+      LatticeCmosIo(ECPIX5.Buttons.sw0),
+      LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin0),
+      LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin1),
+      LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin2),
+      LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin3),
+      LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin4),
+      LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin5),
+      LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin6),
+      LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin7),
+      LatticeCmosIo(ECPIX5.Pmods.Pmod3.pin0),
+      LatticeCmosIo(ECPIX5.Pmods.Pmod3.pin1),
+      LatticeCmosIo(ECPIX5.UartStd.txd),
+      LatticeCmosIo(ECPIX5.UartStd.rxd),
+      LatticeCmosIo(ECPIX5.Pmods.Pmod3.pin2),
+      LatticeCmosIo(ECPIX5.Pmods.Pmod3.pin3),
+      LatticeCmosIo(ECPIX5.Pmods.Pmod3.pin4),
+      LatticeCmosIo(ECPIX5.Pmods.Pmod3.pin5)
+    )
     val ledPullDown = Vec(
       LatticeCmosIo(ECPIX5.LEDs.LD5.red),
       LatticeCmosIo(ECPIX5.LEDs.LD5.green),
@@ -198,20 +221,10 @@ case class ECPIX5Top() extends Component {
 
   io.clock <> FakeI(soc.io_plat.clock)
 
-  soc.io_plat.jtag.tms := False
-  soc.io_plat.jtag.tdi := False
-  soc.io_plat.jtag.tck := False
-
-  io.uartStd.txd <> FakeO(soc.io_per.uartStd.txd)
-  io.uartStd.rxd <> FakeI(soc.io_per.uartStd.rxd)
-  soc.io_per.uartStd.cts := False
-
-  for (index <- 0 until io.gpioStatus.length - 1) {
-    io.gpioStatus(index) <> FakeIo(soc.io_per.gpioStatus.pins(index), true)
-  }
-  for (index <- io.gpioStatus.length - 1 until io.gpioStatus.length) {
-    io.gpioStatus(index) <> FakeIo(soc.io_per.gpioStatus.pins(index))
-  }
+  io.jtag.tms <> FakeI(soc.io_plat.jtag.tms)
+  io.jtag.tdi <> FakeI(soc.io_plat.jtag.tdi)
+  io.jtag.tdo <> FakeO(soc.io_plat.jtag.tdo)
+  io.jtag.tck <> FakeI(soc.io_plat.jtag.tck)
 
   for (index <- 0 until io.hyperbus.cs.length) {
     io.hyperbus.cs(index) <> FakeO(soc.io_plat.hyperbus.cs(index))
@@ -232,13 +245,20 @@ case class ECPIX5Top() extends Component {
     io.spi.dq(index) <> FakeIo(soc.io_plat.spi.dq(index))
   }
 
+  for (index <- 0 until 3) {
+    io.pins(index) <> FakeIo(soc.io.pins.pins(index), true)
+  }
+  for (index <- 3 until io.pins.length) {
+    io.pins(index) <> FakeIo(soc.io.pins.pins(index))
+  }
+
   for (index <- 0 until io.ledPullDown.length) {
     io.ledPullDown(index) <> FakeO(True)
   }
 }
 
 object ECPIX5Generate extends ElementsApp {
-  elementsConfig.genFPGASpinalConfig.generateVerilog {
+  val report = elementsConfig.genFPGASpinalConfig.generateVerilog {
     val top = ECPIX5Top()
 
     val lpf = LatticeTools.Lpf(elementsConfig)
@@ -246,12 +266,14 @@ object ECPIX5Generate extends ElementsApp {
 
     top
   }
+  report.mergeRTLSource("ECPIX5TopBlackboxes")
 }
 
 object ECPIX5Simulate extends ElementsApp {
   val compiled = elementsConfig.genFPGASimConfig.compile {
     val board = ECPIX5Board()
-    BinTools.initRam(board.spiNor.deviceOut.data, elementsConfig.zephyrBinary)
+    BinTools.initRam(board.spiNor.deviceOut.data, elementsConfig.swStorageBaremetalImage("bootrom"))
+    BinTools.initRam(board.w956a8mbya.device.data, elementsConfig.swStorageBaremetalImage("demo"))
     for (domain <- board.top.soc.parameter.getKitParameter.clocks) {
       board.top.soc.clockCtrl.getClockDomainByName(domain.name).clock.simPublic()
     }
@@ -268,31 +290,31 @@ object ECPIX5Simulate extends ElementsApp {
           simDuration.toString.toInt ms
         )
         testCases.addReset(dut.io.reset, 1000 ns)
-        testCases.uartRxIdle(dut.io.uartStd.rxd)
+        testCases.uartRxIdle(dut.io.pins(6))
       }
     case "boot" =>
       compiled.doSimUntilVoid("boot") { dut =>
         dut.simHook()
         val testCases = TestCases()
         testCases.addClockWithTimeout(dut.io.clock, ECPIX5.SystemClock.frequency, 20 ms)
-        testCases.uartRxIdle(dut.io.uartStd.rxd)
-        testCases.boot(dut.io.uartStd.txd, dut.baudPeriod)
+        testCases.uartRxIdle(dut.io.pins(6))
+        testCases.boot(dut.io.pins(5), dut.baudPeriod)
       }
     case "mtimer" =>
       compiled.doSimUntilVoid("mtimer") { dut =>
         dut.simHook()
         val testCases = TestCases()
         testCases.addClockWithTimeout(dut.io.clock, ECPIX5.SystemClock.frequency, 20 ms)
-        testCases.uartRxIdle(dut.io.uartStd.rxd)
-        testCases.heartbeat(dut.io.gpioStatus(0), true)
+        testCases.uartRxIdle(dut.io.pins(6))
+        testCases.heartbeat(dut.io.pins(0), true)
       }
     case "reset" =>
       compiled.doSimUntilVoid("reset") { dut =>
         dut.simHook()
         val testCases = TestCases()
         testCases.addClockWithTimeout(dut.io.clock, ECPIX5.SystemClock.frequency, 25 ms)
-        testCases.uartRxIdle(dut.io.uartStd.rxd)
-        testCases.reset(dut.io.uartStd.txd, dut.baudPeriod)
+        testCases.uartRxIdle(dut.io.pins(6))
+        testCases.reset(dut.io.pins(5), dut.baudPeriod)
       }
     case _ =>
       println(s"Unknown simulation ${simType}")
