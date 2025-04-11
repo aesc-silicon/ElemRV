@@ -111,6 +111,7 @@ tasks:
       - task: lib-sealring
         vars:
           board: "SG13G2"
+      - cp {{ .NAFARR_BASE }}/hardware/scala/nafarr/crypto/aes/AESMasked.v {{ .BUILD_ROOT }}/ElemRV/SG13G2/zibal/
 
   simulate:
     desc: Runs simulations at the RTL level. Add 'duration=n' to specify the duration in n milliseconds.
