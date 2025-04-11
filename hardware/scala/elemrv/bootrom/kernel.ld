@@ -2,8 +2,9 @@
 
 MEMORY
 {
-	FLASH (xr ): ORIGIN = 0xA0000000, LENGTH = 64k
+	OCRAM (xrw): ORIGIN = 0x80000000, LENGTH = 1k
 	MEM   (xrw): ORIGIN = 0x90000000, LENGTH = 64k
+	FLASH (xr ): ORIGIN = 0xA0000000, LENGTH = 64k
 }
 stack_size = 32k;
 heap_size = 0;
