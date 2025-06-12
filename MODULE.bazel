@@ -1,0 +1,72 @@
+module(
+    name = "elemrv",
+    version = "0.0.1",
+    compatibility_level = 1,
+)
+
+bazel_dep(name = "rules_jvm_external", version = "6.4")
+bazel_dep(name = "rules_scala")
+git_override(
+    module_name = "rules_scala",
+    commit = "1aced658083aac6c636fcc03b7cd3952a426eda7",
+    remote = "https://github.com/bazelbuild/rules_scala",
+)
+
+
+SCALA_VERSION = "2.12.20"
+
+SCALA_VERSION_SHORT = SCALA_VERSION.rpartition(".")[0]
+
+scala_config = use_extension(
+    "@rules_scala//scala/extensions:config.bzl",
+    "scala_config",
+)
+scala_config.settings(
+    scala_version = SCALA_VERSION,
+)
+use_repo(scala_config, "rules_scala_config")
+
+scala_deps = use_extension(
+    "@rules_scala//scala/extensions:deps.bzl",
+    "scala_deps",
+)
+scala_deps.settings(
+    fetch_sources = True,
+)
+scala_deps.scala()
+scala_deps.scalatest()
+
+SPINAL_VERSION = "1.10.2a"
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    name = "elemrv_maven",
+    artifacts = [
+        "com.github.spinalhdl:spinalhdl-core_%s:%s" % (SCALA_VERSION_SHORT, SPINAL_VERSION),
+        "com.github.spinalhdl:spinalhdl-lib_%s:%s" % (SCALA_VERSION_SHORT, SPINAL_VERSION),
+        "com.github.spinalhdl:spinalhdl-idsl-plugin_%s:%s" % (SCALA_VERSION_SHORT, SPINAL_VERSION),
+        "org.scalatest:scalatest_%s:3.2.5" % SCALA_VERSION_SHORT,
+        "org.yaml:snakeyaml:1.8",
+    ],
+    repositories = [
+        "https://repo1.maven.org/maven2",
+    ],
+)
+use_repo(maven, "elemrv_maven")
+
+
+
+bazel_dep(name = "bazel-orfs")
+git_override(
+    module_name = "bazel-orfs",
+    commit = "e63b59bce64209aa6f93384ac7089718d44a4062",
+    remote = "https://github.com/The-OpenROAD-Project/bazel-orfs.git",
+)
+
+orfs = use_extension("@bazel-orfs//:extension.bzl", "orfs_repositories")
+orfs.default(
+    image = "docker.io/openroad/orfs:v3.0-3228-g2dff1a34",
+    sha256 = "0556a585e890c049b53f91c2e7473b69e7ac409383927389ee2177ba64b356e1",
+)
+use_repo(orfs, "com_github_nixos_patchelf_download")
+use_repo(orfs, "docker_orfs")

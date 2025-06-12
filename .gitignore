@@ -12,3 +12,7 @@ repo
 *.blend*
 .metals/
 .vscode/
+bazel-ElemRV
+bazel-bin
+bazel-out
+bazel-testlogs
