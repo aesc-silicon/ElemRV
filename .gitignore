@@ -10,3 +10,5 @@ tools/
 .task/
 repo
 *.blend*
+.metals/
+.vscode/
