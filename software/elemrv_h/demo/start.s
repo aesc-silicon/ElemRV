@@ -1,21 +1,27 @@
+/*
+ * SPDX-FileCopyrightText: 2025 aesc silicon
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 .equ REGBYTES, 0x4
 
 .section .text
+.global hang
+.global _head
 _head:
 	li	a0, 1
 	jal	gpio_set_pin
 
 	jal	_init_regs
-	#jal	_init_memc
 	jal	_init_bss
 
-	li	a0, 0
-	jal	gpio_set_pin
+	li	sp, 0x80001000
+	j	_kernel
 
-	jal	_relocate
-	# Jump to application
-	li	ra, 0x90000000
-	ret
+hang:
+	nop
+	beqz	zero, hang
 
 _init_regs:
 	li	x2 , 0xA2A2A2A2
@@ -50,17 +56,7 @@ _init_regs:
 	li	x31, 0xD1D1D1D1
 	ret
 
-_init_memc:
-	li	t0, 0xf0023000
-	li	t1, 0x20
-	sw	t1, 0x14(t0) # reset pulse
-	li	t1, 0x40
-	sw	t1, 0x18(t0) # reset hold
-	li	t1, 7
-	sw	t1, 0x20(t0) # latency cycles
-	li	t1, 1
-	sw	t1, 0x10(t0) # reset chip
-	ret
+
 
 _init_bss:
 	la	t0, __bss_start
@@ -75,20 +71,18 @@ loop_end:
 	ret
 	nop
 
-_relocate:
-	li	t0, 0xa0010000
-	li	t1, 0xa0012000
-	li	t2, 0x90000000
-	beq	t0, t1, relocate_loop_end
-relocate_loop_head:
-	lw	a0, 0x0(t0)
-	sw	a0, 0x0(t2)
-	addi	t0, t0, 4
-	addi	t2, t2, 4
-	bne	t0, t1, relocate_loop_head
-relocate_loop_end:
+
+timer_enable:
+	csrr	a0, mie
+	ori	a0, a0, 0x80
+	csrw	mie, a0
 	ret
-	nop
+
+timer_disable:
+	csrr	a0, mie
+	xori	a0, a0, 0x80
+	csrw	mie, a0
+	ret
 
 # Basic driver for debugging
 

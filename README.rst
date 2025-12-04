@@ -1,3 +1,7 @@
+.. SPDX-FileCopyrightText: 2025 aesc silicon
+..
+.. SPDX-License-Identifier: CERN-OHL-W-2.0
+
 ElemRV - End-to-end Open-Source RISC-V MCU
 ==========================================
 
@@ -140,6 +144,7 @@ Known Issues
 License
 #######
 
-Copyright (c) 2024 Steffen Reith and Daniel Schultz. Released under the `GPLv3 license`_.
+Copyright (c) 2025 aesc silicon. Released under the `CERN-OHL-W-2.0`_ and `Apache-2.0`_ license.
 
-.. _GPLv3 license: COPYING.GPLv3
+.. _CERN-OHL-W-2.0: LICENSES/CERN-OHL-W-2.0.txt
+.. _Apache-2.0: LICENSES/Apache-2.0.txt

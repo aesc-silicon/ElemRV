@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2025 aesc silicon
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include "soc.h"
 #include "gpio.h"
 #include "uart.h"
@@ -57,7 +63,7 @@ void isr_handle(unsigned int mcause)
 void _kernel(void)
 {
 	struct mtimer_driver mtimer;
-	unsigned char banner[19 + 1] = "\r\nElemRV-N 0.2\r\n>- ";
+	unsigned char banner[15 + 1] = "\r\nElemRV-N\r\n>- ";
 
 	gpio_init(&gpio, GPIO0CTRL_BASE);
 	mtimer_init(&mtimer, MTIMERCTRL_BASE);
@@ -71,6 +77,7 @@ void _kernel(void)
 	plic_irq_enable(&plic, GPIO0CTRL_IRQ);
 
 	gpio_dir_set(&gpio, 0);
+
 	uart_puts(&uart, banner);
 	uart_irq_rx_enable(&uart);
 	//gpio_irq_enable(&gpio, 3, GPIO_IRQ_FALLING_EDGE);
