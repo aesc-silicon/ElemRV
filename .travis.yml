@@ -1,0 +1,63 @@
+# SPDX-FileCopyrightText: 2025 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+language: generic
+
+os: linux
+dist: noble
+
+# Only run on pull requests to main branch
+branches:
+  only:
+    - main
+
+# Set timeout to 180 minutes
+timeout: 10800
+
+# Conditional logic for PRs vs Cron
+if: type IN (pull_request, cron)
+
+install:
+  # Install Podman
+  - sudo apt-get update
+  - sudo apt-get install -y podman uidmap slirp4netns
+
+  # Disable color
+  - git config --global color.ui false
+
+  # Install other dependencies
+  - sudo snap install task --classic
+  - sudo apt-get update
+  - sudo apt-get install -y virtualenv
+
+script:
+  # Use appropriate branch: PR branch for PRs, main for cron
+  - |
+    if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then
+      BRANCH="main"
+    else
+      BRANCH="${TRAVIS_PULL_REQUEST_BRANCH:-main}"
+    fi
+
+  # Prepare the project
+  - task install branch=${BRANCH}
+
+  # Prepare files
+  - IS_HEADLESS=true task prepare
+
+  # Generate layout
+  - IS_HEADLESS=true task layout
+
+  # Add metal fill
+  - IS_HEADLESS=true task filler
+
+  # Run maximal DRC
+  - IS_HEADLESS=true task run-drc
+
+notifications:
+  email:
+    on_success: never
+    on_failure: always
+    recipients:
+      - nightly.reports@aesc-silicon.de
