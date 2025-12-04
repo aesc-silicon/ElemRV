@@ -1,15 +1,21 @@
-package elemrv
+// SPDX-FileCopyrightText: 2025 aesc silicon
+//
+// SPDX-License-Identifier: CERN-OHL-W-2.0
+
+package elemrv_n
 
 import spinal.core._
 import spinal.core.sim._
 import spinal.lib._
+
+import spinal.lib.bus.bmb._
 
 import nafarr.system.reset._
 import nafarr.system.reset.ResetControllerCtrl._
 import nafarr.system.clock._
 import nafarr.system.clock.ClockControllerCtrl._
 import nafarr.blackboxes.ihp.sg13g2._
-import nafarr.memory.ocram.ihp.sg13g2.Axi4SharedIhpOnChipRam
+import nafarr.memory.ocram.ihp.sg13g2.BmbIhpOnChipRam
 
 import zibal.misc._
 import zibal.platform.Nitrogen
@@ -100,9 +106,14 @@ case class SG13G2Board() extends Component {
 }
 
 case class SG13G2Top() extends Component {
-  val resets = List[ResetParameter](ResetParameter("system", 128), ResetParameter("debug", 128))
+  val resets = List[ResetParameter](
+    ResetParameter("system", 128),
+    ResetParameter("cpu", 128),
+    ResetParameter("debug", 128)
+  )
   val clocks = List[ClockParameter](
     ClockParameter("system", 20 MHz, "system"),
+    ClockParameter("cpu", 20 MHz, "cpu", synchronousWith = "system"),
     ClockParameter("debug", 10 MHz, "debug", synchronousWith = "system")
   )
   val hyperbusPartitions = List[(BigInt, Boolean)](
@@ -114,86 +125,82 @@ case class SG13G2Top() extends Component {
   val socParameter = ElemRV.Parameter(boardParameter)
   val parameter = Nitrogen.Parameter(
     socParameter,
-    32,
+    4 kB,
     8 MB,
     hyperbusPartitions,
     (resetCtrl: ResetControllerCtrl, reset: Bool, _) => {
       resetCtrl.buildDummy(reset)
     },
     (clockCtrl: ClockControllerCtrl, resetCtrl: ResetControllerCtrl, clock: Bool) => {
-      clockCtrl.buildDummy(clock)
+      clockCtrl.buildDummy(clock, resetCtrl)
     },
-    (ramSize: BigInt) => {
-      val ram = Axi4SharedIhpOnChipRam.OnePort1024x8(
-        dataWidth = 32,
-        byteCount = ramSize,
-        idWidth = 4
-      )
-      (ram, ram.io.axi, ram.engine.ram)
+    (parameter: BmbParameter, ramSize: BigInt) => {
+      val ram = BmbIhpOnChipRam.OnePort1Macro(parameter, ramSize.toInt)
+      (ram, ram.io.bus)
     }
   )
 
   val io = new Bundle {
     val clock = IhpCmosIo("south", 13)
-    val reset = IhpCmosIo("south", 12)
+    val reset = IhpCmosIo("south", 12, "clk_main")
     val jtag = new Bundle {
-      val tms = IhpCmosIo("west", 2)
-      val tdi = IhpCmosIo("west", 3)
-      val tdo = IhpCmosIo("west", 4)
-      val tck = IhpCmosIo("west", 5)
+      val tms = IhpCmosIo("west", 2, "clk_jtag")
+      val tdi = IhpCmosIo("west", 3, "clk_jtag")
+      val tdo = IhpCmosIo("west", 4, "clk_jtag")
+      val tck = IhpCmosIo("west", 5, "clk_jtag")
     }
     val hyperbus = new Bundle {
       val cs = Vec(
-        IhpCmosIo("north", 12),
-        IhpCmosIo("north", 13)
+        IhpCmosIo("north", 12, "clk_main"),
+        IhpCmosIo("north", 13, "clk_main")
       )
-      val ck = IhpCmosIo("east", 13)
-      val reset = IhpCmosIo("north", 10)
-      val rwds = IhpCmosIo("north", 11)
+      val ck = IhpCmosIo("east", 13, "clk_main")
+      val reset = IhpCmosIo("north", 10, "clk_main")
+      val rwds = IhpCmosIo("north", 11, "clk_main")
       val dq = Vec(
-        IhpCmosIo("north", 2),
-        IhpCmosIo("north", 3),
-        IhpCmosIo("north", 4),
-        IhpCmosIo("north", 5),
-        IhpCmosIo("north", 6),
-        IhpCmosIo("north", 7),
-        IhpCmosIo("north", 8),
-        IhpCmosIo("north", 9)
+        IhpCmosIo("north", 2, "clk_main"),
+        IhpCmosIo("north", 3, "clk_main"),
+        IhpCmosIo("north", 4, "clk_main"),
+        IhpCmosIo("north", 5, "clk_main"),
+        IhpCmosIo("north", 6, "clk_main"),
+        IhpCmosIo("north", 7, "clk_main"),
+        IhpCmosIo("north", 8, "clk_main"),
+        IhpCmosIo("north", 9, "clk_main")
       )
     }
     val spi = new Bundle {
       val cs = Vec(
-        IhpCmosIo("east", 2)
+        IhpCmosIo("east", 2, "clk_main")
       )
-      val sck = IhpCmosIo("east", 3)
+      val sck = IhpCmosIo("east", 3, "clk_main")
       val dq = Vec(
-        IhpCmosIo("east", 7),
-        IhpCmosIo("east", 6),
-        IhpCmosIo("east", 5),
-        IhpCmosIo("east", 4)
+        IhpCmosIo("east", 7, "clk_main"),
+        IhpCmosIo("east", 6, "clk_main"),
+        IhpCmosIo("east", 5, "clk_main"),
+        IhpCmosIo("east", 4, "clk_main")
       )
     }
     val pins = Vec(
-      IhpCmosIo("west", 8),
-      IhpCmosIo("west", 9),
-      IhpCmosIo("west", 10),
-      IhpCmosIo("west", 11),
-      IhpCmosIo("west", 12),
-      IhpCmosIo("west", 13),
-      IhpCmosIo("east", 8),
-      IhpCmosIo("east", 9),
-      IhpCmosIo("east", 10),
-      IhpCmosIo("east", 11),
-      IhpCmosIo("south", 2),
-      IhpCmosIo("south", 3),
-      IhpCmosIo("south", 4),
-      IhpCmosIo("south", 5),
-      IhpCmosIo("south", 6),
-      IhpCmosIo("south", 7),
-      IhpCmosIo("south", 8),
-      IhpCmosIo("south", 9),
-      IhpCmosIo("south", 10),
-      IhpCmosIo("south", 11)
+      IhpCmosIo("west", 8, "clk_main"),
+      IhpCmosIo("west", 9, "clk_main"),
+      IhpCmosIo("west", 10, "clk_main"),
+      IhpCmosIo("west", 11, "clk_main"),
+      IhpCmosIo("west", 12, "clk_main"),
+      IhpCmosIo("west", 13, "clk_main"),
+      IhpCmosIo("east", 8, "clk_main"),
+      IhpCmosIo("east", 9, "clk_main"),
+      IhpCmosIo("east", 10, "clk_main"),
+      IhpCmosIo("east", 11, "clk_main"),
+      IhpCmosIo("south", 2, "clk_main"),
+      IhpCmosIo("south", 3, "clk_main"),
+      IhpCmosIo("south", 4, "clk_main"),
+      IhpCmosIo("south", 5, "clk_main"),
+      IhpCmosIo("south", 6, "clk_main"),
+      IhpCmosIo("south", 7, "clk_main"),
+      IhpCmosIo("south", 8, "clk_main"),
+      IhpCmosIo("south", 9, "clk_main"),
+      IhpCmosIo("south", 10, "clk_main"),
+      IhpCmosIo("south", 11, "clk_main")
     )
     val forFutureUse = Vec(
       IhpCmosIo("east", 12),
@@ -247,56 +254,54 @@ case class SG13G2Top() extends Component {
 object SG13G2Generate extends ElementsApp {
   val report = elementsConfig.genASICSpinalConfig.generateVerilog {
     val top = SG13G2Top()
-    val config = OpenROADTools.IHP.Config(elementsConfig)
-    config.generate(
-      OpenROADTools.PDKs.IHP.sg13g2,
-      (0, 0, 2522.4, 2521.26),
-      (394.08, 396.9, 2125.44, 2124.36)
-    )
-
-    val macros = OpenROADTools.IHP.Macros(elementsConfig)
-    macros.addMacro(
-      top.soc.system.onChipCtrl.asInstanceOf[Axi4SharedIhpOnChipRam.OnePort1024x8].engine.ram,
-      444.96,
-      448.35,
-      "MX"
-    )
-    macros.addMacro(top.soc.peripherals.aesCtrl.ctrl.ram, 936.48, 448.35, "MX")
-    macros.generate()
-
-    val sdc = OpenROADTools.IHP.Sdc(elementsConfig)
-    sdc.addClock(top.io.clock.PAD, 20 MHz, "clk_core")
-    sdc.addClock(top.io.jtag.tck.PAD, 10 MHz, "clk_jtag")
-    sdc.setFalsePath("clk_core", "clk_jtag")
-    sdc.generate(top.io)
-
-    val io = OpenROADTools.IHP.Io(elementsConfig)
-    io.addPad("south", 0, "sg13g2_IOPadIOVdd")
-    io.addPad("south", 1, "sg13g2_IOPadIOVss")
-    io.addPad("south", 14, "sg13g2_IOPadVss")
-    io.addPad("south", 15, "sg13g2_IOPadVdd")
-    io.addPad("east", 0, "sg13g2_IOPadIOVdd")
-    io.addPad("east", 1, "sg13g2_IOPadIOVss")
-    io.addPad("east", 14, "sg13g2_IOPadVss")
-    io.addPad("east", 15, "sg13g2_IOPadVdd")
-    io.addPad("north", 0, "sg13g2_IOPadVdd")
-    io.addPad("north", 1, "sg13g2_IOPadVss")
-    io.addPad("north", 14, "sg13g2_IOPadIOVss")
-    io.addPad("north", 15, "sg13g2_IOPadIOVdd")
-    io.addPad("west", 0, "sg13g2_IOPadVdd")
-    io.addPad("west", 1, "sg13g2_IOPadVss")
-    io.addPad("west", 14, "sg13g2_IOPadIOVss")
-    io.addPad("west", 15, "sg13g2_IOPadIOVdd")
-    io.generate(top.io)
-
-    val pdn = OpenROADTools.IHP.Pdn(elementsConfig)
-    pdn.generate()
-
     top.soc.prepareBaremetal("bootrom", elementsConfig)
     top.soc.prepareBaremetal("demo", elementsConfig)
 
     top
   }
+
+  val cpu = OpenROADTools.IHP.Config(elementsConfig, OpenROADTools.PDKs.IHP.sg13g2, true)
+  cpu.dieArea = (0, 0, 799.68, 797.58)
+  cpu.coreArea = (22.56, 22.68, 780, 778.68)
+  cpu.pdnRingWidth = 5.0
+  cpu.pdnRingSpace = 2.0
+  cpu.addClock(report.toplevel.soc.clockCtrl.getClockDomainByName("cpu").clock, 20 MHz)
+  cpu.generate("VexRiscv")
+
+  val chip = OpenROADTools.IHP.Config(elementsConfig, OpenROADTools.PDKs.IHP.sg13g2)
+  chip.dieArea = (0, 0, 2522.4, 2521.26)
+  chip.coreArea = (394.08, 396.9, 2125.44, 2124.36)
+  chip.hasIoRing = true
+  chip.addBlock("VexRiscv")
+  chip.addMacro(
+    report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[BmbIhpOnChipRam.OnePort1Macro].ram,
+    444.96,
+    448.35,
+    "MX"
+  )
+  chip.addClock(report.toplevel.io.clock.PAD, 20 MHz, "clk_main")
+  chip.addClock(report.toplevel.io.jtag.tck.PAD, 10 MHz, "clk_jtag")
+  chip.setFalsePath("clk_main", "clk_jtag")
+  chip.io = Some(report.toplevel.io)
+  chip.pdnRingWidth = 30.0
+  chip.pdnRingSpace = 5.0
+  chip.addPad("south", 0, "sg13g2_IOPadIOVdd")
+  chip.addPad("south", 1, "sg13g2_IOPadIOVss")
+  chip.addPad("south", 14, "sg13g2_IOPadVss")
+  chip.addPad("south", 15, "sg13g2_IOPadVdd")
+  chip.addPad("east", 0, "sg13g2_IOPadIOVdd")
+  chip.addPad("east", 1, "sg13g2_IOPadIOVss")
+  chip.addPad("east", 14, "sg13g2_IOPadVss")
+  chip.addPad("east", 15, "sg13g2_IOPadVdd")
+  chip.addPad("north", 0, "sg13g2_IOPadVdd")
+  chip.addPad("north", 1, "sg13g2_IOPadVss")
+  chip.addPad("north", 14, "sg13g2_IOPadIOVss")
+  chip.addPad("north", 15, "sg13g2_IOPadIOVdd")
+  chip.addPad("west", 0, "sg13g2_IOPadVdd")
+  chip.addPad("west", 1, "sg13g2_IOPadVss")
+  chip.addPad("west", 14, "sg13g2_IOPadIOVss")
+  chip.addPad("west", 15, "sg13g2_IOPadIOVdd")
+  chip.generate
 }
 
 object SG13G2Simulate extends ElementsApp {

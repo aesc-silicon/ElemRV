@@ -1,18 +1,24 @@
-package elemrv
+// SPDX-FileCopyrightText: 2025 aesc silicon
+//
+// SPDX-License-Identifier: CERN-OHL-W-2.0
+
+package elemrv_h
 
 import spinal.core._
 import spinal.core.sim._
 import spinal.lib._
+
+import spinal.lib.bus.bmb._
 
 import nafarr.system.reset._
 import nafarr.system.reset.ResetControllerCtrl._
 import nafarr.system.clock._
 import nafarr.system.clock.ClockControllerCtrl._
 import nafarr.blackboxes.lattice.ecp5._
-import nafarr.memory.ocram.ihp.sg13g2.Axi4SharedIhpOnChipRam
+import nafarr.memory.ocram.ihp.sg13g2.BmbIhpOnChipRam
 
 import zibal.misc._
-import zibal.platform.Nitrogen
+import zibal.platform.Hydrogen
 import zibal.board.{KitParameter, BoardParameter}
 import zibal.sim.hyperram.W956A8MBYA
 import zibal.sim.MT25Q
@@ -24,20 +30,13 @@ case class ECPIX5Board() extends Component {
   val io = new Bundle {
     val clock = inout(Analog(Bool))
     val reset = inout(Analog(Bool))
-    val hyperbus = new Bundle {
-      val cs = inout(Analog(Bool))
-      val ck = inout(Analog(Bool))
-      val reset = inout(Analog(Bool))
-      val rwds = inout(Analog(Bool))
-      val dq = Vec(inout(Analog(Bool())), 8)
-    }
     val spi = new Bundle {
       val cs = inout(Analog(Bool))
       val sck = inout(Analog(Bool))
       val mosi = inout(Analog(Bool))
       val miso = inout(Analog(Bool))
     }
-    val pins = Vec(inout(Analog(Bool())), 20)
+    val pins = Vec(inout(Analog(Bool())), 12)
   }
 
   val top = ECPIX5Top()
@@ -47,26 +46,6 @@ case class ECPIX5Board() extends Component {
   analogTrue := True
 
   top.io.clock.PAD := io.clock
-
-  val w956a8mbya = W956A8MBYA()
-  w956a8mbya.io.ck := io.hyperbus.ck
-  w956a8mbya.io.ckN := analogFalse
-  for (index <- 0 until top.io.hyperbus.dq.length) {
-    w956a8mbya.io.dqIn(index) := io.hyperbus.dq(index)
-    io.hyperbus.dq(index) := w956a8mbya.io.dqOut(index)
-  }
-  w956a8mbya.io.rwdsIn := io.hyperbus.rwds
-  io.hyperbus.rwds := w956a8mbya.io.rwdsOut
-  w956a8mbya.io.csN := io.hyperbus.cs
-  w956a8mbya.io.resetN := io.hyperbus.reset
-
-  io.hyperbus.cs := top.io.hyperbus.cs(0).PAD
-  io.hyperbus.ck := top.io.hyperbus.ck.PAD
-  io.hyperbus.reset := top.io.hyperbus.reset.PAD
-  io.hyperbus.rwds <> top.io.hyperbus.rwds.PAD
-  for (index <- 0 until top.io.hyperbus.dq.length) {
-    io.hyperbus.dq(index) <> top.io.hyperbus.dq(index).PAD
-  }
 
   val spiNor = MT25Q()
   spiNor.io.clock := io.clock
@@ -80,6 +59,8 @@ case class ECPIX5Board() extends Component {
   io.spi.sck := top.io.spi.sck.PAD
   io.spi.mosi := top.io.spi.dq(0).PAD
   top.io.spi.dq(1).PAD := io.spi.miso
+  top.io.spi.dq(2).PAD := analogFalse
+  top.io.spi.dq(3).PAD := analogFalse
 
   for (index <- 0 until top.io.pins.length) {
     io.pins(index) <> top.io.pins(index).PAD
@@ -100,43 +81,36 @@ case class ECPIX5Board() extends Component {
 }
 
 case class ECPIX5Top() extends Component {
-  val resets = List[ResetParameter](ResetParameter("system", 128), ResetParameter("debug", 128))
-  val clocks = List[ClockParameter](
-    ClockParameter("system", 20 MHz, "system"),
-    ClockParameter("debug", 10 MHz, "debug", synchronousWith = "system")
+  val resets = List[ResetParameter](
+    ResetParameter("system", 128),
+    ResetParameter("debug", 128)
   )
-  val hyperbusPartitions = List[(BigInt, Boolean)](
-    (8 MB, true),
-    (8 MB, true),
-    (8 MB, true),
-    (8 MB, true)
+  val clocks = List[ClockParameter](
+    ClockParameter("system", 25 MHz, "system"),
+    ClockParameter("debug", 10 MHz, "debug", synchronousWith = "system")
   )
   val kitParameter = KitParameter(resets, clocks)
   val boardParameter = ECPIX5.Parameter(kitParameter, ECPIX5.SystemClock.frequency)
   val socParameter = ElemRV.Parameter(boardParameter)
-  val parameter = Nitrogen.Parameter(
+  val parameter = Hydrogen.Parameter(
     socParameter,
-    1 kB,
+    4 kB,
     8 MB,
-    hyperbusPartitions,
     (resetCtrl: ResetControllerCtrl, _, clock: Bool) => { resetCtrl.buildXilinx(clock) },
     (clockCtrl: ClockControllerCtrl, resetCtrl: ResetControllerCtrl, clock: Bool) => {
       clockCtrl.buildLatticeECP5Pll(
         clock,
+        resetCtrl,
         boardParameter.getOscillatorFrequency,
         List("system", "debug"),
         2,
         1,
-        8
+        10
       )
     },
-    (ramSize: BigInt) => {
-      val ram = Axi4SharedIhpOnChipRam.OnePort1024x8(
-        dataWidth = 32,
-        byteCount = ramSize,
-        idWidth = 4
-      )
-      (ram, ram.io.axi, ram.engine.ram)
+    (parameter: BmbParameter, ramSize: BigInt) => {
+      val ram = BmbIhpOnChipRam.OnePort4Macros(parameter, ramSize.toInt)
+      (ram, ram.io.bus)
     }
   )
 
@@ -147,28 +121,6 @@ case class ECPIX5Top() extends Component {
       val tdi = LatticeCmosIo(ECPIX5.Pmods.Pmod1.pin3)
       val tdo = LatticeCmosIo(ECPIX5.Pmods.Pmod1.pin0)
       val tck = LatticeCmosIo(ECPIX5.Pmods.Pmod1.pin1)
-    }
-    val hyperbus = new Bundle {
-      val cs = Vec(
-        LatticeCmosIo(ECPIX5.Pmods.Pmod5.pin1),
-        LatticeCmosIo(ECPIX5.Pmods.Pmod5.pin5),
-        LatticeCmosIo(ECPIX5.Pmods.Pmod5.pin0),
-        LatticeCmosIo(ECPIX5.Pmods.Pmod5.pin4)
-      )
-      val ck = LatticeCmosIo(ECPIX5.Pmods.Pmod5.pin2).slewRateFast
-      val ckN = LatticeCmosIo(ECPIX5.Pmods.Pmod5.pin3).slewRateFast
-      val reset = LatticeCmosIo(ECPIX5.Pmods.Pmod5.pin6)
-      val dq = Vec(
-        LatticeCmosIo(ECPIX5.Pmods.Pmod4.pin0).slewRateFast,
-        LatticeCmosIo(ECPIX5.Pmods.Pmod4.pin1).slewRateFast,
-        LatticeCmosIo(ECPIX5.Pmods.Pmod4.pin2).slewRateFast,
-        LatticeCmosIo(ECPIX5.Pmods.Pmod4.pin3).slewRateFast,
-        LatticeCmosIo(ECPIX5.Pmods.Pmod4.pin7).slewRateFast,
-        LatticeCmosIo(ECPIX5.Pmods.Pmod4.pin6).slewRateFast,
-        LatticeCmosIo(ECPIX5.Pmods.Pmod4.pin5).slewRateFast,
-        LatticeCmosIo(ECPIX5.Pmods.Pmod4.pin4).slewRateFast
-      )
-      val rwds = LatticeCmosIo(ECPIX5.Pmods.Pmod5.pin7).slewRateFast
     }
     val spi = new Bundle {
       val cs = Vec(
@@ -187,22 +139,14 @@ case class ECPIX5Top() extends Component {
       LatticeCmosIo(ECPIX5.LEDs.LD6.red),
       LatticeCmosIo(ECPIX5.LEDs.LD7.green),
       LatticeCmosIo(ECPIX5.Buttons.sw0),
+      LatticeCmosIo(ECPIX5.UartStd.txd),
+      LatticeCmosIo(ECPIX5.UartStd.rxd),
       LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin0),
       LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin1),
       LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin2),
       LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin3),
       LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin4),
-      LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin5),
-      LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin6),
-      LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin7),
-      LatticeCmosIo(ECPIX5.Pmods.Pmod3.pin0),
-      LatticeCmosIo(ECPIX5.Pmods.Pmod3.pin1),
-      LatticeCmosIo(ECPIX5.UartStd.txd),
-      LatticeCmosIo(ECPIX5.UartStd.rxd),
-      LatticeCmosIo(ECPIX5.Pmods.Pmod3.pin2),
-      LatticeCmosIo(ECPIX5.Pmods.Pmod3.pin3),
-      LatticeCmosIo(ECPIX5.Pmods.Pmod3.pin4),
-      LatticeCmosIo(ECPIX5.Pmods.Pmod3.pin5)
+      LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin5)
     )
     val ledPullDown = Vec(
       LatticeCmosIo(ECPIX5.LEDs.LD5.red),
@@ -225,17 +169,6 @@ case class ECPIX5Top() extends Component {
   io.jtag.tdi <> FakeI(soc.io_plat.jtag.tdi)
   io.jtag.tdo <> FakeO(soc.io_plat.jtag.tdo)
   io.jtag.tck <> FakeI(soc.io_plat.jtag.tck)
-
-  for (index <- 0 until io.hyperbus.cs.length) {
-    io.hyperbus.cs(index) <> FakeO(soc.io_plat.hyperbus.cs(index))
-  }
-  io.hyperbus.ck <> FakeO(soc.io_plat.hyperbus.ck)
-  io.hyperbus.ckN <> FakeO(False)
-  io.hyperbus.reset <> FakeO(soc.io_plat.hyperbus.reset)
-  for (index <- 0 until io.hyperbus.dq.length) {
-    io.hyperbus.dq(index) <> FakeIo(soc.io_plat.hyperbus.dq(index))
-  }
-  io.hyperbus.rwds <> FakeIo(soc.io_plat.hyperbus.rwds)
 
   for (index <- 0 until io.spi.cs.length) {
     io.spi.cs(index) <> FakeO(soc.io_plat.spi.cs(index))
@@ -272,8 +205,7 @@ object ECPIX5Generate extends ElementsApp {
 object ECPIX5Simulate extends ElementsApp {
   val compiled = elementsConfig.genFPGASimConfig.compile {
     val board = ECPIX5Board()
-    BinTools.initRam(board.spiNor.deviceOut.data, elementsConfig.swStorageBaremetalImage("bootrom"))
-    BinTools.initRam(board.w956a8mbya.device.data, elementsConfig.swStorageBaremetalImage("demo"))
+    BinTools.initRam(board.spiNor.deviceOut.data, elementsConfig.swStorageBaremetalImage("demo"))
     for (domain <- board.top.soc.parameter.getKitParameter.clocks) {
       board.top.soc.clockCtrl.getClockDomainByName(domain.name).clock.simPublic()
     }

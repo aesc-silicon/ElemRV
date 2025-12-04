@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 aesc silicon
+//
+// SPDX-License-Identifier: CERN-OHL-W-2.0
+
 val spinalVersion = "1.10.2a"
 
 lazy val root = (project in file("."))

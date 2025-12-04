@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2025 aesc silicon
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 .equ REGBYTES, 0x4
 
 .section .text
@@ -6,13 +12,15 @@
 .global interrupt_enable
 .global interrupt_disable
 .extern isr_handle
+.global _head
 _head:
 	li	a0, 1
 	jal	gpio_set_pin
 
 	jal	_init_bss
 
-	li	sp, 0x90010000
+	#li	sp, 0x90010000 #TODO move stack to HyperRAM
+	li	sp, 0x80001000
 	j	_kernel
 
 hang:

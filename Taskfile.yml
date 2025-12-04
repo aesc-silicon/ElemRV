@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
 version: '3'
 
 includes:
@@ -7,9 +11,6 @@ includes:
     flatten: true
 
 env:
-  package: "elemrv"
-  SOC: ElemRV
-  CONTAINER_NAME: elemrv_container
   FPGA_FAMILY: ecp5
   FPGA_DEVICE: um5g-45k
   FPGA_PACKAGE: CABGA554
@@ -23,6 +24,12 @@ env:
   BUILD_ROOT: "{{ .PWD }}/build/"
   GCC: "/opt/elements/zephyr-sdk-0.17.0/riscv64-zephyr-elf/bin/riscv64-zephyr-elf"
   OPENROAD_FLOW_ROOT: "{{ .PWD }}/tools/OpenROAD-flow-scripts/flow"
+
+vars:
+  SOC: '{{.SOC | default "ElemRV-N"}}'
+  package:
+    sh: echo "{{.SOC}}" | tr '[:upper:]' '[:lower:]' | tr '-' '_'
+  CONTAINER_NAME: elemrv_container
   CONTAINER_ENV: " \
     -e SOC={{ .SOC }} \
     -e FPGA_FAMILY={{ .FPGA_FAMILY }} \
@@ -47,7 +54,7 @@ tasks:
       - venv/bin/pip3 install podman-compose==1.0.6
       - curl https://storage.googleapis.com/git-repo-downloads/repo > repo
       - chmod a+rx repo
-      - ./repo init -u https://github.com/aesc-silicon/ElemRV.git -b {{if .branch}}{{.branch}}{{else}}main{{end}} -m manifest.xml
+      - ./repo init -u https://github.com/aesc-silicon/ElemRV.git -b {{if .branch}}{{.branch}}{{else}}main{{end}} -m manifest{{if .nightly}}-nightly{{end}}.xml
 
   build-container:
     desc: Creates a container with all necessary host requirements pre-installed.
@@ -65,6 +72,7 @@ tasks:
       - task: repo-sync
     vars:
       branch: "main"
+      nightly: "false"
 
   fpga-prepare:
     desc: Produces the Verilog file and metadata needed for FPGA operations.
@@ -72,7 +80,6 @@ tasks:
       - task: lib-generate
         vars:
           board: "ECPIX5"
-          package: "elemrv"
   fpga-synthesize:
     desc: Generates the FPGA bitstream by synthesizing the design.
     cmds:
@@ -86,6 +93,18 @@ tasks:
       - task: lib-flash-bitstream
         vars:
           board: "ECPIX5"
+  fpga-simulate:
+    desc: Runs simulations at the RTL level. Add 'duration=n' to specify the duration in n milliseconds.
+    cmds:
+      - task: lib-simulate
+        vars:
+          board: "ECPIX5"
+  fpga-view-simulation:
+    desc: Opens the simulation with GTKWave.
+    cmds:
+      - task: lib-view-simulation
+        vars:
+          board: "ECPIX5"
 
   compile-firmware:
      desc: Compiles bare metal firmwares.
@@ -93,12 +112,10 @@ tasks:
        - task: lib-baremetal-firmware
          vars:
           board: "SG13G2"
-          package: "elemrv"
           app: "bootrom"
        - task: lib-baremetal-firmware
          vars:
           board: "SG13G2"
-          package: "elemrv"
           app: "demo"
 
   prepare:
@@ -107,11 +124,9 @@ tasks:
       - task: lib-generate
         vars:
           board: "SG13G2"
-          package: "elemrv"
       - task: lib-sealring
         vars:
           board: "SG13G2"
-      - cp {{ .NAFARR_BASE }}/hardware/scala/nafarr/crypto/aes/AESMasked.v {{ .BUILD_ROOT }}/ElemRV/SG13G2/zibal/
 
   simulate:
     desc: Runs simulations at the RTL level. Add 'duration=n' to specify the duration in n milliseconds.
@@ -119,7 +134,6 @@ tasks:
       - task: lib-simulate
         vars:
           board: "SG13G2"
-          package: "elemrv"
 
   view-simulation:
     desc: Opens the simulation with GTKWave.
@@ -127,7 +141,6 @@ tasks:
       - task: lib-view-simulation
         vars:
           board: "SG13G2"
-          package: "elemrv"
 
   layout:
     desc: Creates the physical layout of the chip.
