@@ -1,0 +1,37 @@
+# SPDX-FileCopyrightText: 2025 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+# This workflow checks the scala format
+
+name: Scala Format Check
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+    branches:
+      - 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          curl -fL "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz" | gzip -d > cs
+          chmod +x cs
+
+      - name: Setup Scala
+        uses: olafurpg/setup-scala@v11
+
+      - name: Check Format
+        run: |
+          export PATH="$PATH:/home/runner/.local/share/coursier/bin"
+          ./cs install scalafmt
+          scalafmt --check hardware/
