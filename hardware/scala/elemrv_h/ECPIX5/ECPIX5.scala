@@ -94,7 +94,7 @@ case class ECPIX5Top() extends Component {
   val socParameter = ElemRV.Parameter(boardParameter)
   val parameter = Hydrogen.Parameter(
     socParameter,
-    4 kB,
+    8 kB,
     8 MB,
     (resetCtrl: ResetControllerCtrl, _, clock: Bool) => { resetCtrl.buildXilinx(clock) },
     (clockCtrl: ClockControllerCtrl, resetCtrl: ResetControllerCtrl, clock: Bool) => {
@@ -109,7 +109,7 @@ case class ECPIX5Top() extends Component {
       )
     },
     (parameter: BmbParameter, ramSize: BigInt) => {
-      val ram = BmbIhpOnChipRam.OnePort4Macros(parameter, ramSize.toInt)
+      val ram = BmbIhpOnChipRam.OnePort1Macro(parameter, ramSize.toInt)
       (ram, ram.io.bus)
     }
   )
