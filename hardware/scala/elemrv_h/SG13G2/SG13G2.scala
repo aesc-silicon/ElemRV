@@ -85,7 +85,7 @@ case class SG13G2Top() extends Component {
   val socParameter = ElemRV.Parameter(boardParameter)
   val parameter = Hydrogen.Parameter(
     socParameter,
-    4 kB,
+    8 kB,
     8 MB,
     (resetCtrl: ResetControllerCtrl, reset: Bool, _) => {
       resetCtrl.buildDummy(reset)
@@ -94,7 +94,7 @@ case class SG13G2Top() extends Component {
       clockCtrl.buildDummy(clock, resetCtrl)
     },
     (parameter: BmbParameter, ramSize: BigInt) => {
-      val ram = BmbIhpOnChipRam.OnePort4Macros(parameter, ramSize.toInt)
+      val ram = BmbIhpOnChipRam.OnePort1Macro(parameter, ramSize.toInt)
       (ram, ram.io.bus)
     }
   )
@@ -177,28 +177,9 @@ object SG13G2Generate extends ElementsApp {
   chip.dieArea = (0, 0, 2150.4, 2150.82)
   chip.coreArea = (394.08, 396.9, 1753.44, 1753.92)
   chip.hasIoRing = true
-
   chip.addMacro(
-    report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[BmbIhpOnChipRam.OnePort4Macros].ram0,
-    446.88,
-    448.35,
-    "MX"
-  )
-  chip.addMacro(
-    report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[BmbIhpOnChipRam.OnePort4Macros].ram1,
-    712.32,
-    448.35,
-    "MX"
-  )
-  chip.addMacro(
-    report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[BmbIhpOnChipRam.OnePort4Macros].ram2,
-    977.76,
-    448.35,
-    "MX"
-  )
-  chip.addMacro(
-    report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[BmbIhpOnChipRam.OnePort4Macros].ram3,
-    1241.76,
+    report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[BmbIhpOnChipRam.OnePort1Macro].ram,
+    444.96,
     448.35,
     "MX"
   )
