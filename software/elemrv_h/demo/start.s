@@ -16,7 +16,7 @@ _head:
 	jal	_init_regs
 	jal	_init_bss
 
-	li	sp, 0x80001000
+	la	sp, __stack_start
 	j	_kernel
 
 hang:

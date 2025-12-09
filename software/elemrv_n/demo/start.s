@@ -19,8 +19,7 @@ _head:
 
 	jal	_init_bss
 
-	#li	sp, 0x90010000 #TODO move stack to HyperRAM
-	li	sp, 0x80001000
+	la	sp, __stack_start
 	j	_kernel
 
 hang:
