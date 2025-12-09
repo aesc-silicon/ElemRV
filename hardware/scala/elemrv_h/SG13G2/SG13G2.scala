@@ -131,8 +131,8 @@ case class SG13G2Top() extends Component {
       IhpCmosIo("north", 3, "clk_main"),
       IhpCmosIo("north", 4, "clk_main"),
       IhpCmosIo("north", 5, "clk_main"),
-      IhpCmosIo("south", 6, "clk_main"),
-      IhpCmosIo("south", 7, "clk_main")
+      IhpCmosIo("north", 6, "clk_main"),
+      IhpCmosIo("north", 7, "clk_main")
     )
   }
 
