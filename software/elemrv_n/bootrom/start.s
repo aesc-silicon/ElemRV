@@ -12,8 +12,9 @@ _head:
 	li	a0, 1
 	jal	gpio_set_pin
 
-	jal	_init_regs
+	jal	_init_xip
 	#jal	_init_memc
+	jal	_init_regs
 	jal	_init_bss
 
 	li	a0, 0
@@ -67,6 +68,13 @@ _init_memc:
 	sw	t1, 0x20(t0) # latency cycles
 	li	t1, 1
 	sw	t1, 0x10(t0) # reset chip
+	ret
+
+_init_xip:
+	li	t0, 0xf0025000
+	li	t1, 0x007f0702
+	sw	t1, 0xc(t0)
+	sw	t1, 0x8(t0)
 	ret
 
 _init_bss:
