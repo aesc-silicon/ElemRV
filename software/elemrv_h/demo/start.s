@@ -13,6 +13,7 @@ _head:
 	li	a0, 1
 	jal	gpio_set_pin
 
+	jal	_init_xip
 	jal	_init_regs
 	jal	_init_bss
 
@@ -56,7 +57,12 @@ _init_regs:
 	li	x31, 0xD1D1D1D1
 	ret
 
-
+_init_xip:
+	li	t0, 0xf0025000
+	li	t1, 0x007f0702
+	sw	t1, 0xc(t0)
+	sw	t1, 0x8(t0)
+	ret
 
 _init_bss:
 	la	t0, __bss_start
@@ -70,7 +76,6 @@ loop_head:
 loop_end:
 	ret
 	nop
-
 
 timer_enable:
 	csrr	a0, mie
