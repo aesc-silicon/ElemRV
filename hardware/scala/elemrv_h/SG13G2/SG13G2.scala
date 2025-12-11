@@ -32,8 +32,7 @@ case class SG13G2Board() extends Component {
     val spi = new Bundle {
       val cs = inout(Analog(Bool))
       val sck = inout(Analog(Bool))
-      val mosi = inout(Analog(Bool))
-      val miso = inout(Analog(Bool))
+      val dq = Vec(inout(Analog(Bool)), 4)
     }
     val pins = Vec(inout(Analog(Bool())), 12)
   }
@@ -52,22 +51,30 @@ case class SG13G2Board() extends Component {
   top.io.jtag.tdi.PAD := analogFalse
   analogFalse := top.io.jtag.tdo.PAD
 
-  val spiNor = MT25Q()
+  val spiNor = MT25Q.MultiProtocol()
   spiNor.io.clock := io.clock
   spiNor.io.dataClock := io.spi.sck
   spiNor.io.reset := io.reset
   spiNor.io.chipSelect := io.spi.cs
-  spiNor.io.dataIn := io.spi.mosi
-  top.io.spi.dq(1).PAD := spiNor.io.dataOut
   io.spi.cs := top.io.spi.cs(0).PAD
   io.spi.sck := top.io.spi.sck.PAD
-  io.spi.mosi := top.io.spi.dq(0).PAD
-  top.io.spi.dq(1).PAD := io.spi.miso
-  top.io.spi.dq(2).PAD := analogFalse
-  top.io.spi.dq(3).PAD := analogFalse
+  for (index <- 0 until top.io.spi.dq.length) {
+    spiNor.io.dqIn(index) := io.spi.dq(index)
+    io.spi.dq(index) := top.io.spi.dq(index).PAD
+    top.io.spi.dq(index).PAD := spiNor.io.dqOut(index)
+  }
 
   for (index <- 0 until top.io.pins.length) {
     io.pins(index) <> top.io.pins(index).PAD
+  }
+
+  val baudPeriod = top.soc.socParameter.uart0.init.getBaudPeriod()
+
+  def simHook() {
+    for ((domain, index) <- top.soc.parameter.getKitParameter.clocks.zipWithIndex) {
+      val clockDomain = top.soc.clockCtrl.getClockDomainByName(domain.name)
+      SimulationHelper.generateEndlessClock(clockDomain.clock, domain.frequency)
+    }
   }
 }
 

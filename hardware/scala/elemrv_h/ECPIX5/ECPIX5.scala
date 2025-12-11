@@ -33,8 +33,7 @@ case class ECPIX5Board() extends Component {
     val spi = new Bundle {
       val cs = inout(Analog(Bool))
       val sck = inout(Analog(Bool))
-      val mosi = inout(Analog(Bool))
-      val miso = inout(Analog(Bool))
+      val dq = Vec(inout(Analog(Bool)), 4)
     }
     val pins = Vec(inout(Analog(Bool())), 12)
   }
@@ -47,20 +46,23 @@ case class ECPIX5Board() extends Component {
 
   top.io.clock.PAD := io.clock
 
-  val spiNor = MT25Q()
+  top.io.jtag.tms.PAD := analogFalse
+  top.io.jtag.tck.PAD := analogFalse
+  top.io.jtag.tdi.PAD := analogFalse
+  analogFalse := top.io.jtag.tdo.PAD
+
+  val spiNor = MT25Q.MultiProtocol()
   spiNor.io.clock := io.clock
   spiNor.io.dataClock := io.spi.sck
   spiNor.io.reset := io.reset
   spiNor.io.chipSelect := io.spi.cs
-  spiNor.io.dataIn := io.spi.mosi
-  top.io.spi.dq(1).PAD := spiNor.io.dataOut
-
   io.spi.cs := top.io.spi.cs(0).PAD
   io.spi.sck := top.io.spi.sck.PAD
-  io.spi.mosi := top.io.spi.dq(0).PAD
-  top.io.spi.dq(1).PAD := io.spi.miso
-  top.io.spi.dq(2).PAD := analogFalse
-  top.io.spi.dq(3).PAD := analogFalse
+  for (index <- 0 until top.io.spi.dq.length) {
+    spiNor.io.dqIn(index) := io.spi.dq(index)
+    io.spi.dq(index) := top.io.spi.dq(index).PAD
+    top.io.spi.dq(index).PAD := spiNor.io.dqOut(index)
+  }
 
   for (index <- 0 until top.io.pins.length) {
     io.pins(index) <> top.io.pins(index).PAD
@@ -133,6 +135,7 @@ case class ECPIX5Top() extends Component {
         LatticeCmosIo(ECPIX5.Pmods.Pmod6.pin7).slewRateFast
       )
       val sck = LatticeCmosIo(ECPIX5.Pmods.Pmod6.pin3).slewRateFast
+      val rst = LatticeCmosIo(ECPIX5.Pmods.Pmod6.pin5)
     }
     val pins = Vec(
       LatticeCmosIo(ECPIX5.LEDs.LD5.blue),
@@ -177,6 +180,26 @@ case class ECPIX5Top() extends Component {
   for (index <- 0 until io.spi.dq.length) {
     io.spi.dq(index) <> FakeIo(soc.io_plat.spi.dq(index))
   }
+
+  // Generate psuedo-reset for external SPI flash
+  val spiResetClockDomain = ClockDomain(
+    clock = io.clock.PAD,
+    config = ClockDomainConfig(
+      resetKind = BOOT
+    )
+  )
+
+  val spiReset = new ClockingArea(spiResetClockDomain) {
+    val done = RegInit(False)
+    val counter = Reg(UInt(4 bits)).init(U(0))
+    when(!done) {
+      counter := counter + 1
+    }
+    when(counter === counter.maxValue) {
+      done := True
+    }
+  }
+  io.spi.rst <> FakeO(spiReset.done)
 
   for (index <- 0 until 3) {
     io.pins(index) <> FakeIo(soc.io.pins.pins(index), true)
