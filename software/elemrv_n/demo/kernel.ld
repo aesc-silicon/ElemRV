@@ -12,11 +12,11 @@ MEMORY
 	MEM   (xrw): ORIGIN = 0x90000000, LENGTH = 64k
 	FLASH (xr ): ORIGIN = 0xA0010000, LENGTH = 64k
 }
-stack_size = 4k;
+stack_size = 8k;
 heap_size = 0;
 
 /* define beginning and ending of stack */
-__stack_start = ORIGIN(OCRAM) + LENGTH(OCRAM);
+__stack_start = ORIGIN(MEM) + LENGTH(MEM);
 __stack_end = __stack_start - stack_size;
 
 ENTRY(_head)
