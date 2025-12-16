@@ -12,7 +12,7 @@ _head:
 	li	a0, 1
 	jal	gpio_set_pin
 
-	jal	_init_xip
+	#jal	_init_xip
 	#jal	_init_memc
 	jal	_init_regs
 	jal	_init_bss
