@@ -145,10 +145,7 @@ case class ECPIX5Top() extends Component {
         clock,
         resetCtrl,
         boardParameter.getOscillatorFrequency,
-        List("system", "cpu", "debug"),
-        2,
-        1,
-        8
+        List("system", "cpu", "debug")
       )
     },
     (parameter: BmbParameter, ramSize: BigInt) => {
