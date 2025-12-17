@@ -63,6 +63,7 @@ case class ECPIX5Board() extends Component {
     io.spi.dq(index) := top.io.spi.dq(index).PAD
     top.io.spi.dq(index).PAD := spiNor.io.dqOut(index)
   }
+  top.io.spi.rst.PAD := analogFalse
 
   for (index <- 0 until top.io.pins.length) {
     io.pins(index) <> top.io.pins(index).PAD
