@@ -84,7 +84,7 @@ case class SG13G2Top() extends Component {
     ResetParameter("debug", 128)
   )
   val clocks = List[ClockParameter](
-    ClockParameter("system", 25 MHz, "system"),
+    ClockParameter("system", 50 MHz, "system"),
     ClockParameter("debug", 10 MHz, "debug", synchronousWith = "system")
   )
   val kitParameter = KitParameter(resets, clocks)
@@ -181,8 +181,8 @@ object SG13G2Generate extends ElementsApp {
   }
 
   val chip = OpenROADTools.IHP.Config(elementsConfig, OpenROADTools.PDKs.IHP.sg13g2)
-  chip.dieArea = (0, 0, 2150.4, 2150.82)
-  chip.coreArea = (394.08, 396.9, 1753.44, 1753.92)
+  chip.dieArea = (0, 0, 1881.6, 1882.44)
+  chip.coreArea = (394.08, 396.9, 1484.64, 1485.54)
   chip.hasIoRing = true
   chip.addMacro(
     report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[BmbIhpOnChipRam.OnePort1Macro].ram,
@@ -191,7 +191,7 @@ object SG13G2Generate extends ElementsApp {
     "MX"
   )
 
-  chip.addClock(report.toplevel.io.clock.PAD, 25 MHz, "clk_main")
+  chip.addClock(report.toplevel.io.clock.PAD, 50 MHz, "clk_main")
   chip.addClock(report.toplevel.io.jtag.tck.PAD, 10 MHz, "clk_jtag")
   chip.setFalsePath("clk_main", "clk_jtag")
   chip.io = Some(report.toplevel.io)
@@ -220,7 +220,7 @@ object SG13G2Simulate extends ElementsApp {
         val testCases = TestCases()
         testCases.addClock(
           dut.io.clock,
-          ElemRVBoard.SystemClock.frequency,
+          50 MHz, // TODO fix missing PLL
           simDuration.toString.toInt ms
         )
         testCases.addReset(dut.io.reset, 100 us)

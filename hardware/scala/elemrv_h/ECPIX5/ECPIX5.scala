@@ -89,7 +89,7 @@ case class ECPIX5Top() extends Component {
     ResetParameter("debug", 128)
   )
   val clocks = List[ClockParameter](
-    ClockParameter("system", 25 MHz, "system"),
+    ClockParameter("system", 50 MHz, "system"),
     ClockParameter("debug", 10 MHz, "debug", synchronousWith = "system")
   )
   val kitParameter = KitParameter(resets, clocks)
