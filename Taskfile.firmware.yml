@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: 2026 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+tasks:
+  compile:
+    desc: Compiles bare metal firmwares.
+    cmds:
+      - task: ':lib-baremetal-firmware'
+        vars:
+         board: "{{.TECH}}"
+         app: "bootrom"
+      - task: ':lib-baremetal-firmware'
+        vars:
+         board: "{{.TECH}}"
+         app: "demo"
+      - "{{ .RUN }} './software/{{ .package }}/gen_image_container.sh'"
+
+  flash:
+    desc: Programs the SPI flash with the compiled firmware image.
+    cmds:
+      - "flashrom -p buspirate_spi:dev=/dev/serial/by-id/usb-Bus_Pirate_Bus_Pirate_5_5buspirate-if02,spispeed=8M -c MT25QL256 -l software/{{ .package }}/spi.layout -i flash -n -w {{ .BUILD_ROOT}}/{{ .SOC }}/{{ .TECH }}/firmware/image_container.img"
