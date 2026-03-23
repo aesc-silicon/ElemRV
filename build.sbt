@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: CERN-OHL-W-2.0
 
-val spinalVersion = "1.10.2a"
+val spinalVersion = "1.13.0"
 
 lazy val root = (project in file("."))
   .settings(
