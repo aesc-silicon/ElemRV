@@ -36,24 +36,32 @@ script:
   - |
     if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then
       BRANCH="main"
+      MANIFEST_SUFFIX="manifest_suffix=-nightly"
     else
       BRANCH="${TRAVIS_PULL_REQUEST_BRANCH:-main}"
+      MANIFEST_SUFFIX=""
     fi
 
   # Prepare the project
-  - task install branch=${BRANCH}
+  - CI=true IS_HEADLESS=true task install branch=${BRANCH} ${MANIFEST_SUFFIX}
+
+  # Prepare FPGA files
+  - IS_HEADLESS=true task fpga:prepare
+
+  # Synthesize FPGA design
+  - IS_HEADLESS=true task fpga:synthesize
 
   # Prepare files
-  - IS_HEADLESS=true task prepare
+  - CI=true IS_HEADLESS=true task prepare
 
   # Generate layout
-  - IS_HEADLESS=true task layout
+  - CI=true IS_HEADLESS=true task layout
 
   # Add metal fill
-  - IS_HEADLESS=true task filler
+  - CI=true IS_HEADLESS=true task filler
 
   # Run maximal DRC
-  - IS_HEADLESS=true task run-drc
+  - CI=true IS_HEADLESS=true task run-drc
 
 notifications:
   email:
