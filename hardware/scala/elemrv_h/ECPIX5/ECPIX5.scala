@@ -88,9 +88,10 @@ case class ECPIX5Top() extends Component {
     ResetParameter("system", 128),
     ResetParameter("debug", 128)
   )
+  val inputClock = ClockParameter("input", ECPIX5.SystemClock.frequency, "input")
   val clocks = List[ClockParameter](
     ClockParameter("system", 50 MHz, "system"),
-    ClockParameter("debug", 10 MHz, "debug", synchronousWith = "system")
+    ClockParameter("debug", 12.5 MHz, "debug", synchronousWith = "system")
   )
   val kitParameter = KitParameter(resets, clocks)
   val boardParameter = ECPIX5.Parameter(kitParameter, ECPIX5.SystemClock.frequency)
@@ -99,14 +100,20 @@ case class ECPIX5Top() extends Component {
     socParameter,
     8 kB,
     8 MB,
-    (resetCtrl: ResetControllerCtrl, _, clock: Bool) => { resetCtrl.buildXilinx(clock) },
-    (clockCtrl: ClockControllerCtrl, resetCtrl: ResetControllerCtrl, clock: Bool) => {
-      clockCtrl.buildLatticeECP5Pll(
-        clock,
-        resetCtrl,
-        boardParameter.getOscillatorFrequency,
+    (parameter: ResetControllerCtrl.Parameter) => {
+      val resetCtrl = new ResetControllerCtrl.GeneratorResetController(parameter)
+      resetCtrl
+    },
+    (
+        parameter: ClockControllerCtrl.Parameter,
+        resetCtrl: ResetControllerCtrl.ResetControllerBase
+    ) => {
+      val clockCtrl = new ClockControllerCtrl.LatticeECP5PllController(
+        parameter,
+        inputClock,
         List("system", "debug")
       )
+      clockCtrl
     },
     (parameter: BmbParameter, ramSize: BigInt) => {
       val ram = BmbIhpOnChipRam.OnePort1Macro(parameter, ramSize.toInt)
