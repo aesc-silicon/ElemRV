@@ -11,9 +11,7 @@ import spinal.lib._
 import spinal.lib.bus.bmb._
 
 import nafarr.system.reset._
-import nafarr.system.reset.ResetControllerCtrl._
 import nafarr.system.clock._
-import nafarr.system.clock.ClockControllerCtrl._
 import nafarr.blackboxes.lattice.ecp5._
 import nafarr.memory.ocram.ihp.sg13g2.BmbIhpOnChipRam
 
@@ -64,8 +62,10 @@ case class ECPIX5Board() extends Component {
   w956a8mbya.io.ckN := analogFalse
   for (index <- 0 until top.io.hyperbus.dq.length) {
     w956a8mbya.io.dqIn(index) := io.hyperbus.dq(index)
+    io.hyperbus.dq(index).addTag(crossClockDomain)
     io.hyperbus.dq(index) := w956a8mbya.io.dqOut(index)
   }
+  w956a8mbya.io.rwdsIn.addTag(crossClockDomain)
   w956a8mbya.io.rwdsIn := io.hyperbus.rwds
   io.hyperbus.rwds := w956a8mbya.io.rwdsOut
   w956a8mbya.io.csN := io.hyperbus.cs(0)
@@ -74,8 +74,9 @@ case class ECPIX5Board() extends Component {
   top.io.hyperbus.cs(1).PAD := analogFalse
   top.io.hyperbus.cs(2).PAD := analogFalse
   top.io.hyperbus.cs(3).PAD := analogFalse
+  top.io.hyperbus.ckN.PAD := analogFalse
+  top.io.hyperbus.ck.PAD := top.io.hyperbus.ck.PAD
   io.hyperbus.cs(0) := top.io.hyperbus.cs(0).PAD
-  io.hyperbus.ck := top.io.hyperbus.ck.PAD
   io.hyperbus.reset := top.io.hyperbus.reset.PAD
   io.hyperbus.rwds <> top.io.hyperbus.rwds.PAD
   for (index <- 0 until top.io.hyperbus.dq.length) {
@@ -118,11 +119,16 @@ case class ECPIX5Top() extends Component {
   val resets = List[ResetParameter](
     ResetParameter("system", 128),
     ResetParameter("cpu", 128),
+    ResetParameter("hyperbus", 128),
+    ResetParameter("spiXip", 128),
     ResetParameter("debug", 128)
   )
+  val inputClock = ClockParameter("input", ECPIX5.SystemClock.frequency, "input")
   val clocks = List[ClockParameter](
-    ClockParameter("system", 20 MHz, "system"),
-    ClockParameter("cpu", 20 MHz, "cpu", synchronousWith = "system"),
+    ClockParameter("system", 50 MHz, "system"),
+    ClockParameter("cpu", 50 MHz, "cpu", synchronousWith = "system"),
+    ClockParameter("hyperbus", 100 MHz, "hyperbus"),
+    ClockParameter("spiXip", 100 MHz, "spiXip"),
     ClockParameter("debug", 10 MHz, "debug", synchronousWith = "system")
   )
   val hyperbusPartitions = List[(BigInt, Boolean)](
@@ -139,14 +145,20 @@ case class ECPIX5Top() extends Component {
     4 kB,
     8 MB,
     hyperbusPartitions,
-    (resetCtrl: ResetControllerCtrl, _, clock: Bool) => { resetCtrl.buildXilinx(clock) },
-    (clockCtrl: ClockControllerCtrl, resetCtrl: ResetControllerCtrl, clock: Bool) => {
-      clockCtrl.buildLatticeECP5Pll(
-        clock,
-        resetCtrl,
-        boardParameter.getOscillatorFrequency,
-        List("system", "cpu", "debug")
+    (parameter: ResetControllerCtrl.Parameter) => {
+      val resetCtrl = new ResetControllerCtrl.GeneratorResetController(parameter)
+      resetCtrl
+    },
+    (
+        parameter: ClockControllerCtrl.Parameter,
+        resetCtrl: ResetControllerCtrl.ResetControllerBase
+    ) => {
+      val clockCtrl = new ClockControllerCtrl.ClockDividerController(
+        parameter,
+        inputClock,
+        List("system", "cpu", "hyperbus", "spiXip", "debug")
       )
+      clockCtrl
     },
     (parameter: BmbParameter, ramSize: BigInt) => {
       val ram = BmbIhpOnChipRam.OnePort1Macro(parameter, ramSize.toInt)
@@ -278,6 +290,7 @@ case class ECPIX5Top() extends Component {
       done := True
     }
   }
+  soc.io_plat.reset := spiReset.done
   io.spi.rst <> FakeO(spiReset.done)
 
   for (index <- 0 until 3) {
@@ -307,8 +320,7 @@ object ECPIX5Generate extends ElementsApp {
 object ECPIX5Simulate extends ElementsApp {
   val compiled = elementsConfig.genFPGASimConfig.compile {
     val board = ECPIX5Board()
-    BinTools.initRam(board.spiNor.deviceOut.data, elementsConfig.swStorageBaremetalImage("bootrom"))
-    BinTools.initRam(board.w956a8mbya.device.data, elementsConfig.swStorageBaremetalImage("demo"))
+    BinTools.initRam(board.spiNor.deviceOut.data, elementsConfig.swStorageImageContainer)
     for (domain <- board.top.soc.parameter.getKitParameter.clocks) {
       board.top.soc.clockCtrl.getClockDomainByName(domain.name).clock.simPublic()
     }
