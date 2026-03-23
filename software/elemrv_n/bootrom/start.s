@@ -9,18 +9,19 @@
 .section .text
 .global _head
 _head:
-	li	a0, 1
+	li	a0, 2
 	jal	gpio_set_pin
 
-	#jal	_init_xip
-	#jal	_init_memc
+	jal	_init_xip
+	jal	_init_memc
 	jal	_init_regs
 	jal	_init_bss
+
+	jal	_relocate
 
 	li	a0, 0
 	jal	gpio_set_pin
 
-	jal	_relocate
 	# Jump to application
 	li	ra, 0x90000000
 	ret
@@ -74,7 +75,7 @@ _init_xip:
 	li	t0, 0xf0025000
 	li	t1, 0x007f0702
 	sw	t1, 0xc(t0)
-	sw	t1, 0x8(t0)
+	sw	zero, 0x8(t0)
 	ret
 
 _init_bss:
@@ -92,7 +93,7 @@ loop_end:
 
 _relocate:
 	li	t0, 0xa0010000
-	li	t1, 0xa0014000
+	li	t1, 0xa0012000
 	li	t2, 0x90000000
 	beq	t0, t1, relocate_loop_end
 relocate_loop_head:
@@ -111,4 +112,9 @@ gpio_set_pin:
 	li	t0, 0xf0000000
 	sw	a0, 0x10(t0)
 	sw	a0, 0x14(t0)
+	ret
+
+uart_putc:
+	li	t0, 0xf0006000
+	sw	a0, 0x18(t0)
 	ret
