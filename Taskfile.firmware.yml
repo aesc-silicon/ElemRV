@@ -5,17 +5,24 @@
 
 version: '3'
 
+vars:
+  arch:
+    sh: |
+      case "{{.SOC}}" in
+        ElemRV-H) echo "rv32i_zicsr" ;;
+        ElemRV-N) echo "rv32im_zicsr" ;;
+        *) echo ""; echo "Unknown SOC: {{.SOC}}" >&2; exit 1 ;;
+      esac
+
 tasks:
   compile:
     desc: Compiles bare metal firmwares.
     cmds:
       - task: ':lib-baremetal-firmware'
         vars:
-         board: "{{.TECH}}"
          app: "bootrom"
       - task: ':lib-baremetal-firmware'
         vars:
-         board: "{{.TECH}}"
          app: "demo"
       - "{{ .RUN }} './software/{{ .package }}/gen_image_container.sh'"
 
