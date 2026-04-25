@@ -11,10 +11,10 @@ SPDX-License-Identifier: CERN-OHL-W-2.0
 
 	<default remote="github" sync-j="8" />
 
-	<project name="aesc-silicon/elements-nafarr" path="modules/elements/nafarr" revision="1ed0ca2ce80c78b2c1222e7bbc8eda3032dfa3c6" />
-	<project name="aesc-silicon/elements-zibal" path="modules/elements/zibal" revision="93757cd76b19dda751b5dfc5de2dae7c157aab73" />
+	<project name="aesc-silicon/elements-nafarr" path="modules/elements/nafarr" revision="76c1029b612685ab76c8a884042f3858b11c51db" />
+	<project name="aesc-silicon/elements-zibal" path="modules/elements/zibal" revision="0cb328644630564fec686c0110c828dd446003ff" />
 	<project name="SpinalHDL/SpinalCrypto" path="modules/elements/SpinalCrypto" revision="f2a4ae9db5e9434c5589d0651efec8719103498e" />
+	<project name="SpinalHDL/VexiiRiscv" path="modules/elements/vexiiriscv" revision="03587f948b91f84197ecdbd958ba490977fd5671" />
 	<project name="aesc-silicon/elements-vexriscv" path="modules/elements/vexriscv" revision="6814d54a341562beb330d407bb9898024367e447" />
-	<project name="aesc-silicon/OpenROAD-flow-scripts" path="tools/OpenROAD-flow-scripts" revision="ede8b54b2a6015bf2929832bee21015a833ec5f7" />
-	<project name="aesc-silicon/IHP-Open-PDK" sync-s="true" path="pdks/IHP-Open-PDK" revision="64239e24bdbe742355c141e443b4149a2af0eaf3" />
+	<project name="The-OpenROAD-Project/OpenROAD-flow-scripts" path="tools/OpenROAD-flow-scripts" revision="52b6f9dd8143eb72d47c2fc58fc6ce95c2165637" />
 </manifest>
