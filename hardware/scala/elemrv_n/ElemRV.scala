@@ -25,7 +25,7 @@ object ElemRV {
 
   case class Parameter(boardParameter: BoardParameter)
       extends SocParameter(boardParameter, socInterrupts = 6) {
-    val gpio0 = GpioCtrl.Parameter(Gpio.Parameter(20), 3, null, null, null)
+    val gpio0 = GpioCtrl.Parameter(Gpio.Parameter(20), 3)
     val i2c0 = I2cControllerCtrl.Parameter.default(1)
     val i2c1 = I2cControllerCtrl.Parameter.lightweight()
     val pio0 = PioCtrl.Parameter.default(3)
