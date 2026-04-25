@@ -4,7 +4,7 @@
 
 #!/bin/bash
 
-FW_DIR=${BUILD_ROOT}/${SOC}/${TECH}/firmware/
+FW_DIR=${BUILD_ROOT}/${SOC}/${BOARD}/firmware/
 IMG_CONTAINER=${FW_DIR}/image_container.img
 
 dd if=/dev/zero of=${IMG_CONTAINER} bs=32M count=1

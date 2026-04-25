@@ -16,6 +16,9 @@ tasks:
   prepare:
     desc: Produces the Verilog file and metadata needed for FPGA operations.
     cmds:
+      - task: ':lib-sbt-publishLocal'
+        vars:
+          project: "modules/elements/vexiiriscv"
       - task: ':lib-generate'
         vars:
           board: "ECPIX5"
