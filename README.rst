@@ -133,8 +133,6 @@ The default task runs the complete RTL-to-GDSII tape-out flow in one step. The f
 Known Issues
 ############
 
-- **M2.d Errors**: OpenROAD generates excessively small segments on M2 when connecting Via1 to Via2.
-- **Fill Errors**: AFil.g2 and MxFil.h might fail because there is not enough metal fill in the chip core area.
 - **X-Server**: If you encounter an error when running `view-klayout` or `view-openroad`, it may be due to permission restrictions with the X-Server. To resolve this, run the following command in your terminal to add the current user to the X-Server backend:
 
   .. code-block:: text
