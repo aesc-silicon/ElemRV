@@ -67,14 +67,6 @@ case class SG13G2Board() extends Component {
     io.pins(index) <> top.io.pins(index).PAD
   }
 
-  val baudPeriod = top.soc.socParameter.uart0.init.getBaudPeriod()
-
-  def simHook() {
-    for ((domain, index) <- top.soc.parameter.getKitParameter.clocks.zipWithIndex) {
-      val clockDomain = top.soc.clockCtrl.getClockDomainByName(domain.name)
-      SimulationHelper.generateEndlessClock(clockDomain.clock, domain.frequency)
-    }
-  }
 }
 
 case class SG13G2Top() extends Component {
@@ -196,17 +188,17 @@ object SG13G2Generate extends ElementsApp {
   }
 
   val chip = OpenROADTools.IHP.Config(elementsConfig, OpenROADTools.PDKs.IHP.sg13g2)
-  chip.dieArea = (0, 0, 2081.28, 2079)
-  chip.coreArea = (394.08, 396.9, 1684.32, 1682.1)
+  chip.dieArea = (0, 0, 1892.64, 1893.78)
+  chip.coreArea = (394.08, 396.9, 1495.68, 1496.88)
   chip.hasIoRing = true
   chip.addMacro(
     report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[BmbIhpOnChipRam.OnePort1Macro].ram,
-    444.96,
-    448.35,
+    414.08,
+    416.68,
     "MX",
     depth = 3
   )
-  chip.addClock(report.toplevel.io.clock.PAD, 50 MHz, "clk_main")
+  chip.addClock(report.toplevel.io.clock.PAD, report.toplevel.inputClock.frequency, "clk_main")
   chip.addClock(report.toplevel.io.jtag.tck.PAD, 10 MHz, "clk_jtag")
   chip.addGeneratedClock(
     report.toplevel.io.clock.PAD,
@@ -238,7 +230,7 @@ object SG13G2Simulate extends ElementsApp {
         val testCases = TestCases()
         testCases.addClock(
           dut.io.clock,
-          50 MHz, // TODO fix missing PLL
+          dut.top.inputClock.frequency,
           simDuration.toString.toInt ms
         )
         testCases.addReset(dut.io.reset, 100 us)
