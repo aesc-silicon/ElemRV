@@ -17,7 +17,7 @@ Features
 
   * **Chip Layout**: Created using the OpenROAD flow.
 
-* **RISC-V**: Powered by a VexRiscv RISC-V CPU with the RV32IC instruction set.
+* **RISC-V**: Powered by a VexiiRiscv RISC-V CPU with the RV32IC instruction set.
 * **Zephyr RTOS**: Firmware based on Zephyr RTOS for efficient real-time operation.
 * **Memory**: Supports up to one HyperRAM chip and executes code from external SPI Flash in XIP mode.
 * **Interfaces**: Includes common low-speed interfaces such as GPIO, UART, I2C, SPI, and programmable I/Os.

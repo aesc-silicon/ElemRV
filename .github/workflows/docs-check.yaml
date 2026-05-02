@@ -1,0 +1,30 @@
+# SPDX-FileCopyrightText: 2026 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+name: "Check Docs"
+on:
+  pull_request:
+    types:
+      - opened
+  push:
+    branches:
+      - main
+
+jobs:
+  docs:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - name: Checkout Nafarr
+        uses: actions/checkout@v6
+        with:
+          repository: aesc-silicon/elements-nafarr
+          ref: main
+          path: modules/elements/nafarr
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: ammaraskar/sphinx-action@dev
+        with:
+          docs-folder: "docs/"
