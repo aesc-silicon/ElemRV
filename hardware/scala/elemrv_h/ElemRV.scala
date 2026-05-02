@@ -23,7 +23,7 @@ object ElemRV {
   def apply(parameter: Hydrogen.Parameter) = ElemRV(parameter)
 
   case class Parameter(boardParameter: BoardParameter)
-      extends SocParameter(boardParameter, socInterrupts = 3) {
+      extends SocParameter(boardParameter, socInterrupts = 4) {
     val gpio0 = GpioCtrl.Parameter(Gpio.Parameter(12), 3)
     val i2c0 = I2cControllerCtrl.Parameter.default(1)
     val pio0 = PioCtrl.Parameter.default(3)
@@ -56,6 +56,7 @@ object ElemRV {
 
       val pio0Ctrl = WishbonePio(socParameter.pio0, system.wishboneConfig)
       addPeripheralDevice(pio0Ctrl.io.bus, 0x2000, 4 kB)
+      addInterrupt(pio0Ctrl.io.interrupt)
       for (pin <- 0 until socParameter.pio0.io.width) {
         addPinmuxInput(pio0Ctrl.io.pio.pins(pin), s"pio0_$pin")
       }

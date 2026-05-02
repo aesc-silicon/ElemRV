@@ -8,5 +8,6 @@ FW_DIR=${BUILD_ROOT}/${SOC}/${BOARD}/firmware/
 IMG_CONTAINER=${FW_DIR}/zephyr_container.img
 
 dd if=/dev/zero of=${IMG_CONTAINER} bs=32M count=1
-dd if=${FW_DIR}/bootrom/kernel.img of=${IMG_CONTAINER} conv=notrunc
-dd if=${FW_DIR}/zephyr/zephyr/zephyr.bin of=${IMG_CONTAINER} seek=64 bs=1k conv=notrunc
+dd if=${FW_DIR}/zephyr/zephyr/zephyr.bin of=${IMG_CONTAINER} conv=notrunc
+#dd if=${FW_DIR}/bootrom/kernel.img of=${IMG_CONTAINER} conv=notrunc
+#dd if=${FW_DIR}/zephyr/zephyr/zephyr.bin of=${IMG_CONTAINER} seek=64 bs=1k conv=notrunc

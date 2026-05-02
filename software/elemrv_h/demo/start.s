@@ -14,13 +14,16 @@
 .extern isr_handle
 .global _head
 _head:
-	li	a0, 1
+	li	a0, 3
 	jal	gpio_set_pin
 
 	jal	_init_xip
 	jal	_init_regs
 	jal	_init_bss
 
+	# Jump to application
+	#li	ra, 0xa0010000
+	#ret
 	la	sp, __stack_start
 	j	_kernel
 

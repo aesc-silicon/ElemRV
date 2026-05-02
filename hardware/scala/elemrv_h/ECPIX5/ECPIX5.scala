@@ -98,7 +98,7 @@ case class ECPIX5Top() extends Component {
   val socParameter = ElemRV.Parameter(boardParameter)
   val parameter = Hydrogen.Parameter(
     socParameter,
-    8 kB,
+    128 kB,
     8 MB,
     (parameter: ResetControllerCtrl.Parameter) => {
       val resetCtrl = new ResetControllerCtrl.GeneratorResetController(parameter)
@@ -114,11 +114,12 @@ case class ECPIX5Top() extends Component {
         List("system", "debug")
       )
       clockCtrl
-    },
+    }/*,
     (parameter: BmbParameter, ramSize: BigInt) => {
       val ram = BmbIhpOnChipRam.OnePort1Macro(parameter, ramSize.toInt)
       (ram, ram.io.bus)
     }
+*/
   )
 
   val io = new Bundle {
@@ -216,11 +217,13 @@ case class ECPIX5Top() extends Component {
   for (index <- 0 until io.ledPullDown.length) {
     io.ledPullDown(index) <> FakeO(True)
   }
+
 }
 
 object ECPIX5Generate extends ElementsApp {
   val report = elementsConfig.genFPGASpinalConfig.generateVerilog {
     val top = ECPIX5Top()
+    BinTools.initRam(top.soc.system.onChipRam.ctrl.ram, elementsConfig.swStorageImageContainer)
 
     val lpf = LatticeTools.Lpf(elementsConfig)
     lpf.generate(top.io)
@@ -233,7 +236,8 @@ object ECPIX5Generate extends ElementsApp {
 object ECPIX5Simulate extends ElementsApp {
   val compiled = elementsConfig.genFPGASimConfig.compile {
     val board = ECPIX5Board()
-    BinTools.initRam(board.spiNor.deviceOut.data, elementsConfig.swStorageBaremetalImage("demo"))
+    //BinTools.initRam(board.spiNor.deviceOut.data, elementsConfig.swStorageImageContainer)
+    BinTools.initRam(board.top.soc.system.onChipRam.ctrl.ram, elementsConfig.swStorageImageContainer)
     for (domain <- board.top.soc.parameter.getKitParameter.clocks) {
       board.top.soc.clockCtrl.getClockDomainByName(domain.name).clock.simPublic()
     }

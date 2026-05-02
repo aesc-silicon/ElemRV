@@ -26,6 +26,7 @@ tasks:
           boardname: "elemrv/{{.package}}"
       - "{{.RUN}} './software/{{.package}}/gen_zephyr_container.sh'"
       - "{{.RUN}} 'ln -sf {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/zephyr_container.img {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/image_container.img'"
+      - "{{.RUN}} 'ln -sf {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/zephyr_container.img {{.BUILD_ROOT}}/{{.SOC}}/ECPIX5/firmware/image_container.img'"
     vars:
       app: "modules/elements/zephyr/samples/hello_world"
 

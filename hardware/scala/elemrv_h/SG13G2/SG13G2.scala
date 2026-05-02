@@ -221,7 +221,7 @@ object SG13G2Generate extends ElementsApp {
 object SG13G2Simulate extends ElementsApp {
   val compiled = elementsConfig.genFPGASimConfig.compile {
     val board = SG13G2Board()
-    BinTools.initRam(board.spiNor.deviceOut.data, elementsConfig.swStorageBaremetalImage("demo"))
+    BinTools.initRam(board.spiNor.deviceOut.data, elementsConfig.swStorageImageContainer)
     board
   }
   simType match {
