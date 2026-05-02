@@ -29,3 +29,8 @@ SPDX-License-Identifier = "CERN-OHL-W-2.0"
 path = "hardware/scala/*/*/rules.json"
 SPDX-FileCopyrightText = "2026 aesc silicon"
 SPDX-License-Identifier = "CERN-OHL-W-2.0"
+
+[[annotations]]
+path = "docs/**"
+SPDX-FileCopyrightText = "2026 aesc silicon"
+SPDX-License-Identifier = "CERN-OHL-W-2.0"
