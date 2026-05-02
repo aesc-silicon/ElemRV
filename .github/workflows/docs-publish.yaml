@@ -1,0 +1,31 @@
+# SPDX-FileCopyrightText: 2026 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+name: Publish Docs to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  pages:
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout Nafarr
+        uses: actions/checkout@v6
+        with:
+          repository: aesc-silicon/elements-nafarr
+          ref: main
+          path: modules/elements/nafarr
+      - id: deployment
+        uses: sphinx-notes/pages@v3
+        with:
+          documentation_path: 'docs/source'
