@@ -110,6 +110,7 @@ tasks:
     desc: Downloads and synchronizes all required dependencies.
     cmds:
       - ./repo sync {{if .CI}}-q{{end}}
+      - ./repo forall modules/elements/vexiiriscv -c 'git submodule update --init --recursive'
 
   install:
     desc: Installs all dependencies and prepares the project for FPGA and chip workflows.
