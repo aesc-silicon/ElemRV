@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: 2026 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+manifest:
+    projects:
+      - name: zephyr
+        path: modules/elements/zephyr
+        url: https://github.com/aesc-silicon/elements-zephyr
+        revision: main
+        import: true
+        import:
+          name-allowlist:
+            - cmsis
+            - hal_riscv
+            - picolibc
+    self:
+      path: .
