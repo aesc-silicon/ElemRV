@@ -70,7 +70,7 @@ _init_xip:
 	li	t0, 0xf0025000
 	li	t1, 0x007f0702
 	sw	t1, 0xc(t0)
-	sw	t1, 0x8(t0)
+	sw	zero, 0x8(t0)
 	ret
 
 _init_bss:
@@ -165,4 +165,9 @@ gpio_set_pin:
 	li	t0, 0xf0000000
 	sw	a0, 0x10(t0)
 	sw	a0, 0x14(t0)
+	ret
+
+uart_putc:
+	li	t0, 0xf0006000
+	sw	a0, 0x18(t0)
 	ret
