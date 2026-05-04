@@ -1,8 +1,8 @@
+#!/bin/bash
+
 # SPDX-FileCopyrightText: 2026 aesc silicon
 #
 # SPDX-License-Identifier: Apache-2.0
-
-#!/bin/bash
 
 FW_DIR=${BUILD_ROOT}/${SOC}/${BOARD}/firmware/
 IMG_CONTAINER=${FW_DIR}/zephyr_container.img
