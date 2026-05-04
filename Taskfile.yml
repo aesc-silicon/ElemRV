@@ -10,10 +10,12 @@ includes:
     taskfile: ./modules/elements/zibal/Taskfile.yaml
     optional: true
     flatten: true
-  firmware:
-    taskfile: ./Taskfile.firmware.yml
   fpga:
     taskfile: ./Taskfile.fpga.yml
+  baremetal:
+    taskfile: ./Taskfile.baremetal.yml
+  zephyr:
+    taskfile: ./Taskfile.zephyr.yml
 
 vars:
   SOC: '{{.SOC | default "ElemRV-N"}}'
@@ -75,6 +77,7 @@ vars:
     -e VEXRISCV_ROOT={{.VEXRISCV_ROOT}} \
     -e BUILD_ROOT={{.BUILD_ROOT}} \
     -e USER={{.USER}} \
+    -e ZEPHYR_SDK_INSTALL_DIR={{.ZEPHYR_SDK_INSTALL_DIR}} \
     -e GCC={{.GCC}} \
     -e RULES_JSON={{.PWD}}/hardware/scala/{{.package}}/{{.board}}/rules.json \
 "
@@ -90,7 +93,8 @@ env:
   ZIBAL_BASE: "{{.PWD}}/modules/elements/zibal/"
   VEXRISCV_ROOT: "{{.PWD}}/modules/elements/vexriscv/"
   BUILD_ROOT: "{{.PWD}}/build/"
-  GCC: "/opt/elements/zephyr-sdk-0.17.0/riscv64-zephyr-elf/bin/riscv64-zephyr-elf"
+  ZEPHYR_SDK_INSTALL_DIR: "/opt/elements/zephyr-sdk-1.0.1"
+  GCC: "{{.ZEPHYR_SDK_INSTALL_DIR}}/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf"
   OPENROAD_FLOW_ROOT: "{{.PWD}}/tools/OpenROAD-flow-scripts/flow"
 
 tasks:
@@ -118,6 +122,8 @@ tasks:
       - task: _project-prepare
       - task: _build-container
       - task: repo-sync
+      - task: west-init
+      - task: west-update
     vars:
       branch: "main"
       manifest_suffix: ""
