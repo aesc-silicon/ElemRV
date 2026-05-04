@@ -54,6 +54,12 @@ script:
   # Prepare files
   - CI=true IS_HEADLESS=true task prepare
 
+  # Compile baremetal firmware
+  - CI=true IS_HEADLESS=true task baremetal:compile
+
+  # Compile Zephyr firmware
+  - CI=true IS_HEADLESS=true task zephyr:compile
+
   # Generate layout
   - CI=true IS_HEADLESS=true task layout
 
