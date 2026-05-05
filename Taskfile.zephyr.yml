@@ -23,10 +23,11 @@ tasks:
           app: "bootrom"
       - task: ':lib-zephyr-firmware'
         vars:
-          app: "modules/elements/zephyr/samples/hello_world"
           boardname: "elemrv/{{.package}}"
-      - "./software/{{.package}}/gen_zephyr_container.sh"
-      - "ln -f {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/zephyr_container.img {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/image_container.img"
+      - "{{.RUN}} './software/{{.package}}/gen_zephyr_container.sh'"
+      - "{{.RUN}} 'ln -sf {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/zephyr_container.img {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/image_container.img'"
+    vars:
+      app: "modules/elements/zephyr/samples/hello_world"
 
   flash:
     desc: Programs the SPI flash with the Zephyr image container.

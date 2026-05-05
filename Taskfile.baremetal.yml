@@ -24,8 +24,8 @@ tasks:
       - task: ':lib-baremetal-firmware'
         vars:
          app: "demo"
-      - "./software/{{.package}}/gen_baremetal_container.sh"
-      - "ln -f {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/baremetal_container.img {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/image_container.img"
+      - "{{.RUN}} './software/{{.package}}/gen_baremetal_container.sh'"
+      - "{{.RUN}} 'ln -sf {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/baremetal_container.img {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/image_container.img'"
 
   flash:
     desc: Programs the SPI flash with the compiled baremetal firmware image.
