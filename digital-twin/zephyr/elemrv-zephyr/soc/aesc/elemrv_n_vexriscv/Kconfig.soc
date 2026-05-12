@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: Apache-2.0
+
+config SOC_ELEMRV_N_VEXRISCV
+	bool
+	help
+	  ElemRV Nitrogen VexRiscv RV32IMC SoC with LiteX-compatible peripherals.
+
+config SOC
+	default "elemrv_n_vexriscv" if SOC_ELEMRV_N_VEXRISCV

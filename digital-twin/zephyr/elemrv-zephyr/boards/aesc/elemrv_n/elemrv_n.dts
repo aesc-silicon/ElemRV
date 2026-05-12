@@ -1,0 +1,61 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * ElemRV Nitrogen board device tree.
+ * VexRiscv RV32IMC @ 20 MHz, 4 KB SRAM, 64 KB Flash (XIP).
+ */
+
+/dts-v1/;
+
+#include <riscv32-elemrv-n-vexriscv.dtsi>
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+	model = "ElemRV Nitrogen";
+	compatible = "aesc,elemrv-n";
+
+	chosen {
+		zephyr,console = &uart0;
+		zephyr,shell-uart = &uart0;
+		zephyr,sram = &ram0;
+		zephyr,flash = &flash0;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led0: led_0 {
+			gpios = <&gpio0 0 GPIO_ACTIVE_HIGH>;
+			label = "LED0";
+		};
+	};
+
+	aliases {
+		led0 = &led0;
+	};
+
+	ram0: memory@80000000 {
+		device_type = "memory";
+		reg = <0x80000000 0x1000>;
+	};
+
+	flash0: memory@a0000000 {
+		reg = <0xa0000000 0x10000>;
+	};
+};
+
+&uart0 {
+	status = "okay";
+	current-speed = <115200>;
+};
+
+&timer0 {
+	status = "okay";
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&i2c0 {
+	status = "okay";
+};

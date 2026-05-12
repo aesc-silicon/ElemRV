@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: Apache-2.0
+
+config SOC_ELEMRV_N_VEXRISCV
+	select RISCV
+	select ATOMIC_OPERATIONS_C
+	select INCLUDE_RESET_VECTOR
+	select RISCV_ISA_RV32I
+	select RISCV_ISA_EXT_M
+	select RISCV_ISA_EXT_C
+	select RISCV_ISA_EXT_ZICSR
+	select RISCV_ISA_EXT_ZIFENCEI
+	imply XIP
+
+if SOC_ELEMRV_N_VEXRISCV
+
+config LITEX_CSR_DATA_WIDTH
+	int "LiteX CSR data width"
+	default 32
+	help
+	  Width of the LiteX CSR bus registers. ElemRV-N uses 32-bit CSRs.
+
+endif # SOC_ELEMRV_N_VEXRISCV

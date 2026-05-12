@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: Apache-2.0
+
+identifier: elemrv_n
+name: ElemRV Nitrogen RISC-V SoC
+type: mcu
+arch: riscv
+toolchain:
+  - zephyr
+ram: 4
+flash: 64
+supported:
+  - uart
+  - gpio
+  - i2c
+vendor: aesc

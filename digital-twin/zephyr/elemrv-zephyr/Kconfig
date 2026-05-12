@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# Minimal Zephyr module Kconfig for the ElemRV-N + GPIO + UART slice.
+# No custom drivers in this slice (blinky uses upstream litex,gpio and
+# litex,timer drivers via the DT compatible strings).

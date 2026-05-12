@@ -1,0 +1,17 @@
+manifest:
+  self:
+    path: elemrv-zephyr
+
+  remotes:
+    - name: zephyrproject-rtos
+      url-base: https://github.com/zephyrproject-rtos
+
+  projects:
+    - name: zephyr
+      remote: zephyrproject-rtos
+      revision: v4.1.0
+      import:
+        name-allowlist:
+          - cmsis
+          - cmsis_6
+          - hal_riscv

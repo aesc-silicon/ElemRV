@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# Console
+CONFIG_CONSOLE=y
+CONFIG_SERIAL=y
+CONFIG_UART_CONSOLE=y
+CONFIG_UART_INTERRUPT_DRIVEN=y
+
+# XIP: code executes from Flash, only data in RAM (matches real HW: 4 KB SRAM)
+CONFIG_XIP=y
+
+# GPIO (LiteX GPIO driver, auto-selected by DT compatible)
+CONFIG_GPIO=y
+
+# I2C (LiteX I2C bit-bang driver, auto-selected by DT compatible)
+CONFIG_I2C=y
+
+# Size optimization for constrained RAM (4 KB)
+CONFIG_SIZE_OPTIMIZATIONS=y
+CONFIG_HEAP_MEM_POOL_SIZE=512
+CONFIG_MAIN_STACK_SIZE=512
+CONFIG_IDLE_STACK_SIZE=256
+CONFIG_ISR_STACK_SIZE=512

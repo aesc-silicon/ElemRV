@@ -1,0 +1,118 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * ElemRV-N VexRiscv SoC device tree include.
+ * CPU: VexRiscv RV32IMC @ 20 MHz, Wishbone bus, LiteX-compatible peripherals.
+ */
+
+#include <zephyr/dt-bindings/i2c/i2c.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	compatible = "aesc,elemrv-n-vexriscv", "litex-dev";
+	model = "aesc,elemrv-n-vexriscv";
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		cpu0: cpu@0 {
+			clock-frequency = <20000000>;
+			compatible = "litex,vexriscv-standard", "riscv";
+			device_type = "cpu";
+			reg = <0>;
+			riscv,isa = "rv32imc_zicsr_zifencei";
+			status = "okay";
+		};
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "aesc,elemrv-n-vexriscv";
+		ranges;
+
+		intc0: interrupt-controller@bc0 {
+			compatible = "litex,vexriscv-intc0";
+			#address-cells = <0>;
+			#interrupt-cells = <2>;
+			interrupt-controller;
+			reg = <0xbc0 0x4 0xfc0 0x4>;
+			reg-names = "irq_mask", "irq_pending";
+			riscv,max-priority = <7>;
+		};
+
+		uart0: serial@f0006000 {
+			compatible = "litex,uart";
+			interrupt-parent = <&intc0>;
+			interrupts = <0 10>;
+			reg = <0xf0006000 0x4
+				0xf0006004 0x4
+				0xf0006008 0x4
+				0xf000600c 0x4
+				0xf0006010 0x4
+				0xf0006014 0x4
+				0xf0006018 0x4
+				0xf000601c 0x4>;
+			reg-names =
+				"rxtx",
+				"txfull",
+				"rxempty",
+				"ev_status",
+				"ev_pending",
+				"ev_enable",
+				"txempty",
+				"rxfull";
+			status = "disabled";
+		};
+
+		timer0: timer@f0020000 {
+			compatible = "litex,timer0";
+			interrupt-parent = <&intc0>;
+			interrupts = <1 0>;
+			reg = <0xf0020000 0x4
+				0xf0020004 0x4
+				0xf0020008 0x4
+				0xf002000c 0x4
+				0xf0020010 0x4
+				0xf0020014 0x4
+				0xf0020018 0x4
+				0xf002001c 0x4
+				0xf0020020 0x4
+				0xf0020024 0x8>;
+			reg-names =
+				"load",
+				"reload",
+				"en",
+				"update_value",
+				"value",
+				"ev_status",
+				"ev_pending",
+				"ev_enable",
+				"uptime_latch",
+				"uptime_cycles";
+			status = "disabled";
+		};
+
+		gpio0: gpio@f0000000 {
+			compatible = "litex,gpio";
+			reg = <0xf0000000 0x4>;
+			reg-names = "control";
+			ngpios = <20>;
+			port-is-output;
+			status = "disabled";
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		i2c0: i2c@f0001000 {
+			compatible = "litex,i2c";
+			reg = <0xf0001000 0x4 0xf0001004 0x4>;
+			reg-names = "write", "read";
+			clock-frequency = <I2C_BITRATE_STANDARD>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled";
+		};
+	};
+};

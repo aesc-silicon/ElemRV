@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: Apache-2.0
+
+if BOARD_ELEMRV_N
+
+config BOARD
+	default "elemrv_n"
+
+endif # BOARD_ELEMRV_N

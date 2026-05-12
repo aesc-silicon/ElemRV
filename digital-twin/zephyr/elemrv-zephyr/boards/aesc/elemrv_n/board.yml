@@ -1,0 +1,6 @@
+board:
+  name: elemrv_n
+  full_name: ElemRV Nitrogen RISC-V SoC
+  vendor: aesc
+  socs:
+    - name: elemrv_n_vexriscv
