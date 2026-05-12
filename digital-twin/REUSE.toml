@@ -1,0 +1,41 @@
+version = 1
+
+# ---------------------------------------------------------------------------
+# Digital Twin REUSE annotations.
+#
+# Paths in [[annotations]] are relative to this REUSE.toml file (i.e. to
+# `digital-twin/`). REUSE 3.3 supports nested REUSE.toml files; this one
+# applies only to files under `digital-twin/**` while the upstream root
+# `REUSE.toml` covers everything outside.
+#
+# In-file SPDX headers (when present) take precedence over these
+# annotations; the entries here only fill gaps for files that ship
+# without inline headers, e.g. generated Verilog, doc sub-trees,
+# build artefacts.
+# ---------------------------------------------------------------------------
+
+# Default fallback for the whole DT subtree: Apache-2.0 for executable
+# code / firmware / scripts. Files under `docs/**` and `gen_n/**` get
+# overridden below.
+[[annotations]]
+path = "**"
+SPDX-FileCopyrightText = "2025 aesc silicon"
+SPDX-License-Identifier = "Apache-2.0"
+
+# Digital Twin documentation prefers the hardware-doc license.
+[[annotations]]
+path = "docs/**"
+SPDX-FileCopyrightText = "2025 aesc silicon"
+SPDX-License-Identifier = "CERN-OHL-W-2.0"
+
+# Generated Verilog (reproducible output of digital-twin/scala/**).
+[[annotations]]
+path = "gen_n/**"
+SPDX-FileCopyrightText = "2025 aesc silicon"
+SPDX-License-Identifier = "CERN-OHL-W-2.0"
+
+# Tracked .gitignore files inside the DT subtree.
+[[annotations]]
+path = "**/.gitignore"
+SPDX-FileCopyrightText = "2025 aesc silicon"
+SPDX-License-Identifier = "CERN-OHL-W-2.0"
