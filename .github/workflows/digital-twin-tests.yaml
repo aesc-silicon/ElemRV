@@ -1,0 +1,105 @@
+# SPDX-FileCopyrightText: 2025 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+# Digital Twin CI: builds Verilator co-simulation libraries for the
+# ElemRV-N + GPIO + UART slice, builds the Zephyr blinky app, and runs
+# the 5-test suite inside a simulation container.
+#
+# Until the upstream `elements-container` image ships Renode 1.16.0 and
+# Verilator (see
+# https://github.com/aesc-silicon/ElemRV/issues/13#issuecomment-4365667159),
+# this workflow expects a temporary `elemrv-sim` image. Override via the
+# `container_image` workflow_dispatch input.
+
+name: Digital Twin Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      container_image:
+        description: "Simulation container image (Renode 1.16.0 + Verilator + sbt + RISC-V toolchain + Zephyr SDK)"
+        required: false
+        default: "elemrv-sim:latest"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE: ${{ github.event.inputs.container_image || 'elemrv-sim:latest' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Confirm simulation container image is present
+        run: |
+          if ! docker image inspect "${IMAGE}" >/dev/null 2>&1; then
+            echo "Container image '${IMAGE}' not available on this runner."
+            echo "Provide an image with Renode 1.16.0 + Verilator + sbt +"
+            echo "RISC-V toolchain + Zephyr SDK and pass it via the"
+            echo "'container_image' workflow_dispatch input. See"
+            echo "https://github.com/aesc-silicon/ElemRV/issues/13#issuecomment-4365667159"
+            exit 1
+          fi
+
+      - name: Start container
+        run: |
+          docker run -d --name elemrv-test \
+            -v ${{ github.workspace }}:/workspace/elemrv \
+            -w /workspace/elemrv \
+            "${IMAGE}" sleep infinity
+
+      - name: Configure git safe directories
+        run: docker exec elemrv-test git config --global --add safe.directory "*"
+
+      - name: Generate N peripheral Verilog (GPIO, UART)
+        run: |
+          docker exec -w /workspace/elemrv/digital-twin elemrv-test bash -c '
+            sbt "runMain elemrv_n.test.WishboneGpioNVerilog" &&
+            sbt "runMain elemrv_n.test.WishboneUartLiteVerilog"'
+
+      - name: Build N co-simulation libraries (libgpio_n.so, libuart_lite.so)
+        run: |
+          docker exec elemrv-test bash -c '
+            cd /workspace/elemrv/digital-twin/renode/verilated/wrappers &&
+            bash build_n_cosim.sh release'
+
+      - name: Initialize Zephyr workspace
+        run: |
+          docker exec elemrv-test bash -c '
+            cd /workspace/elemrv/digital-twin/zephyr &&
+            west init -l elemrv-zephyr 2>/dev/null || true &&
+            west update'
+
+      - name: Build Zephyr blinky for elemrv_n
+        run: |
+          docker exec elemrv-test bash -c '
+            export ZEPHYR_BASE=/workspace/elemrv/digital-twin/zephyr/zephyr &&
+            cd /workspace/elemrv/digital-twin/zephyr/elemrv-zephyr &&
+            west build -b elemrv_n app/blinky -d build-n-blinky'
+
+      - name: Run digital twin tests (5-test slice)
+        run: |
+          docker exec elemrv-test bash -c '
+            cd /workspace/elemrv/digital-twin/renode &&
+            bash run_tests.sh'
+
+      - name: Collect test logs
+        if: always()
+        run: |
+          mkdir -p test-logs
+          for i in 1 2 3 4 5; do
+            docker cp elemrv-test:/tmp/dt_test_${i}.log test-logs/ 2>/dev/null || true
+          done
+          docker cp elemrv-test:/tmp/dt_verilator_tb.log test-logs/ 2>/dev/null || true
+
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: digital-twin-test-logs
+          path: test-logs/
+
+      - name: Cleanup
+        if: always()
+        run: docker rm -f elemrv-test || true
