@@ -1,0 +1,52 @@
+# SPDX-FileCopyrightText: 2025 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+# ElemRV-N Base Platform Test (no co-simulation)
+# Verifies CPU + RAM + HyperRAM + peripherals work correctly
+#
+# IMPORTANT (Renode v1.16.0 in Docker):
+# - Use "emulation RunFor" with TimeSpan format (e.g. "00:00:00.001000")
+# - Do NOT use integer RunFor, "cpu Execute", or "start" + RunFor
+
+using sysbus
+
+# Create machine
+mach create "elemrv_n_base"
+
+# Load platform (without co-simulation)
+log "Loading N base platform..."
+machine LoadPlatformDescription @platforms/elemrv_n.repl
+
+# Suppress sysbus warnings for tagged regions
+logLevel 3 sysbus
+
+# Load tight-loop into flash (no firmware needed for base test)
+sysbus WriteDoubleWord 0xA0000000 0x0000006F
+cpu PC 0xA0000000
+
+log ""
+log "=== ElemRV-N Base Platform Test ==="
+log "CPU: VexRiscv RV32IMC @ 20 MHz"
+log ""
+
+# Test 1: emulation RunFor (short)
+log "Test 1: emulation RunFor 1ms..."
+emulation RunFor "00:00:00.001000"
+log "Test 1 PASSED: RunFor 1ms works"
+
+# Test 2: emulation RunFor (medium)
+log "Test 2: emulation RunFor 10ms..."
+emulation RunFor "00:00:00.010000"
+log "Test 2 PASSED: RunFor 10ms works"
+
+# Test 3: emulation RunFor (longer)
+log "Test 3: emulation RunFor 50ms..."
+emulation RunFor "00:00:00.050000"
+log "Test 3 PASSED: RunFor 50ms works"
+
+log ""
+log "=== ElemRV-N Base Platform Test PASSED ==="
+log ""
+
+quit

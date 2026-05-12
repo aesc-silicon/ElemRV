@@ -1,0 +1,92 @@
+# SPDX-FileCopyrightText: 2025 aesc silicon
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+# Makefile for UART (lightweight) RTL co-simulation
+
+WRAPPER_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+VERILATED_DIR := $(WRAPPER_DIR)/..
+GENERATED_DIR := $(VERILATED_DIR)/generated/UartLite
+LIBS_DIR := $(VERILATED_DIR)/libs
+RTL_DIR := /workspace/elemrv/digital-twin/gen_n
+RENODE_ROOT ?= /opt/renode_1.16.0_portable
+RENODE_INC := $(RENODE_ROOT)/plugins/IntegrationLibrary/src
+
+VERILATOR := verilator
+VERILATOR_ROOT := /usr/local/share/verilator
+VERILATOR_INC := $(VERILATOR_ROOT)/include
+
+VERILOG_TOP := $(RTL_DIR)/WishboneUart.v
+WRAPPER_SRC := $(WRAPPER_DIR)/uart_lite_wrapper.cpp
+
+LIB_NAME := libuart_lite.so
+LIB_PATH := $(LIBS_DIR)/$(LIB_NAME)
+
+CXX := g++
+BUILD_MODE ?= debug
+
+BASE_CXXFLAGS := -fPIC -std=c++17 \
+    -I$(RENODE_INC) -I$(RENODE_INC)/buses \
+    -I$(RENODE_ROOT)/plugins/IntegrationLibrary \
+    -I$(RENODE_ROOT)/plugins/IntegrationLibrary/libs/socket-cpp \
+    -I$(VERILATOR_INC) -I$(VERILATOR_INC)/vltstd \
+    -I$(GENERATED_DIR)
+
+ifeq ($(BUILD_MODE),debug)
+  CXXFLAGS := $(BASE_CXXFLAGS) -g -O0 -DDEBUG_ENABLE=1 \
+      -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -DVM_TRACE_FST=0
+else
+  CXXFLAGS := $(BASE_CXXFLAGS) -O2 -DDEBUG_ENABLE=0 \
+      -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=0 -DVM_TRACE_FST=0
+endif
+
+LDFLAGS := -shared -fPIC -lpthread -latomic
+
+.PHONY: all clean debug release
+
+all: $(LIB_PATH)
+
+verilate: $(GENERATED_DIR)/VWishboneUart.h
+
+$(GENERATED_DIR)/VWishboneUart.h: $(VERILOG_TOP)
+	@echo "Running Verilator for UART (Lite)..."
+	@mkdir -p $(GENERATED_DIR)
+	$(VERILATOR) --cc --top-module WishboneUart -Mdir $(GENERATED_DIR) $(VERILOG_TOP)
+
+$(LIB_PATH): verilate $(WRAPPER_SRC)
+	@echo "Building UART (Lite) shared library ($(BUILD_MODE) mode)..."
+	@mkdir -p $(LIBS_DIR)
+	$(CXX) $(CXXFLAGS) -c $(VERILATOR_INC)/verilated.cpp -o $(GENERATED_DIR)/verilated.o
+	$(CXX) $(CXXFLAGS) -c $(VERILATOR_INC)/verilated_threads.cpp -o $(GENERATED_DIR)/verilated_threads.o
+	$(CXX) $(CXXFLAGS) -c $(GENERATED_DIR)/VWishboneUart.cpp -o $(GENERATED_DIR)/VWishboneUart.o
+	$(CXX) $(CXXFLAGS) -c $(GENERATED_DIR)/VWishboneUart__Dpi.cpp -o $(GENERATED_DIR)/VWishboneUart__Dpi.o 2>/dev/null || true
+	$(CXX) $(CXXFLAGS) -c $(GENERATED_DIR)/VWishboneUart__Syms.cpp -o $(GENERATED_DIR)/VWishboneUart__Syms.o
+	for f in $(GENERATED_DIR)/VWishboneUart___024root*.cpp $(GENERATED_DIR)/VWishboneUart__ConstPool*.cpp; do \
+		[ -f "$$f" ] && $(CXX) $(CXXFLAGS) -c $$f -o $${f%.cpp}.o || true; \
+	done
+	$(CXX) $(CXXFLAGS) -c $(RENODE_INC)/renode_bus.cpp -o $(GENERATED_DIR)/renode_bus.o
+	$(CXX) $(CXXFLAGS) -c $(RENODE_INC)/communication/socket_channel.cpp -o $(GENERATED_DIR)/socket_channel.o
+	$(CXX) $(CXXFLAGS) -c $(RENODE_INC)/buses/wishbone.cpp -o $(GENERATED_DIR)/wishbone.o
+	$(CXX) $(CXXFLAGS) -c $(RENODE_INC)/buses/bus.cpp -o $(GENERATED_DIR)/bus.o
+	$(CXX) $(CXXFLAGS) -c $(RENODE_ROOT)/plugins/IntegrationLibrary/libs/socket-cpp/Socket/Socket.cpp -o $(GENERATED_DIR)/socket_lib.o
+	$(CXX) $(CXXFLAGS) -c $(RENODE_ROOT)/plugins/IntegrationLibrary/libs/socket-cpp/Socket/TCPClient.cpp -o $(GENERATED_DIR)/tcp_client.o
+	$(CXX) $(CXXFLAGS) -c $(WRAPPER_SRC) -o $(GENERATED_DIR)/uart_lite_wrapper.o
+	$(CXX) $(LDFLAGS) \
+		-o $(LIB_PATH) \
+		$(GENERATED_DIR)/uart_lite_wrapper.o \
+		$(GENERATED_DIR)/renode_bus.o $(GENERATED_DIR)/socket_channel.o \
+		$(GENERATED_DIR)/wishbone.o $(GENERATED_DIR)/bus.o \
+		$(GENERATED_DIR)/socket_lib.o $(GENERATED_DIR)/tcp_client.o \
+		$(GENERATED_DIR)/VWishboneUart.o $(GENERATED_DIR)/VWishboneUart__Syms.o \
+		$(GENERATED_DIR)/verilated.o $(GENERATED_DIR)/verilated_threads.o \
+		$$(ls $(GENERATED_DIR)/VWishboneUart___024root*.o $(GENERATED_DIR)/VWishboneUart__ConstPool*.o 2>/dev/null)
+	@echo "Created: $(LIB_PATH) ($(BUILD_MODE) mode)"
+
+clean:
+	@rm -rf $(GENERATED_DIR)
+	@rm -f $(LIB_PATH)
+
+release:
+	$(MAKE) BUILD_MODE=release
+
+debug:
+	$(MAKE) BUILD_MODE=debug

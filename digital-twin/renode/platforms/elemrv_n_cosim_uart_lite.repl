@@ -1,0 +1,43 @@
+// SPDX-FileCopyrightText: 2025 aesc silicon
+//
+// SPDX-License-Identifier: CERN-OHL-W-2.0
+
+// ElemRV-N Platform with UART1 (lightweight) RTL Co-simulation
+
+cpu: CPU.VexRiscv @ sysbus
+    cpuType: "rv32imc"
+
+ram: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x00001000
+
+hyperram: Memory.MappedMemory @ sysbus 0x90000000
+    size: 0x04000000
+
+flash: Memory.MappedMemory @ sysbus 0xA0000000
+    size: 0x00010000
+
+uart0: UART.LiteX_UART @ sysbus 0xF0006000
+    -> cpu@0
+
+gpio0: GPIOPort.LiteX_GPIO @ sysbus 0xF0000000
+    type: Type.Out
+
+i2c0: I2C.LiteX_I2C @ sysbus 0xF0001000
+
+timer0: Timers.LiteX_Timer @ sysbus 0xF0020000
+    frequency: 20000000
+    -> cpu@1
+
+// UART1: RTL Co-simulation via Verilator (lightweight)
+uart1_cosim: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0007000, +0x1000>
+    frequency: 20000000
+    limitBuffer: 10000
+
+sysbus:
+    init:
+        Tag <0xF0002000, +0x1000> "I2C1"
+        Tag <0xF0003000, +0x1000> "PIO0"
+        Tag <0xF0004000, +0x1000> "PWM0"
+        Tag <0xF0005000, +0x1000> "SPI0"
+        Tag <0xF0010000, +0x1000> "Pinmux"
+        Tag <0xF0023000, +0x1000> "HyperBus Config"

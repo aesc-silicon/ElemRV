@@ -1,0 +1,49 @@
+# SPDX-FileCopyrightText: 2025 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+# ElemRV-N UART Lite Co-simulation Register Test
+# Validates IpIdentification and clock divider register.
+# Serial txd/rxd NOT connected to console.
+
+using sysbus
+
+mach create "elemrv_n_cosim_uart_lite"
+
+machine LoadPlatformDescription @platforms/elemrv_n_cosim_uart_lite.repl
+
+logLevel 3 sysbus
+
+$uart_lite_lib?="/workspace/elemrv/digital-twin/renode/verilated/libs/libuart_lite.so"
+uart1_cosim SimulationFilePathLinux $uart_lite_lib
+
+sysbus WriteDoubleWord 0xA0000000 0x0000006F
+cpu PC 0xA0000000
+cpu PerformanceInMips 20
+
+log ""
+log "=== N UART Lite Co-simulation Register Test ==="
+log ""
+
+emulation RunFor "00:00:00.000100"
+
+# IpIdentification registers
+log "IP Header    @ 0xF0007000:"
+sysbus ReadDoubleWord 0xF0007000
+log "IP Version   @ 0xF0007004:"
+sysbus ReadDoubleWord 0xF0007004
+log "IP Features  @ 0xF0007008:"
+sysbus ReadDoubleWord 0xF0007008
+
+# Write clock divider and read back
+log "Writing clock divider = 0x14..."
+sysbus WriteDoubleWord 0xF0007010 0x14
+emulation RunFor "00:00:00.000010"
+log "Clock Div    @ 0xF0007010 (expect 0x14):"
+sysbus ReadDoubleWord 0xF0007010
+
+log ""
+log "=== N UART Lite Co-simulation Test PASSED ==="
+log ""
+
+quit

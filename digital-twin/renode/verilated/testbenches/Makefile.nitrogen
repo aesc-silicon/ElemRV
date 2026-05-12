@@ -1,0 +1,99 @@
+# SPDX-FileCopyrightText: 2025 aesc silicon
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+# Makefile for pure Verilator testbenches: ElemRV-N peripherals.
+# Builds standalone executables that exercise each N-specific peripheral's
+# Verilator model directly via Wishbone bus transactions.
+
+SHELL := /bin/bash
+
+TB_DIR   := $(dir $(lastword $(MAKEFILE_LIST)))
+RTL_DIR  := /workspace/elemrv/digital-twin/gen_n
+GEN_DIR  := $(TB_DIR)generated_n
+
+VERILATOR      := verilator
+VERILATOR_ROOT := /usr/local/share/verilator
+VERILATOR_INC  := $(VERILATOR_ROOT)/include
+
+CXX      := g++
+CXXFLAGS := -std=c++17 -O2 \
+    -I$(VERILATOR_INC) \
+    -I$(VERILATOR_INC)/vltstd \
+    -I$(TB_DIR) \
+    -DVM_COVERAGE=0 \
+    -DVM_SC=0 \
+    -DVM_TRACE=0 \
+    -DVM_TRACE_FST=0
+
+# Peripheral definitions: name -> Verilog top module
+PERIPH_gpio_n    := WishboneGpio
+PERIPH_uart_lite := WishboneUart
+
+PERIPHERALS := gpio_n uart_lite
+TARGETS     := $(addprefix $(TB_DIR)tb_,$(PERIPHERALS))
+
+.PHONY: all run clean
+
+all: $(TARGETS)
+
+# Run all testbenches and print summary
+run: all
+	@PASS=0; FAIL=0; TOTAL=0; \
+	for p in $(PERIPHERALS); do \
+		TOTAL=$$((TOTAL + 1)); \
+		echo ""; \
+		echo "=== Running tb_$$p ==="; \
+		if $(TB_DIR)tb_$$p; then \
+			PASS=$$((PASS + 1)); \
+		else \
+			FAIL=$$((FAIL + 1)); \
+		fi; \
+	done; \
+	echo ""; \
+	echo "============================================"; \
+	echo "  N Verilator Testbenches: $$PASS/$$TOTAL passed"; \
+	echo "============================================"; \
+	if [ $$FAIL -eq 0 ]; then \
+		echo "All N testbenches PASSED"; \
+	else \
+		echo "$$FAIL N testbench(es) FAILED"; \
+		exit 1; \
+	fi
+
+clean:
+	rm -rf $(GEN_DIR)
+	rm -f $(TARGETS)
+
+# --- Per-peripheral build script ---
+define BUILD_RULE
+$(TB_DIR)tb_$(1): $(RTL_DIR)/$(PERIPH_$(1)).v $(TB_DIR)tb_$(1).cpp $(TB_DIR)wb_helpers.h
+	@echo "=== Building tb_$(1) ==="
+	@mkdir -p $(GEN_DIR)/tb_$(1)
+	$(VERILATOR) --cc --top-module $(PERIPH_$(1)) -Wno-WIDTH \
+		-Mdir $(GEN_DIR)/tb_$(1) \
+		$(RTL_DIR)/$(PERIPH_$(1)).v
+	$(CXX) $(CXXFLAGS) -I$(GEN_DIR)/tb_$(1) \
+		-c $(VERILATOR_INC)/verilated.cpp \
+		-o $(GEN_DIR)/tb_$(1)/verilated.o
+	$(CXX) $(CXXFLAGS) -I$(GEN_DIR)/tb_$(1) \
+		-c $(VERILATOR_INC)/verilated_threads.cpp \
+		-o $(GEN_DIR)/tb_$(1)/verilated_threads.o
+	@for f in $(GEN_DIR)/tb_$(1)/V$(PERIPH_$(1))*.cpp; do \
+		base=$$$$(basename "$$$$f" .cpp); \
+		echo "  Compiling $$$$base..."; \
+		$(CXX) $(CXXFLAGS) -I$(GEN_DIR)/tb_$(1) \
+			-c "$$$$f" -o "$(GEN_DIR)/tb_$(1)/$$$$base.o"; \
+	done
+	$(CXX) $(CXXFLAGS) -I$(GEN_DIR)/tb_$(1) \
+		-c $(TB_DIR)tb_$(1).cpp \
+		-o $(GEN_DIR)/tb_$(1)/tb_$(1).o
+	$(CXX) -o $(TB_DIR)tb_$(1) \
+		$(GEN_DIR)/tb_$(1)/tb_$(1).o \
+		$(GEN_DIR)/tb_$(1)/verilated.o \
+		$(GEN_DIR)/tb_$(1)/verilated_threads.o \
+		$(GEN_DIR)/tb_$(1)/V$(PERIPH_$(1))*.o \
+		-lpthread
+	@echo "Built: $(TB_DIR)tb_$(1)"
+endef
+
+$(foreach p,$(PERIPHERALS),$(eval $(call BUILD_RULE,$(p))))

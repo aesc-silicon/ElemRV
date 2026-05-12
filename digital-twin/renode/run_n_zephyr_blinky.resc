@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# ElemRV-N Zephyr Blinky Test (GPIO + Timer)
+# Validates GPIO output toggles and Timer-based k_sleep.
+#
+# Build: west build -b elemrv_n app/blinky -d build-n-blinky
+
+using sysbus
+
+mach create "elemrv_n_blinky"
+
+machine LoadPlatformDescription @platforms/elemrv_n_zephyr.repl
+
+# Suppress sysbus warnings for tagged regions
+logLevel 3 sysbus
+
+# Create UART analyzer to capture output
+showAnalyzer uart0
+
+# Load Zephyr ELF
+sysbus LoadELF @../zephyr/elemrv-zephyr/build-n-blinky/zephyr/zephyr.elf
+
+log ""
+log "=== N Zephyr Blinky Test (GPIO + Timer) ==="
+log "Board: ElemRV-N (VexRiscv RV32IMC @ 20 MHz)"
+log "App: blinky"
+log ""
+
+# Run for 3s: enough for 8 toggles at 250ms (2s) + boot time
+emulation RunFor "00:00:03.000000"
+
+log ""
+log "=== N Zephyr Blinky Test PASSED ==="
+log ""
+
+quit

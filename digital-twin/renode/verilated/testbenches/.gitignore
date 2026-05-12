@@ -1,0 +1,14 @@
+generated/
+generated_n/
+tb_pwm
+tb_gpio
+tb_pio
+tb_pinmux
+tb_i2c
+tb_uart
+tb_mtimer
+tb_gpio_n
+tb_i2c_lite
+tb_pinmux_n
+tb_spi
+tb_uart_lite

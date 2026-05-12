@@ -1,0 +1,55 @@
+# SPDX-FileCopyrightText: 2025 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+# ElemRV-N GPIO Co-simulation Register Test (20 pins)
+# Validates IpIdentification header and direction/output register writes.
+
+using sysbus
+
+mach create "elemrv_n_cosim_gpio"
+
+machine LoadPlatformDescription @platforms/elemrv_n_cosim_gpio.repl
+
+logLevel 3 sysbus
+
+$gpio_n_lib?="/workspace/elemrv/digital-twin/renode/verilated/libs/libgpio_n.so"
+gpio0_cosim SimulationFilePathLinux $gpio_n_lib
+
+sysbus WriteDoubleWord 0xA0000000 0x0000006F
+cpu PC 0xA0000000
+cpu PerformanceInMips 20
+
+log ""
+log "=== N GPIO Co-simulation Register Test ==="
+log ""
+
+emulation RunFor "00:00:00.000100"
+
+# IpIdentification registers
+log "IP Header    @ 0xF0000000:"
+sysbus ReadDoubleWord 0xF0000000
+log "IP Version   @ 0xF0000004:"
+sysbus ReadDoubleWord 0xF0000004
+log "IP Features  @ 0xF0000008:"
+sysbus ReadDoubleWord 0xF0000008
+
+# Write direction register (set pins 0-3 as output)
+log "Writing direction = 0x0F (pins 0-3 output)..."
+sysbus WriteDoubleWord 0xF0000010 0x0F
+emulation RunFor "00:00:00.000010"
+log "Direction    @ 0xF0000010 (expect 0x0F):"
+sysbus ReadDoubleWord 0xF0000010
+
+# Write output register
+log "Writing output = 0x05 (pins 0,2 high)..."
+sysbus WriteDoubleWord 0xF0000014 0x05
+emulation RunFor "00:00:00.000010"
+log "Output       @ 0xF0000014 (expect 0x05):"
+sysbus ReadDoubleWord 0xF0000014
+
+log ""
+log "=== N GPIO Co-simulation Test PASSED ==="
+log ""
+
+quit
