@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-FW_DIR=${BUILD_ROOT}/${SOC}/${BOARD}/firmware/
+FW_DIR=${BUILD_ROOT}/${SOC}/firmware/
 IMG_CONTAINER=${FW_DIR}/baremetal_container.img
 
 dd if=/dev/zero of=${IMG_CONTAINER} bs=32M count=1

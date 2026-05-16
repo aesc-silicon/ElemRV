@@ -16,14 +16,14 @@ import nafarr.blackboxes.ihp.common._
 import nafarr.memory.ocram.ihp.sg13g2.BmbIhpOnChipRam
 
 import zibal.misc._
-import zibal.platform.Nitrogen
+//import zibal.platform.Nitrogen
 import zibal.board.{KitParameter, BoardParameter}
 import zibal.sim.hyperram.W956A8MBYA
 import zibal.sim.MT25Q
 
 import elements.sdk.ElementsApp
 import elements.board.ElemRVBoard
-
+/*
 case class SG13G2Board() extends Component {
   val io = new Bundle {
     val clock = inout(Analog(Bool))
@@ -426,3 +426,4 @@ object SG13G2Simulate extends ElementsApp {
       }
   }
 }
+*/

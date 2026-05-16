@@ -7,13 +7,13 @@ package elemrv_h
 import spinal.core._
 import spinal.core.sim._
 import spinal.lib._
-import spinal.lib.bus.bmb._
+import spinal.lib.bus.tilelink.{BusParameter => TileLinkParameter}
 
 import nafarr.system.reset._
 import nafarr.system.clock._
 import nafarr.blackboxes.ihp.sg13g2._
 import nafarr.blackboxes.ihp.common._
-import nafarr.memory.ocram.ihp.sg13g2.BmbIhpOnChipRam
+import nafarr.memory.ocram.ihp.sg13g2.TileLinkIhpOnChipRam
 
 import zibal.misc._
 import zibal.platform.Hydrogen
@@ -84,7 +84,7 @@ case class SG13G2Top() extends Component {
   val socParameter = ElemRV.Parameter(boardParameter)
   val parameter = Hydrogen.Parameter(
     socParameter,
-    8 kB,
+    4 kB,
     8 MB,
     (parameter: ResetControllerCtrl.Parameter) => {
       val resetCtrl = new ResetControllerCtrl.DummyResetController(parameter)
@@ -101,8 +101,8 @@ case class SG13G2Top() extends Component {
       )
       clockCtrl
     },
-    (parameter: BmbParameter, ramSize: BigInt) => {
-      val ram = BmbIhpOnChipRam.OnePort1Macro(parameter, ramSize.toInt)
+    (parameter: TileLinkParameter, ramSize: BigInt) => {
+      val ram = TileLinkIhpOnChipRam.OnePort1Macro(parameter, ramSize.toInt)
       (ram, ram.io.bus)
     }
   )
@@ -192,7 +192,7 @@ object SG13G2Generate extends ElementsApp {
   chip.coreArea = (394.08, 396.9, 1495.68, 1496.88)
   chip.hasIoRing = true
   chip.addMacro(
-    report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[BmbIhpOnChipRam.OnePort1Macro].ram,
+    report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[TileLinkIhpOnChipRam.OnePort1Macro].ram,
     414.08,
     416.68,
     "MX",

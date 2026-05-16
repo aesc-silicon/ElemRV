@@ -16,14 +16,14 @@ import nafarr.blackboxes.lattice.ecp5._
 import nafarr.memory.ocram.ihp.sg13g2.BmbIhpOnChipRam
 
 import zibal.misc._
-import zibal.platform.Nitrogen
+//import zibal.platform.Nitrogen
 import zibal.board.{KitParameter, BoardParameter}
 import zibal.sim.hyperram.W956A8MBYA
 import zibal.sim.MT25Q
 
 import elements.sdk.ElementsApp
 import elements.board.ECPIX5
-
+/*
 case class ECPIX5Board() extends Component {
   val io = new Bundle {
     val clock = inout(Analog(Bool))
@@ -367,3 +367,4 @@ object ECPIX5Simulate extends ElementsApp {
       println(s"Unknown simulation ${simType}")
   }
 }
+*/

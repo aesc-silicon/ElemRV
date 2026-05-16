@@ -8,7 +8,7 @@ import spinal.core._
 import spinal.lib._
 
 import zibal.misc._
-import zibal.platform.Nitrogen
+//import zibal.platform.Nitrogen
 import zibal.board.BoardParameter
 import zibal.soc.SocParameter
 
@@ -19,7 +19,7 @@ import nafarr.peripherals.com.uart.{WishboneUart, Uart, UartCtrl}
 import nafarr.peripherals.com.i2c.{WishboneI2cController, I2c, I2cControllerCtrl}
 import nafarr.peripherals.com.spi.{WishboneSpiController, Spi, SpiControllerCtrl}
 import nafarr.peripherals.pinmux.{WishbonePinmux, Pinmux, PinmuxCtrl}
-
+/*
 object ElemRV {
   def apply(parameter: Nitrogen.Parameter) = ElemRV(parameter)
 
@@ -99,7 +99,6 @@ object ElemRV {
       addPinmuxInput(uart1Ctrl.io.uart.rxd, "uart1_rx", output = false)
       uart1Ctrl.io.uart.cts := True
 
-      /* Pin Mapping */
       addPinmuxOption(0, List("gpio0_0", "i2c0_scl"))
       addPinmuxOption(1, List("gpio0_1", "i2c0_sda"))
       addPinmuxOption(2, List("gpio0_2", "i2c0_interrupt_0"))
@@ -131,3 +130,4 @@ object ElemRV {
     }
   }
 }
+*/

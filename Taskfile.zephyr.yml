@@ -25,12 +25,11 @@ tasks:
         vars:
           boardname: "elemrv/{{.package}}"
       - "{{.RUN}} './software/{{.package}}/gen_zephyr_container.sh'"
-      - "{{.RUN}} 'ln -sf {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/zephyr_container.img {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/image_container.img'"
-      - "{{.RUN}} 'ln -sf {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/zephyr_container.img {{.BUILD_ROOT}}/{{.SOC}}/ECPIX5/firmware/image_container.img'"
+      - "{{.RUN}} 'ln -sf {{.BUILD_ROOT}}/{{.SOC}}/firmware/zephyr_container.img {{.BUILD_ROOT}}/{{.SOC}}/firmware/image_container.img'"
     vars:
       app: "modules/elements/zephyr/samples/hello_world"
 
   flash:
     desc: Programs the SPI flash with the Zephyr image container.
     cmds:
-      - "flashrom -p buspirate_spi:dev=/dev/serial/by-id/usb-Bus_Pirate_Bus_Pirate_5_5buspirate-if02,spispeed=8M -c MT25QL256 -l software/{{.package}}/spi.layout -i flash -n -w {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/zephyr_container.img"
+      - "flashrom -p buspirate_spi:dev=/dev/serial/by-id/usb-Bus_Pirate_Bus_Pirate_5_5buspirate-if02,spispeed=8M -c MT25QL256 -l software/{{.package}}/spi.layout -i flash -n -w {{.BUILD_ROOT}}/{{.SOC}}/firmware/zephyr_container.img"

@@ -8,8 +8,8 @@
 
 MEMORY
 {
-	OCRAM (xrw): ORIGIN = 0x80000000, LENGTH = 8k
-	FLASH (xr ): ORIGIN = 0xA0000000, LENGTH = 64k
+	OCRAM (xrw): ORIGIN = 0x80000000, LENGTH = 4k
+	FLASH (xr ): ORIGIN = 0xA0010000, LENGTH = 64k
 }
 stack_size = 4k;
 heap_size = 0;
