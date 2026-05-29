@@ -24,6 +24,7 @@ vars:
     sh: |
       case "{{.PDK}}" in
         ihp-sg13g2) echo "sg13g2" ;;
+        ihp-sg13cmos5l) echo "sg13cmos5l" ;;
         sky130A)    echo "sky130" ;;
         gf180mcuD)  echo "gf180mcu" ;;
         *) echo ""; echo "Unknown PDK: {{.PDK}}" >&2; exit 1 ;;
@@ -32,6 +33,7 @@ vars:
     sh: |
       case "{{.PDK}}" in
         ihp-sg13g2) echo "ihp-sg13g2" ;;
+        ihp-sg13cmos5l) echo "ihp-sg13g2" ;;
         sky130A)    echo "sky130" ;;
         gf180mcuD)  echo "gf180mcu" ;;
         *) echo ""; echo "Unknown PDK: {{.PDK}}" >&2; exit 1 ;;
@@ -40,6 +42,7 @@ vars:
     sh: |
       case "{{.PDK}}" in
         ihp-sg13g2) echo "ihp-sg13g2" ;;
+        ihp-sg13cmos5l) echo "ihp-sg13g2" ;;
         sky130A)    echo "sky130hd" ;;
         gf180mcuD)  echo "gf180" ;;
         *) echo ""; echo "Unknown PDK: {{.PDK}}" >&2; exit 1 ;;
@@ -48,6 +51,7 @@ vars:
     sh: |
       case "{{.PDK}}" in
         ihp-sg13g2) echo "5cccb161f7492697cfa52eb14dc03beb00bdca9e" ;;
+        ihp-sg13cmos5l) echo "5cccb161f7492697cfa52eb14dc03beb00bdca9e" ;;
         sky130A)    echo "7b70722e33c03fcb5dabcf4d479fb0822d9251c9" ;;
         gf180mcuD)  echo "7b70722e33c03fcb5dabcf4d479fb0822d9251c9" ;;
         *) echo ""; echo "Unknown PDK: {{.PDK}}" >&2; exit 1 ;;
