@@ -34,3 +34,8 @@ SPDX-License-Identifier = "CERN-OHL-W-2.0"
 path = "docs/**"
 SPDX-FileCopyrightText = "2026 aesc silicon"
 SPDX-License-Identifier = "CERN-OHL-W-2.0"
+
+[[annotations]]
+path = ".claude/**"
+SPDX-FileCopyrightText = "2026 aesc silicon"
+SPDX-License-Identifier = "CERN-OHL-W-2.0"
