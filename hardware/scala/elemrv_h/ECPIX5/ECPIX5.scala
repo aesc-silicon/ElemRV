@@ -7,21 +7,22 @@ package elemrv_h
 import spinal.core._
 import spinal.core.sim._
 import spinal.lib._
+import spinal.lib.bus.tilelink.{BusParameter => TileLinkParameter}
 
-import spinal.lib.bus.bmb._
-
+import nafarr.memory.ocram.ihp.sg13g2.TileLinkIhpOnChipRam
 import nafarr.system.reset._
 import nafarr.system.reset.ResetControllerCtrl._
 import nafarr.system.clock._
 import nafarr.system.clock.ClockControllerCtrl._
 import nafarr.blackboxes.lattice.ecp5._
-import nafarr.memory.ocram.ihp.sg13g2.BmbIhpOnChipRam
 
 import zibal.misc._
 import zibal.platform.Hydrogen
 import zibal.board.{KitParameter, BoardParameter}
 import zibal.sim.hyperram.W956A8MBYA
 import zibal.sim.MT25Q
+
+import nafarr.memory.ocram.TileLinkOnChipRam
 
 import elements.sdk.ElementsApp
 import elements.board.ECPIX5
@@ -99,7 +100,7 @@ case class ECPIX5Top() extends Component {
   val parameter = Hydrogen.Parameter(
     socParameter,
     8 kB,
-    8 MB,
+    512 kB,
     (parameter: ResetControllerCtrl.Parameter) => {
       val resetCtrl = new ResetControllerCtrl.GeneratorResetController(parameter)
       resetCtrl
@@ -115,8 +116,8 @@ case class ECPIX5Top() extends Component {
       )
       clockCtrl
     },
-    (parameter: BmbParameter, ramSize: BigInt) => {
-      val ram = BmbIhpOnChipRam.OnePort1Macro(parameter, ramSize.toInt)
+    onChipRamLogic = (p: TileLinkParameter, size: BigInt) => {
+      val ram = TileLinkIhpOnChipRam.OnePort(p, size.toInt)
       (ram, ram.io.bus)
     }
   )
@@ -216,11 +217,16 @@ case class ECPIX5Top() extends Component {
   for (index <- 0 until io.ledPullDown.length) {
     io.ledPullDown(index) <> FakeO(True)
   }
+
 }
 
 object ECPIX5Generate extends ElementsApp {
   val report = elementsConfig.genFPGASpinalConfig.generateVerilog {
     val top = ECPIX5Top()
+    BinTools.initRam(
+      top.soc.system.onChipRam.ctrl.asInstanceOf[TileLinkOnChipRam].ram,
+      elementsConfig.swStorageImageContainer
+    )
 
     val lpf = LatticeTools.Lpf(elementsConfig)
     lpf.generate(top.io)
@@ -233,7 +239,7 @@ object ECPIX5Generate extends ElementsApp {
 object ECPIX5Simulate extends ElementsApp {
   val compiled = elementsConfig.genFPGASimConfig.compile {
     val board = ECPIX5Board()
-    BinTools.initRam(board.spiNor.deviceOut.data, elementsConfig.swStorageBaremetalImage("demo"))
+    BinTools.initRam(board.spiNor.deviceOut.data, elementsConfig.swStorageImageContainer)
     for (domain <- board.top.soc.parameter.getKitParameter.clocks) {
       board.top.soc.clockCtrl.getClockDomainByName(domain.name).clock.simPublic()
     }
