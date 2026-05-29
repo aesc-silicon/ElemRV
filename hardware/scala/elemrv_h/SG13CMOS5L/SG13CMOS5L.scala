@@ -7,13 +7,13 @@ package elemrv_h
 import spinal.core._
 import spinal.core.sim._
 import spinal.lib._
-import spinal.lib.bus.bmb._
+import spinal.lib.bus.tilelink.{BusParameter => TileLinkParameter}
 
 import nafarr.system.reset._
 import nafarr.system.clock._
-import nafarr.blackboxes.ihp.sg13g2._
+import nafarr.blackboxes.ihp.sg13cmos5l._
 import nafarr.blackboxes.ihp.common._
-import nafarr.memory.ocram.ihp.sg13g2.BmbIhpOnChipRam
+import nafarr.memory.ocram.ihp.sg13g2.TileLinkIhpOnChipRam
 
 import zibal.misc._
 import zibal.platform.Hydrogen
@@ -22,9 +22,9 @@ import zibal.sim.hyperram.W956A8MBYA
 import zibal.sim.MT25Q
 
 import elements.sdk.ElementsApp
-import elements.board.ElemRVBoard
+import elements.board.ElemRVFlask
 
-case class SG13G2Board() extends Component {
+case class SG13CMOS5LBoard() extends Component {
   val io = new Bundle {
     val clock = inout(Analog(Bool))
     val reset = inout(Analog(Bool))
@@ -36,7 +36,7 @@ case class SG13G2Board() extends Component {
     val pins = Vec(inout(Analog(Bool())), 12)
   }
 
-  val top = SG13G2Top()
+  val top = SG13CMOS5LTop()
   val analogFalse = Analog(Bool)
   analogFalse := False
   val analogTrue = Analog(Bool)
@@ -69,23 +69,23 @@ case class SG13G2Board() extends Component {
 
 }
 
-case class SG13G2Top() extends Component {
+case class SG13CMOS5LTop() extends Component {
   val resets = List[ResetParameter](
     ResetParameter("system", 128),
     ResetParameter("debug", 128)
   )
-  val inputClock = ClockParameter("input", 50 MHz, "input")
+  val inputClock = ClockParameter("input", ElemRVFlask.Hydrogen.oscillatorFrequency, "input")
   val clocks = List[ClockParameter](
-    ClockParameter("system", 50 MHz, "system"),
-    ClockParameter("debug", 12.5 MHz, "debug", synchronousWith = "system")
+    ClockParameter("system", inputClock.frequency, "system"),
+    ClockParameter("debug", inputClock.frequency / 4, "debug", synchronousWith = "system")
   )
   val kitParameter = KitParameter(resets, clocks)
-  val boardParameter = ElemRVBoard.Parameter(kitParameter)
+  val boardParameter = ElemRVFlask.Hydrogen.Parameter(kitParameter)
   val socParameter = ElemRV.Parameter(boardParameter)
   val parameter = Hydrogen.Parameter(
     socParameter,
     8 kB,
-    8 MB,
+    512 kB,
     (parameter: ResetControllerCtrl.Parameter) => {
       val resetCtrl = new ResetControllerCtrl.DummyResetController(parameter)
       resetCtrl
@@ -101,8 +101,8 @@ case class SG13G2Top() extends Component {
       )
       clockCtrl
     },
-    (parameter: BmbParameter, ramSize: BigInt) => {
-      val ram = BmbIhpOnChipRam.OnePort1Macro(parameter, ramSize.toInt)
+    onChipRamLogic = (parameter: TileLinkParameter, ramSize: BigInt) => {
+      val ram = TileLinkIhpOnChipRam.OnePort(parameter, ramSize.toInt)
       (ram, ram.io.bus)
     }
   )
@@ -167,37 +167,45 @@ case class SG13G2Top() extends Component {
   }
 
   val power = Seq(
-    IhpPowerIo(Edge.South, 6, IhpPowerIoCell.SG13G2.Vss),
-    IhpPowerIo(Edge.South, 7, IhpPowerIoCell.SG13G2.Vdd),
-    IhpPowerIo(Edge.East, 6, IhpPowerIoCell.SG13G2.IOVdd),
-    IhpPowerIo(Edge.East, 7, IhpPowerIoCell.SG13G2.IOVss),
-    IhpPowerIo(Edge.North, 0, IhpPowerIoCell.SG13G2.Vss),
-    IhpPowerIo(Edge.North, 1, IhpPowerIoCell.SG13G2.Vdd),
-    IhpPowerIo(Edge.West, 0, IhpPowerIoCell.SG13G2.IOVdd),
-    IhpPowerIo(Edge.West, 1, IhpPowerIoCell.SG13G2.IOVss)
+    IhpPowerIo(Edge.South, 6, IhpPowerIoCell.SG13CMOS5L.Vss),
+    IhpPowerIo(Edge.South, 7, IhpPowerIoCell.SG13CMOS5L.Vdd),
+    IhpPowerIo(Edge.East, 6, IhpPowerIoCell.SG13CMOS5L.IOVss),
+    IhpPowerIo(Edge.East, 7, IhpPowerIoCell.SG13CMOS5L.IOVdd),
+    IhpPowerIo(Edge.North, 0, IhpPowerIoCell.SG13CMOS5L.Vdd),
+    IhpPowerIo(Edge.North, 1, IhpPowerIoCell.SG13CMOS5L.Vss),
+    IhpPowerIo(Edge.West, 0, IhpPowerIoCell.SG13CMOS5L.IOVdd),
+    IhpPowerIo(Edge.West, 1, IhpPowerIoCell.SG13CMOS5L.IOVss)
   )
 }
 
-object SG13G2Generate extends ElementsApp {
+object SG13CMOS5LGenerate extends ElementsApp {
   val report = elementsConfig.genASICSpinalConfig.generateVerilog {
-    val top = SG13G2Top()
+    val top = SG13CMOS5LTop()
 
     top.soc.prepareBaremetal("demo", elementsConfig)
 
     top
   }
 
-  val chip = OpenROADTools.IHP.Config(elementsConfig, OpenROADTools.PDKs.IHP.sg13g2)
-  chip.dieArea = (0, 0, 1892.64, 1893.78)
-  chip.coreArea = (394.08, 396.9, 1495.68, 1496.88)
+  val chip = OpenROADTools.IHP.Config(elementsConfig, OpenROADTools.PDKs.IHP.sg13cmos5l)
+  chip.dieArea = (0, 0, 1991.52, 1995.84)
+  chip.coreArea = (394.08, 396.9, 1594.56, 1598.94)
   chip.hasIoRing = true
   chip.addMacro(
-    report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[BmbIhpOnChipRam.OnePort1Macro].ram,
-    414.08,
-    416.68,
+    report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[TileLinkIhpOnChipRam.OnePort].rams(0),
+    434.08,
+    409.12,
     "MX",
     depth = 3
   )
+  chip.addMacro(
+    report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[TileLinkIhpOnChipRam.OnePort].rams(1),
+    1137.92,
+    409.12,
+    "MX",
+    depth = 3
+  )
+
   chip.addClock(report.toplevel.io.clock.PAD, report.toplevel.inputClock.frequency, "clk_main")
   chip.addClock(report.toplevel.io.jtag.tck.PAD, 10 MHz, "clk_jtag")
   chip.addGeneratedClock(
@@ -218,10 +226,10 @@ object SG13G2Generate extends ElementsApp {
   chip.generate
 }
 
-object SG13G2Simulate extends ElementsApp {
+object SG13CMOS5LSimulate extends ElementsApp {
   val compiled = elementsConfig.genFPGASimConfig.compile {
-    val board = SG13G2Board()
-    BinTools.initRam(board.spiNor.deviceOut.data, elementsConfig.swStorageBaremetalImage("demo"))
+    val board = SG13CMOS5LBoard()
+    BinTools.initRam(board.spiNor.deviceOut.data, elementsConfig.swStorageImageContainer)
     board
   }
   simType match {

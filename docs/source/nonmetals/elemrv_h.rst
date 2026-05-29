@@ -2,8 +2,8 @@ ElemRV-H (Hydrogen)
 ###################
 
 ElemRV-H is the entry-level platform of the Nonmetal class. It is designed for
-minimal area and simplicity: a single-issue in-order CPU, a shared BMB bus, no
-caches, and a small set of low-speed peripherals. All IO is routed through a
+minimal area and simplicity: a single-issue in-order CPU, a TileLink shared bus,
+no caches, and a small set of low-speed peripherals. All IO is routed through a
 pinmux controller, making the 12 physical pins fully reconfigurable in software.
 
 Specifications
@@ -18,11 +18,11 @@ Specifications
    * - **Clock**
      - 50 MHz system
    * - **Interconnect**
-     - BMB shared bus
+     - TileLink shared bus
    * - **On-chip SRAM**
      - 8 kB
    * - **SPI Flash**
-     - 8 MB, Quad SPI XIP
+     - 512 kB, Quad SPI XIP
    * - **IO pins**
      - 12 (via pinmux)
    * - **Debug**
@@ -41,7 +41,7 @@ Memory Map
      - Description
    * - SPI Flash (XIP)
      - ``0xa0000000``
-     - 8 MB
+     - 512 kB
      - Code and read-only data
    * - On-chip SRAM
      - ``0x80000000``
@@ -56,6 +56,9 @@ Peripherals
 ***********
 
 Offsets are relative to the peripheral base address at ``0xf0000000``.
+
+User peripherals
+================
 
 .. list-table::
    :header-rows: 1
@@ -85,10 +88,66 @@ Offsets are relative to the peripheral base address at ``0xf0000000``.
      - ``0x4000``
      - 4 kB
      - UART with full handshake (TX, RX, CTS, RTS) - see :ref:`hardware-peripherals-uart`
+   * - PRNG
+     - ``0x5000``
+     - 4 kB
+     - Pseudo Random Number Generator - see :ref:`hardware-crypto-prng`
    * - Pinmux
      - ``0x10000``
      - 4 kB
      - Pin multiplexer for all 12 IO pins
+
+System peripherals
+==================
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 15 15 50
+
+   * - Peripheral
+     - Offset
+     - Size
+     - Description
+   * - MachineTimer
+     - ``0x20000``
+     - 4 kB
+     - RISC-V machine-mode timer (mtime / mtimecmp)
+   * - ResetController
+     - ``0x21000``
+     - 4 kB
+     - Reset domain controller
+   * - ClockController
+     - ``0x22000``
+     - 4 kB
+     - Clock domain controller
+   * - Syscon
+     - ``0x23000``
+     - 4 kB
+     - System controller (board identity, feature flags, IP counts)
+   * - SpiFlash (config)
+     - ``0x24000``
+     - 4 kB
+     - SPI XIP controller configuration
+   * - SpiFlash (XIP ctrl)
+     - ``0x25000``
+     - 4 kB
+     - SPI XIP controller
+   * - Timer
+     - ``0x26000``
+     - 4 kB
+     - General-purpose timer - see :ref:`hardware-peripherals-timer`
+   * - Watchdog
+     - ``0x27000``
+     - 4 kB
+     - Watchdog timer with windowed mode and lock protection - see :ref:`hardware-system-watchdog`
+   * - ESM
+     - ``0x28000``
+     - 4 kB
+     - Error Signaling Module (optional) - see :ref:`hardware-system-esm`
+   * - PLIC
+     - ``0x800000``
+     - 4 MB
+     - Platform-Level Interrupt Controller
 
 Interrupts
 **********
@@ -105,6 +164,12 @@ Interrupts
      - Triggered on transfer completion or error
    * - UART0
      - Triggered on receive, transmit, or error conditions
+   * - Timer
+     - Triggered on counter expiry
+   * - Watchdog
+     - Triggered on timeout or window violation; error output triggers system reset
+   * - ESM
+     - Triggered on INFO or WARN severity events; ERROR/FATAL triggers system reset
 
 Pinmux
 ******
