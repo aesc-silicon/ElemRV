@@ -23,8 +23,7 @@ import nafarr.peripherals.pinmux.{WishbonePinmux, Pinmux, PinmuxCtrl}
 object ElemRV {
   def apply(parameter: Nitrogen.Parameter) = ElemRV(parameter)
 
-  case class Parameter(boardParameter: BoardParameter)
-      extends SocParameter(boardParameter, socInterrupts = 6) {
+  case class Parameter(boardParameter: BoardParameter) extends SocParameter(boardParameter) {
     val gpio0 = GpioCtrl.Parameter(Gpio.Parameter(20), 3)
     val i2c0 = I2cControllerCtrl.Parameter.default(1)
     val i2c1 = I2cControllerCtrl.Parameter.lightweight()
@@ -34,6 +33,8 @@ object ElemRV {
     val uart0 = UartCtrl.Parameter.full()
     val uart1 = UartCtrl.Parameter.lightweight()
     val pinmux = PinmuxCtrl.Parameter(Pinmux.Parameter(20), 40, 2)
+
+    override val irqSources = Seq(gpio0, i2c0, i2c1, spi0, uart0, uart1)
   }
 
   case class ElemRV(parameter: Nitrogen.Parameter) extends Nitrogen.Nitrogen(parameter) {
@@ -75,6 +76,8 @@ object ElemRV {
       for (pin <- 0 until socParameter.pwm0.io.channels) {
         addPinmuxInput(pwm0Ctrl.io.pwm.output(pin), s"pwm0_$pin")
       }
+      pwm0Ctrl.io.pwm.syncIn := False
+      pwm0Ctrl.io.pwm.faultIn := False
 
       val spi0Ctrl = WishboneSpiController(socParameter.spi0, system.wishboneConfig)
       addPeripheralDevice(spi0Ctrl.io.bus, 0x5000, 4 kB)
