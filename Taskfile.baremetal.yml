@@ -20,14 +20,14 @@ tasks:
     cmds:
       - task: ':lib-baremetal-firmware'
         vars:
-         app: "bootrom"
+          app: "bootrom"
       - task: ':lib-baremetal-firmware'
         vars:
-         app: "demo"
+          app: "demo"
       - "{{.RUN}} './software/{{.package}}/gen_baremetal_container.sh'"
-      - "{{.RUN}} 'ln -sf {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/baremetal_container.img {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/image_container.img'"
+      - "{{.RUN}} 'ln -sf {{.BUILD_ROOT}}/{{.SOC}}/firmware/baremetal_container.img {{.BUILD_ROOT}}/{{.SOC}}/firmware/image_container.img'"
 
   flash:
     desc: Programs the SPI flash with the compiled baremetal firmware image.
     cmds:
-      - "flashrom -p buspirate_spi:dev=/dev/serial/by-id/usb-Bus_Pirate_Bus_Pirate_5_5buspirate-if02,spispeed=8M -c MT25QL256 -l software/{{.package}}/spi.layout -i flash -n -w {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/firmware/baremetal_container.img"
+      - "flashrom -p buspirate_spi:dev=/dev/serial/by-id/usb-Bus_Pirate_Bus_Pirate_5_5buspirate-if02,spispeed=8M -c MT25QL128 -l software/{{.package}}/spi.layout -i flash -n -w {{.BUILD_ROOT}}/{{.SOC}}/firmware/baremetal_container.img"
