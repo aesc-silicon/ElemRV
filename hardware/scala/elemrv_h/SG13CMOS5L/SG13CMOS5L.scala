@@ -169,10 +169,10 @@ case class SG13CMOS5LTop() extends Component {
   val power = Seq(
     IhpPowerIo(Edge.South, 6, IhpPowerIoCell.SG13CMOS5L.Vss),
     IhpPowerIo(Edge.South, 7, IhpPowerIoCell.SG13CMOS5L.Vdd),
-    IhpPowerIo(Edge.East, 6, IhpPowerIoCell.SG13CMOS5L.IOVdd),
-    IhpPowerIo(Edge.East, 7, IhpPowerIoCell.SG13CMOS5L.IOVss),
-    IhpPowerIo(Edge.North, 0, IhpPowerIoCell.SG13CMOS5L.Vss),
-    IhpPowerIo(Edge.North, 1, IhpPowerIoCell.SG13CMOS5L.Vdd),
+    IhpPowerIo(Edge.East, 6, IhpPowerIoCell.SG13CMOS5L.IOVss),
+    IhpPowerIo(Edge.East, 7, IhpPowerIoCell.SG13CMOS5L.IOVdd),
+    IhpPowerIo(Edge.North, 0, IhpPowerIoCell.SG13CMOS5L.Vdd),
+    IhpPowerIo(Edge.North, 1, IhpPowerIoCell.SG13CMOS5L.Vss),
     IhpPowerIo(Edge.West, 0, IhpPowerIoCell.SG13CMOS5L.IOVdd),
     IhpPowerIo(Edge.West, 1, IhpPowerIoCell.SG13CMOS5L.IOVss)
   )
@@ -188,8 +188,8 @@ object SG13CMOS5LGenerate extends ElementsApp {
   }
 
   val chip = OpenROADTools.IHP.Config(elementsConfig, OpenROADTools.PDKs.IHP.sg13cmos5l)
-  chip.dieArea = (0, 0, 1991.52, 1995.84)
-  chip.coreArea = (394.08, 396.9, 1594.56, 1598.94)
+  chip.dieArea = (0, 0, 2243.04, 2249.10)
+  chip.coreArea = (394.08, 396.9, 1846.08, 1852.20)
   chip.hasIoRing = true
   chip.addMacro(
     report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[TileLinkIhpOnChipRam.OnePort].rams(0),
@@ -204,6 +204,13 @@ object SG13CMOS5LGenerate extends ElementsApp {
     409.12,
     "MX",
     depth = 3
+  )
+  chip.addMacro(
+    report.toplevel.soc.peripherals.aesMaskedCtrl.ctrl.ram,
+    912.00,
+    1625.40,
+    "MX",
+    depth = 4
   )
 
   chip.addClock(report.toplevel.io.clock.PAD, report.toplevel.inputClock.frequency, "clk_main")
@@ -223,6 +230,7 @@ object SG13CMOS5LGenerate extends ElementsApp {
   chip.ioPower = Some(report.toplevel.power)
   chip.pdnRingWidth = 30.0
   chip.pdnRingSpace = 5.0
+  chip.additionalVerilogFiles ++= report.blackboxesSourcesPaths
   chip.generate
 }
 
