@@ -2,10 +2,10 @@
 ..
 .. SPDX-License-Identifier: CERN-OHL-W-2.0
 
-ElemRV - End-to-end Open-Source RISC-V MCU
-==========================================
+ElemRV - End-to-end Open-Source RISC-V MCU Platform
+====================================================
 
-This project offers an end-to-end open-source RISC-V Microcontroller, fully implemented in SpinalHDL and design to work seamlessly with the OpenROAD toolchain. This MCU is tailored to use with the IHP Open SG13G2 PDK, providing a complete open-source solution from RTL to GDSII without any reliance on proprietary software.
+ElemRV is a platform of open-source RISC-V microcontrollers, fully implemented in SpinalHDL and designed to work seamlessly with the OpenROAD toolchain. Several SoC variants are available, ranging from minimal cost-efficient cores to high-performance configurations, while sharing a common toolchain and design methodology. Each variant is tailored to work with open PDKs such as IHP SG13G2, providing a complete open-source solution from RTL to GDSII without any reliance on proprietary software.
 
 Features
 ########
@@ -17,9 +17,9 @@ Features
 
   * **Chip Layout**: Created using the OpenROAD flow.
 
-* **RISC-V**: Powered by a VexiiRiscv RISC-V CPU with the RV32IC instruction set.
+* **RISC-V**: Powered by a VexiiRiscv RISC-V CPU, with instruction set extensions tailored to each SoC variant.
 * **Zephyr RTOS**: Firmware based on Zephyr RTOS for efficient real-time operation.
-* **Memory**: Supports up to one HyperRAM chip and executes code from external SPI Flash in XIP mode.
+* **Memory**: All variants boot from external SPI Flash in XIP mode. Higher-tier SoCs add HyperRAM for additional memory.
 * **Interfaces**: Includes common low-speed interfaces such as GPIO, UART, I2C, SPI, and programmable I/Os.
 
 Layout Rendering
@@ -62,6 +62,10 @@ This project uses Taskfile as its task runner tool. You can install Taskfile usi
 - List all available tasks::
 
         task -a
+
+Most tasks accept the ``SOC`` and ``PDK`` variables to select a specific SoC variant and target PDK. For example::
+
+        task prepare SOC=ElemRV-H PDK=ihp-sg13cmos5l
 
 **Note:** By default, the X-Server is required for the `view-klayout` and `view-openroad` tasks. On headless systems, you can bypass this requirement by adding `IS_HEADLESS=true` before the task command. This is particularly useful when accessing the system via SSH, as it allows you to run the container without the need for X-Server.
 
