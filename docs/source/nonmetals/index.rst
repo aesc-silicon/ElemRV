@@ -10,17 +10,14 @@ tier. Each platform is a strict superset of the one before it.
 Feature Overview
 ****************
 
-.. list-table::
-   :header-rows: 2
-   :stub-columns: 1
+All platforms use a VexiiRiscv CPU. Higher-tier variants add caches, branch
+prediction, and wider execution pipelines for increased performance.
 
-   * -
-     - H
-     - C
-     - N
-     - O
-     - P
-     - S
+.. list-table:: CPU
+   :header-rows: 1
+   :stub-columns: 1
+   :align: left
+
    * -
      - Hydrogen
      - Carbon
@@ -28,13 +25,6 @@ Feature Overview
      - Oxygen
      - Phosphorus
      - Sulfur
-   * - **CPU**
-     -
-     -
-     -
-     -
-     -
-     -
    * - I-Cache
      -
      - ✓
@@ -84,13 +74,22 @@ Feature Overview
      - M+U
      - M+U
      - M+U
-   * - **Memory**
-     -
-     -
-     -
-     -
-     -
-     -
+
+Every platform includes on-chip SRAM and boots from external SPI Flash in XIP
+mode. Starting with Nitrogen, HyperRAM and tightly-coupled memory are available.
+
+.. list-table:: Memory
+   :header-rows: 1
+   :stub-columns: 1
+   :align: left
+
+   * -
+     - Hydrogen
+     - Carbon
+     - Nitrogen
+     - Oxygen
+     - Phosphorus
+     - Sulfur
    * - On-chip SRAM
      - ✓
      - ✓
@@ -119,13 +118,22 @@ Feature Overview
      - ✓
      - ✓
      - ✓
-   * - **Interconnect**
-     -
-     -
-     -
-     -
-     -
-     -
+
+Simpler variants use a shared bus, while higher-tier platforms switch to a
+crossbar for better throughput.
+
+.. list-table:: Interconnect
+   :header-rows: 1
+   :stub-columns: 1
+   :align: left
+
+   * -
+     - Hydrogen
+     - Carbon
+     - Nitrogen
+     - Oxygen
+     - Phosphorus
+     - Sulfur
    * - Shared bus
      - ✓
      - ✓
@@ -140,13 +148,21 @@ Feature Overview
      - ✓
      - ✓
      - ✓
-   * - **DMA**
-     -
-     -
-     -
-     -
-     -
-     -
+
+A DMA controller is available starting with Nitrogen.
+
+.. list-table:: DMA
+   :header-rows: 1
+   :stub-columns: 1
+   :align: left
+
+   * -
+     - Hydrogen
+     - Carbon
+     - Nitrogen
+     - Oxygen
+     - Phosphorus
+     - Sulfur
    * - Channels
      -
      -
@@ -154,13 +170,21 @@ Feature Overview
      - TBD
      - TBD
      - TBD
-   * - **Interrupt Controller**
-     -
-     -
-     -
-     -
-     -
-     -
+
+All platforms include a PLIC for interrupt handling.
+
+.. list-table:: Interrupt Controller
+   :header-rows: 1
+   :stub-columns: 1
+   :align: left
+
+   * -
+     - Hydrogen
+     - Carbon
+     - Nitrogen
+     - Oxygen
+     - Phosphorus
+     - Sulfur
    * - PLIC sources
      - ✓
      - ✓
@@ -168,13 +192,22 @@ Feature Overview
      - ✓
      - ✓
      - ✓
-   * - **Debug**
-     -
-     -
-     -
-     -
-     -
-     -
+
+JTAG debug is available on every platform. Higher-tier variants add trace
+support for real-time instruction tracing.
+
+.. list-table:: Debug
+   :header-rows: 1
+   :stub-columns: 1
+   :align: left
+
+   * -
+     - Hydrogen
+     - Carbon
+     - Nitrogen
+     - Oxygen
+     - Phosphorus
+     - Sulfur
    * - JTAG
      - ✓
      - ✓
@@ -189,13 +222,22 @@ Feature Overview
      - ✓
      - ✓
      - ✓
-   * - **Power**
-     -
-     -
-     -
-     -
-     -
-     -
+
+Hydrogen and Carbon run on a single clock domain. Advanced power management
+for higher-tier platforms is planned.
+
+.. list-table:: Power
+   :header-rows: 1
+   :stub-columns: 1
+   :align: left
+
+   * -
+     - Hydrogen
+     - Carbon
+     - Nitrogen
+     - Oxygen
+     - Phosphorus
+     - Sulfur
    * - Clock domains
      - 1
      - 1
@@ -205,8 +247,9 @@ Feature Overview
      - TBD
 
 
+See the available platforms for detailed specifications and usage instructions.
+
 .. toctree::
    :maxdepth: 2
-   :caption: Platforms:
 
    elemrv_h.rst
