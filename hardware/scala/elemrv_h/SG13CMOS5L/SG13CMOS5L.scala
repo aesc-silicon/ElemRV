@@ -16,6 +16,7 @@ import nafarr.blackboxes.ihp.common._
 import nafarr.memory.ocram.ihp.sg13g2.TileLinkIhpOnChipRam
 
 import zibal.misc._
+import zibal.misc.ElementsConfig._
 import zibal.platform.Hydrogen
 import zibal.board.{KitParameter, BoardParameter}
 import zibal.sim.hyperram.W956A8MBYA
@@ -84,8 +85,8 @@ case class SG13CMOS5LTop() extends Component {
   val socParameter = ElemRV.Parameter(boardParameter)
   val parameter = Hydrogen.Parameter(
     socParameter,
-    8 kB,
-    512 kB,
+    onChipRamSize = 8 kB,
+    spiFlashSize = 512 kB,
     (parameter: ResetControllerCtrl.Parameter) => {
       val resetCtrl = new ResetControllerCtrl.DummyResetController(parameter)
       resetCtrl
@@ -179,7 +180,7 @@ case class SG13CMOS5LTop() extends Component {
 }
 
 object SG13CMOS5LGenerate extends ElementsApp {
-  val report = elementsConfig.genASICSpinalConfig.generateVerilog {
+  val report = elementsConfig.genASICSpinalConfig.ihpSramBlackboxes.generateVerilog {
     val top = SG13CMOS5LTop()
 
     top.soc.prepareBaremetal("demo", elementsConfig)
@@ -227,7 +228,7 @@ object SG13CMOS5LGenerate extends ElementsApp {
 }
 
 object SG13CMOS5LSimulate extends ElementsApp {
-  val compiled = elementsConfig.genFPGASimConfig.compile {
+  val compiled = elementsConfig.genASICSimConfig.compile {
     val board = SG13CMOS5LBoard()
     BinTools.initRam(board.spiNor.deviceOut.data, elementsConfig.swStorageImageContainer)
     board

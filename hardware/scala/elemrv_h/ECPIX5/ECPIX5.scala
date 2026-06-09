@@ -99,8 +99,8 @@ case class ECPIX5Top() extends Component {
   val socParameter = ElemRV.Parameter(boardParameter)
   val parameter = Hydrogen.Parameter(
     socParameter,
-    8 kB,
-    512 kB,
+    onChipRamSize = 8 kB,
+    spiFlashSize = 512 kB,
     (parameter: ResetControllerCtrl.Parameter) => {
       val resetCtrl = new ResetControllerCtrl.GeneratorResetController(parameter)
       resetCtrl
