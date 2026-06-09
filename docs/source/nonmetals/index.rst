@@ -75,6 +75,75 @@ prediction, and wider execution pipelines for increased performance.
      - M+U
      - M+U
 
+.. list-table:: RISC-V Extensions
+   :header-rows: 1
+   :stub-columns: 1
+   :align: left
+
+   * -
+     - Hydrogen
+     - Carbon
+     - Nitrogen
+     - Oxygen
+     - Phosphorus
+     - Sulfur
+   * - M (multiply/divide)
+     -
+     - ✓
+     - ✓
+     - ✓
+     - ✓
+     - ✓
+   * - A (atomics)
+     -
+     -
+     - ✓
+     - ✓
+     - ✓
+     - ✓
+   * - F (single-precision FPU)
+     -
+     -
+     -
+     -
+     - ✓
+     - ✓
+   * - D (double-precision FPU)
+     -
+     -
+     -
+     -
+     -
+     - ✓
+   * - C (compressed)
+     -
+     - ✓
+     - ✓
+     - ✓
+     - ✓
+     - ✓
+   * - Zba/Zbb/Zbs (bit manipulation)
+     -
+     -
+     -
+     - ✓
+     - ✓
+     - ✓
+   * - Zicsr
+     - ✓
+     - ✓
+     - ✓
+     - ✓
+     - ✓
+     - ✓
+   * - Zifencei
+     - ✓
+     - ✓
+     - ✓
+     - ✓
+     - ✓
+     - ✓
+
 Every platform includes on-chip SRAM and boots from external SPI Flash in XIP
 mode. Starting with Nitrogen, HyperRAM and tightly-coupled memory are available.
 
