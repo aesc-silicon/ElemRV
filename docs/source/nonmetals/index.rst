@@ -322,3 +322,4 @@ See the available platforms for detailed specifications and usage instructions.
    :maxdepth: 2
 
    elemrv_h.rst
+   elemrv_c.rst
