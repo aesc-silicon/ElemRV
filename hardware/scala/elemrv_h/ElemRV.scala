@@ -18,7 +18,6 @@ import nafarr.peripherals.io.pwm.{TileLinkPwm, Pwm, PwmCtrl}
 import nafarr.peripherals.com.uart.{TileLinkUart, Uart, UartCtrl}
 import nafarr.peripherals.com.i2c.{TileLinkI2cController, I2c, I2cControllerCtrl}
 import nafarr.peripherals.pinmux.{TileLinkPinmux, Pinmux, PinmuxCtrl}
-import nafarr.crypto.crc.{TileLinkCrc32, Crc32Ctrl}
 import nafarr.crypto.prng.{TileLinkPrng, PrngCtrl}
 
 object ElemRV {
@@ -31,7 +30,6 @@ object ElemRV {
     val pwm0 = PwmCtrl.Parameter.default(1)
     val uart0 = UartCtrl.Parameter.full()
     val prng = PrngCtrl.Parameter()
-    val crc32 = Crc32Ctrl.Parameter()
     val pinmux = PinmuxCtrl.Parameter(Pinmux.Parameter(12), 24, 2)
 
     override val irqSources = Seq(gpio0, i2c0, pio0, pwm0, uart0)
