@@ -141,11 +141,15 @@ tasks:
       - task: _project-prepare
       - task: _build-container
       - task: repo-sync
-      - task: west-init
-      - task: west-update
     vars:
       branch: "main"
       manifest_suffix: ""
+
+  install-zephyr:
+    desc: Initializes the Zephyr workspace and fetches all Zephyr dependencies.
+    cmds:
+      - task: west-init
+      - task: west-update
 
   prepare:
     desc: Generates all necessary source files and metadata for chip layout creation.

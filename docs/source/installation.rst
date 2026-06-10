@@ -15,9 +15,10 @@ Install system dependencies and Taskfile::
 Set Up the Project
 ******************
 
-Run the install task to download and configure all dependencies::
+Run the install tasks to download and configure all dependencies::
 
     task install
+    task install-zephyr
 
 To list all available tasks::
 

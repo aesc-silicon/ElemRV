@@ -48,6 +48,7 @@ script:
 
   # Prepare the project
   - CI=true IS_HEADLESS=true task install branch=${BRANCH} ${MANIFEST_SUFFIX}
+  - CI=true IS_HEADLESS=true task install-zephyr
 
   # Prepare files
   - CI=true IS_HEADLESS=true task SOC=ElemRV-H PDK=ihp-sg13cmos5l prepare
