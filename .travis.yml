@@ -45,29 +45,41 @@ script:
   # Prepare the project
   - CI=true IS_HEADLESS=true task install branch=${BRANCH} ${MANIFEST_SUFFIX}
 
-  # Prepare FPGA files
-  - IS_HEADLESS=true task fpga:prepare
-
-  # Synthesize FPGA design
-  - IS_HEADLESS=true task fpga:synthesize
-
   # Prepare files
-  - CI=true IS_HEADLESS=true task prepare
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-H PDK=ihp-sg13cmos5l prepare
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-C PDK=ihp-sg13cmos5l prepare
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-N PDK=ihp-sg13g2 prepare
 
   # Compile baremetal firmware
-  - CI=true IS_HEADLESS=true task baremetal:compile
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-H baremetal:compile
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-C baremetal:compile
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-N baremetal:compile
 
+  # Prepare FPGA files
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-H fpga:prepare
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-C fpga:prepare
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-N fpga:prepare
+
+  # TODO ElemRV-C are currently missing in Zephyr
   # Compile Zephyr firmware
-  - CI=true IS_HEADLESS=true task zephyr:compile
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-H zephyr:compile
+  #- CI=true IS_HEADLESS=true task SOC=ElemRV-C zephyr:compile
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-N zephyr:compile
 
+  # Synthesize FPGA design
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-H fpga:synthesize
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-C fpga:synthesize
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-N fpga:synthesize
+
+  # TODO Full RTL to GDS flow takes too long for travis
   # Generate layout
-  - CI=true IS_HEADLESS=true task layout
+  #- CI=true IS_HEADLESS=true task SOC=ElemRV-H PDK=ihp-sg13cmos5l layout
 
   # Add metal fill
-  - CI=true IS_HEADLESS=true task filler
+  #- CI=true IS_HEADLESS=true task SOC=ElemRV-H PDK=ihp-sg13cmos5l filler
 
   # Run maximal DRC
-  - CI=true IS_HEADLESS=true task run-drc
+  #- CI=true IS_HEADLESS=true task SOC=ElemRV-H PDK=ihp-sg13cmos5l run-drc
 
 notifications:
   email:
