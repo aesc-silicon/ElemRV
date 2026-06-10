@@ -112,7 +112,22 @@ tasks:
 
   _build-container:
     cmds:
-      - venv/bin/podman-compose {{if .CI}}--podman-pull-args=-q{{end}} pull
+      - |
+        {{if .CI -}}
+        CONTAINER_IMAGE=$(grep 'image:' podman-compose-headless.yml | awk '{print $2}')
+        CACHE_DIR="$HOME/.podman-cache"
+        CACHE_TAG=$(echo "$CONTAINER_IMAGE" | sed 's/[\/:]/-/g')
+        CACHE_FILE="$CACHE_DIR/${CACHE_TAG}.tar"
+        mkdir -p "$CACHE_DIR"
+        if [ -f "$CACHE_FILE" ]; then
+          podman load -q -i "$CACHE_FILE"
+        else
+          podman pull -q "$CONTAINER_IMAGE"
+          podman save -o "$CACHE_FILE" "$CONTAINER_IMAGE"
+        fi
+        {{- else -}}
+        venv/bin/podman-compose pull
+        {{- end}}
 
   repo-sync:
     desc: Downloads and synchronizes all required dependencies.
