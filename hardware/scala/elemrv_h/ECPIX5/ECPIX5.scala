@@ -9,7 +9,6 @@ import spinal.core.sim._
 import spinal.lib._
 import spinal.lib.bus.tilelink.{BusParameter => TileLinkParameter}
 
-import nafarr.memory.ocram.ihp.sg13g2.TileLinkIhpOnChipRam
 import nafarr.system.reset._
 import nafarr.system.reset.ResetControllerCtrl._
 import nafarr.system.clock._
@@ -115,10 +114,6 @@ case class ECPIX5Top() extends Component {
         List("system", "debug")
       )
       clockCtrl
-    },
-    onChipRamLogic = (p: TileLinkParameter, size: BigInt) => {
-      val ram = TileLinkIhpOnChipRam.OnePort(p, size.toInt)
-      (ram, ram.io.bus)
     }
   )
 
