@@ -58,6 +58,7 @@ This project uses Taskfile as its task runner tool. You can install Taskfile usi
 - Set up the project::
 
         task install
+        task install-zephyr
 
 - List all available tasks::
 
