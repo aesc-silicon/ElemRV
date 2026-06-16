@@ -137,7 +137,7 @@ case class ECPIX5Top() extends Component {
     (8 MB, true),
     (8 MB, true)
   )
-  val kitParameter = KitParameter(resets, clocks)
+  val kitParameter = KitParameter(resets, clocks, inputClock)
   val boardParameter = ECPIX5.Parameter(kitParameter, ECPIX5.SystemClock.frequency)
   val socParameter = ElemRV.Parameter(boardParameter)
   val parameter = Nitrogen.Parameter(

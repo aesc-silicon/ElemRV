@@ -93,7 +93,7 @@ case class ECPIX5Top() extends Component {
     ClockParameter("system", 50 MHz, "system"),
     ClockParameter("debug", 12.5 MHz, "debug", synchronousWith = "system")
   )
-  val kitParameter = KitParameter(resets, clocks)
+  val kitParameter = KitParameter(resets, clocks, inputClock)
   val boardParameter = ECPIX5.Parameter(kitParameter, ECPIX5.SystemClock.frequency)
   val socParameter = ElemRV.Parameter(boardParameter)
   val parameter = Carbon.Parameter(
