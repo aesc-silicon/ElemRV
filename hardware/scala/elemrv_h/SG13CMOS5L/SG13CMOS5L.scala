@@ -201,9 +201,9 @@ object SG13CMOS5LGenerate extends ElementsApp {
   )
   chip.addMacro(
     report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[TileLinkIhpOnChipRam.OnePort].rams(1),
-    1137.92,
-    409.12,
-    "MX",
+    434.08,
+    1240.0,
+    "R0",
     depth = 3
   )
 
