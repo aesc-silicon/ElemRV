@@ -80,7 +80,7 @@ case class SG13CMOS5LTop() extends Component {
     ClockParameter("system", inputClock.frequency, "system"),
     ClockParameter("debug", inputClock.frequency / 4, "debug", synchronousWith = "system")
   )
-  val kitParameter = KitParameter(resets, clocks)
+  val kitParameter = KitParameter(resets, clocks, inputClock)
   val boardParameter = ElemRVFlask.Carbon.Parameter(kitParameter)
   val socParameter = ElemRV.Parameter(boardParameter)
   val parameter = Carbon.Parameter(

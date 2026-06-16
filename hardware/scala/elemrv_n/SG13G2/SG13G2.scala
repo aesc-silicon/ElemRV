@@ -126,7 +126,7 @@ case class SG13G2Top() extends Component {
     (8 MB, true),
     (8 MB, true)
   )
-  val kitParameter = KitParameter(resets, clocks)
+  val kitParameter = KitParameter(resets, clocks, inputClock)
   val boardParameter = ElemRVBoard.Parameter(kitParameter)
   val socParameter = ElemRV.Parameter(boardParameter)
   val parameter = Nitrogen.Parameter(
