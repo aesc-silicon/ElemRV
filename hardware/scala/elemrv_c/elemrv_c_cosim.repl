@@ -1,0 +1,123 @@
+// SPDX-FileCopyrightText: 2026 aesc silicon
+//
+// SPDX-License-Identifier: CERN-OHL-W-2.0
+
+// ElemRV-C co-simulation platform.
+// All I/O + system peripherals are the *real* Verilated TileLink RTL; CPU, interconnect, OCRAM,
+// flash, plus uart0 (console), plic and mtimer (interrupt timing) stay functional for speed.
+// Each co-simulated peripheral is its own Verilated library (build/<SOC>/<board>/cosim/<name>/libVtop.so);
+// the .resc binds the SimulationFilePath for each. cosim->Renode signal 0 = io_interrupt, 1 = io_error.
+
+// CPU: VexiiRiscv RV32IMC + Zicsr, modeled as a generic RISC-V 32-bit core.
+cpu: CPU.RiscV32 @ sysbus
+    cpuType: "rv32imc_zicsr"
+    timeProvider: empty
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+
+// On-chip RAM: 8 KB @ 0x80000000
+ram: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x00002000
+
+// SPI XIP flash @ 0xA0000000 (reset/boot region)
+flash: Memory.MappedMemory @ sysbus 0xA0000000
+    size: 0x02000000
+
+// Machine timer (mtime/mtimecmp) @ 0xF0020000 - drives the CPU MTIP line (cause 7). FUNCTIONAL.
+mtimer: Timers.MachineTimerCtrl @ sysbus 0xF0020000
+    frequency: 50000000
+    -> cpu@7
+
+// PLIC @ 0xF0800000 - output context 0 -> CPU external-interrupt line (cause 11). FUNCTIONAL.
+// Sources match soc.h IRQ numbers: gpio0=3, i2c0=4, pio0=5, pwm0=6, uart0=7, watchdog=1.
+plic: IRQControllers.PlicCtrl @ sysbus 0xF0800000
+    0 -> cpu@11
+    numberOfSources: 31
+
+// UART0 @ 0xF0004000 - kept FUNCTIONAL so the Renode console/PTY works; IRQ is PLIC source 7.
+uart0: UART.UartCtrl @ sysbus 0xF0004000
+    IRQ -> plic@7
+
+// SPI XIP config bus @ 0xF0025000 - kept FUNCTIONAL (multi-bus controller, not a single TL slave).
+spiXipCfg: Miscellaneous.SpiXipControllerCtrl @ sysbus 0xF0025000
+
+// ---------------------------------------------------------------------------
+// Co-simulated peripherals (real Verilated RTL). signal 0 = io_interrupt, 1 = io_error.
+// ---------------------------------------------------------------------------
+
+// GPIO0 @ 0xF0000000 (TileLinkGpio) - IRQ -> PLIC source 3.
+gpio0: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0000000, +0x1000>
+    frequency: 50000000
+    limitBuffer: 1000000
+    timeout: 10000
+    0 -> plic@3
+    cosimToRenodeSignalRange: <0, +1>
+
+// I2C0 @ 0xF0001000 (TileLinkI2cController) - IRQ -> PLIC source 4.
+i2c0: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0001000, +0x1000>
+    frequency: 50000000
+    limitBuffer: 1000000
+    timeout: 10000
+    0 -> plic@4
+    cosimToRenodeSignalRange: <0, +1>
+
+// PIO0 @ 0xF0002000 (TileLinkPio) - IRQ -> PLIC source 5; signal 1 = error (unrouted).
+pio0: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0002000, +0x1000>
+    frequency: 50000000
+    limitBuffer: 1000000
+    timeout: 10000
+    0 -> plic@5
+    cosimToRenodeSignalRange: <0, +2>
+
+// PWM0 @ 0xF0003000 (TileLinkPwm) - IRQ -> PLIC source 6; signal 1 = error (unrouted).
+pwm0: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0003000, +0x1000>
+    frequency: 50000000
+    limitBuffer: 1000000
+    timeout: 10000
+    0 -> plic@6
+    cosimToRenodeSignalRange: <0, +2>
+
+// PRNG @ 0xF0005000 (TileLinkPrng) - signal 0 = error (unrouted, no PLIC IRQ).
+prng: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0005000, +0x1000>
+    frequency: 50000000
+    limitBuffer: 1000000
+    timeout: 10000
+    cosimToRenodeSignalRange: <0, +1>
+
+// Pinmux @ 0xF0010000 (TileLinkPinmux) - no interrupt/error.
+pinmux: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0010000, +0x1000>
+    frequency: 50000000
+    limitBuffer: 1000000
+    timeout: 10000
+
+// Reset controller @ 0xF0021000 (TileLinkResetController) - no interrupt/error.
+resetCtrl: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0021000, +0x1000>
+    frequency: 50000000
+    limitBuffer: 1000000
+    timeout: 10000
+
+// Clock controller @ 0xF0022000 (TileLinkClockController) - no interrupt/error.
+clockCtrl: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0022000, +0x1000>
+    frequency: 50000000
+    limitBuffer: 1000000
+    timeout: 10000
+
+// Syscon @ 0xF0023000 (TileLinkSyscon) - no interrupt/error.
+syscon: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0023000, +0x1000>
+    frequency: 50000000
+    limitBuffer: 1000000
+    timeout: 10000
+
+// Watchdog @ 0xF0027000 (TileLinkWatchdog) - IRQ -> PLIC source 1; signal 1 = error (unrouted).
+watchdog: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0027000, +0x1000>
+    frequency: 50000000
+    limitBuffer: 1000000
+    timeout: 10000
+    0 -> plic@1
+    cosimToRenodeSignalRange: <0, +2>
+
+// ESM @ 0xF0028000 (TileLinkEsm) - register RTL only; its non-standard signal outputs
+// (io_infoInterrupt/io_warnInterrupt/io_errorSignal) are not surfaced.
+esm: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0028000, +0x1000>
+    frequency: 50000000
+    limitBuffer: 1000000
+    timeout: 10000

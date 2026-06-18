@@ -1,0 +1,64 @@
+// SPDX-FileCopyrightText: 2026 aesc silicon
+//
+// SPDX-License-Identifier: CERN-OHL-W-2.0
+
+// ElemRV-C (Hydrogen platform) - Renode functional model.
+// Mirrors hardware/scala/elemrv_c/ElemRV.scala + zibal Hydrogen.scala.
+
+// CPU: VexiiRiscv RV32IMC + Zicsr, modeled as a generic RISC-V 32-bit core.
+cpu: CPU.RiscV32 @ sysbus
+    cpuType: "rv32imc_zicsr"
+    timeProvider: empty
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+
+// On-chip RAM: 8 KB @ 0x80000000
+ram: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x00002000
+
+// SPI XIP flash @ 0xA0000000 (reset/boot region)
+flash: Memory.MappedMemory @ sysbus 0xA0000000
+    size: 0x02000000
+
+// Machine timer (mtime/mtimecmp) @ 0xF0020000 - drives the CPU MTIP line (cause 7).
+mtimer: Timers.MachineTimerCtrl @ sysbus 0xF0020000
+    frequency: 50000000
+    -> cpu@7
+
+// PLIC @ 0xF0800000 (Nafarr PLIC, standard SiFive map; gateway latch + write-to-complete,
+// read-claim optional). Output context 0 -> CPU external-interrupt line (cause 11).
+// Sources match soc.h IRQ numbers: gpio0=3, i2c0=4, pio0=5, pwm0=6, uart0=7, watchdog=1.
+plic: IRQControllers.PlicCtrl @ sysbus 0xF0800000
+    0 -> cpu@11
+    numberOfSources: 31
+
+// GPIO0: 12 pins @ 0xF0000000 (Nafarr GpioCtrl) - IRQ is PLIC source 3.
+gpio0: GPIOPort.GpioCtrl @ sysbus 0xF0000000
+    numberOfPins: 12
+    IRQ -> plic@3
+
+// LED on GPIO0 pin 1 - lit when the pin is driven high.
+led1: Miscellaneous.LED @ gpio0 1
+
+// UART0 @ 0xF0004000 (Nafarr UartCtrl) - console output / RX injection; IRQ is PLIC source 7.
+uart0: UART.UartCtrl @ sysbus 0xF0004000
+    IRQ -> plic@7
+
+// PRNG @ 0xF0005000 (Nafarr PrngCtrl) - xorshift output (not the RTL LFSR sequence).
+prng: Miscellaneous.PrngCtrl @ sysbus 0xF0005000
+
+// Syscon @ 0xF0023000 (Nafarr Syscon) - read-only platform identity + 50 MHz reference clock.
+syscon: Miscellaneous.Syscon @ sysbus 0xF0023000
+    refClockHz: 50000000
+
+// Clock controller @ 0xF0022000 (Nafarr ClockControllerCtrl) - per-domain enable; ratios placeholder.
+clockCtrl: Miscellaneous.ClockControllerCtrl @ sysbus 0xF0022000
+    numberOfDomains: 2
+
+// SPI XIP config bus @ 0xF0025000 (Nafarr SpiXipControllerCtrl) - flash XIP cfg only.
+// (0xF0024000 is the separate SPI controller command interface - not modeled.)
+spiXipCfg: Miscellaneous.SpiXipControllerCtrl @ sysbus 0xF0025000
+
+// Pinmux @ 0xF0010000 (Nafarr PinmuxCtrl) - stores per-pin mux selection.
+pinmux: Miscellaneous.PinmuxCtrl @ sysbus 0xF0010000
+    width: 12
+    options: 2

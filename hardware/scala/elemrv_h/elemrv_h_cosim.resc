@@ -1,0 +1,45 @@
+# SPDX-FileCopyrightText: 2026 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+:name: ElemRV-H (co-simulation)
+:description: Boots a binary with all peripherals as Verilated TileLink RTL; CPU/UART/PLIC/mtimer functional.
+
+# Application binary and the directory holding the per-peripheral co-sim libraries
+# (built by 'task cosim-build' -> <cosimdir>/<name>/libVtop.so).
+$bin ?= @build/app.bin
+$cosimdir ?= @build/ElemRV-H/SG13CMOS5L/cosim
+
+# Functional peripheral models that stay in Renode (the rest are co-simulated RTL).
+i @modules/elements/nafarr/hardware/scala/nafarr/peripherals/com/uart/UartCtrl.cs
+i @modules/elements/nafarr/hardware/scala/nafarr/system/mtimer/MachineTimerCtrl.cs
+i @modules/elements/nafarr/hardware/scala/nafarr/system/plic/PlicCtrl.cs
+i @modules/elements/nafarr/hardware/scala/nafarr/memory/spi/SpiXipControllerCtrl.cs
+
+mach create "elemrv_h_cosim"
+machine LoadPlatformDescription @hardware/scala/elemrv_h/elemrv_h_cosim.repl
+
+# Bind each co-simulated peripheral to its Verilated library.
+gpio0     SimulationFilePathLinux $cosimdir/gpio0/libVtop.so
+i2c0      SimulationFilePathLinux $cosimdir/i2c0/libVtop.so
+pio0      SimulationFilePathLinux $cosimdir/pio0/libVtop.so
+pwm0      SimulationFilePathLinux $cosimdir/pwm0/libVtop.so
+prng      SimulationFilePathLinux $cosimdir/prng/libVtop.so
+pinmux    SimulationFilePathLinux $cosimdir/pinmux/libVtop.so
+resetCtrl SimulationFilePathLinux $cosimdir/resetCtrl/libVtop.so
+clockCtrl SimulationFilePathLinux $cosimdir/clockCtrl/libVtop.so
+syscon    SimulationFilePathLinux $cosimdir/syscon/libVtop.so
+watchdog  SimulationFilePathLinux $cosimdir/watchdog/libVtop.so
+esm       SimulationFilePathLinux $cosimdir/esm/libVtop.so
+
+# Boot from XIP flash (same flow as elemrv_h_emul.resc).
+sysbus LoadBinary $bin 0xA0000000
+cpu PC 0xA0000000
+
+# UART0 console: GUI window plus a TCP socket reachable from the host (port published by
+# podman-compose). From the host run:  telnet localhost 3456   (or: nc localhost 3456)
+showAnalyzer uart0
+emulation CreateServerSocketTerminal 3456 "uart0term"
+connector Connect uart0 uart0term
+
+echo "ElemRV-H co-sim ready. Type 'start' to run."
