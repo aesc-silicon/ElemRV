@@ -89,10 +89,6 @@ Scan the build logs for warnings and errors after any flow step::
 Known Issues
 ************
 
-- **M2.d errors** - OpenROAD generates excessively small segments on M2 when
-  connecting Via1 to Via2.
-- **Fill errors** - ``AFil.g2`` and ``MxFil.h`` may fail when there is
-  insufficient metal fill in the chip core area.
 - **X server** - If ``view-klayout`` or ``view-openroad`` fails with an X
   server permission error, grant access with::
 
