@@ -68,5 +68,6 @@ Content
 
    installation.rst
    flows/index.rst
+   virtual-prototyping/index.rst
    nonmetals/index.rst
    hardware/index.rst
