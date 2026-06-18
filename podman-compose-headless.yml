@@ -14,6 +14,9 @@ services:
     container_name: elemrv_container
     environment:
       - DISPLAY=${DISPLAY}
+    ports:
+      # Renode UART0 socket terminal (virtual prototyping), reachable from the host.
+      - "3456:3456"
     volumes:
       - /home:/home
       - ivy2-cache:/root/.ivy2
