@@ -175,6 +175,28 @@ tasks:
     cmds:
       - task: lib-view-simulation
 
+  emulate:
+    desc: Boots a bare-metal binary in Renode (functional emulation). Add 'bin=path/to/app.bin'.
+    cmds:
+      - task: lib-emulate
+
+  emulate-gui:
+    desc: Like 'emulate' but launches the full Renode GUI (monitor window). Add 'bin=path/to/app.bin'.
+    cmds:
+      - task: lib-emulate-gui
+
+  cosim:
+    desc: Boots a binary in Renode co-simulating the real GPIO RTL (rebuilds the co-sim library first). Add 'bin=path/to/app.bin'.
+    cmds:
+      - task: lib-cosim-build
+      - task: lib-cosim
+
+  cosim-gui:
+    desc: Like 'cosim' but launches the full Renode GUI (monitor window).
+    cmds:
+      - task: lib-cosim-build
+      - task: lib-cosim-gui
+
   layout:
     desc: Creates the physical layout of the chip.
     cmds:
