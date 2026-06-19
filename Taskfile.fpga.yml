@@ -21,14 +21,14 @@ tasks:
           project: "modules/elements/vexiiriscv"
       - task: ':lib-generate'
         vars:
-          board: "ECPIX5"
+          FPGA: "ECPIX5"
 
   synthesize:
     desc: Generates the FPGA bitstream by synthesizing the design.
     cmds:
       - task: ':lib-synthesize-fpga'
         vars:
-          board: "ECPIX5"
+          FPGA: "ECPIX5"
           vendor: "Lattice"
 
   flash:
@@ -36,18 +36,18 @@ tasks:
     cmds:
       - task: ':lib-flash-bitstream'
         vars:
-          board: "ECPIX5"
+          FPGA: "ECPIX5"
 
   simulate:
     desc: Runs simulations at the RTL level. Add 'duration=n' to specify the duration in n milliseconds.
     cmds:
       - task: ':lib-simulate'
         vars:
-          board: "ECPIX5"
+          FPGA: "ECPIX5"
 
   view-simulation:
     desc: Opens the simulation with GTKWave.
     cmds:
       - task: ':lib-view-simulation'
         vars:
-          board: "ECPIX5"
+          FPGA: "ECPIX5"

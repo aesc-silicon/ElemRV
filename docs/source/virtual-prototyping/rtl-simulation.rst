@@ -12,19 +12,19 @@ Running
 
 To simulate the configured platform::
 
-    task simulate SOC=ElemRV-H PDK=ihp-sg13cmos5l
+    task simulate SOC=ElemRV-H TARGET=SG13CMOS5L
 
 By default the simulation runs to completion. Limit it to a fixed duration in
 milliseconds with ``duration``::
 
-    task simulate SOC=ElemRV-H PDK=ihp-sg13cmos5l duration=100
+    task simulate SOC=ElemRV-H TARGET=SG13CMOS5L duration=100
 
 Waveforms
 *********
 
 Open the recorded waveforms in GTKWave after a run::
 
-    task view-simulation SOC=ElemRV-H PDK=ihp-sg13cmos5l
+    task view-simulation SOC=ElemRV-H TARGET=SG13CMOS5L
 
 When to use
 ***********

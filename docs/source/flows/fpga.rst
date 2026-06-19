@@ -14,7 +14,7 @@ Full Flow
 
 To run prepare, synthesize, and flash in one step::
 
-    task fpga
+    task fpga SOC=ElemRV-H TARGET=SG13CMOS5L
 
 Step by Step
 ************
@@ -23,33 +23,33 @@ Step by Step
 
 Generates the Verilog netlist and all metadata required for FPGA synthesis::
 
-    task fpga:prepare
+    task fpga:prepare SOC=ElemRV-H TARGET=SG13CMOS5L
 
 **2. Synthesize**
 
 Runs Yosys synthesis followed by nextpnr place-and-route to produce the
 bitstream::
 
-    task fpga:synthesize
+    task fpga:synthesize SOC=ElemRV-H TARGET=SG13CMOS5L
 
 **3. Flash**
 
 Programs the ECP5 with the generated bitstream over USB::
 
-    task fpga:flash
+    task fpga:flash SOC=ElemRV-H TARGET=SG13CMOS5L
 
 Simulation
 **********
 
 The design can be simulated at RTL level using Verilator before flashing::
 
-    task fpga:simulate
+    task fpga:simulate SOC=ElemRV-H TARGET=SG13CMOS5L
 
 By default the simulation runs until it finishes. To limit the run to a
 specific duration, pass ``duration`` in milliseconds::
 
-    task fpga:simulate duration=100
+    task fpga:simulate SOC=ElemRV-H TARGET=SG13CMOS5L duration=100
 
 To inspect the waveforms afterwards, open the simulation output in GTKWave::
 
-    task fpga:view-simulation
+    task fpga:view-simulation SOC=ElemRV-H TARGET=SG13CMOS5L

@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: CERN-OHL-W-2.0
 
-package elemrv_n
+package elemrv_n.SG13G2
+
+import elemrv_n.ElemRV
 
 import spinal.core._
 import spinal.core.sim._

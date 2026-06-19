@@ -19,7 +19,17 @@ includes:
 
 vars:
   SOC: '{{.SOC | default "ElemRV-N"}}'
-  PDK: '{{.PDK | default "ihp-sg13g2"}}'
+  # ASIC target = process node + on-chip config (SG13CMOS5L, GF180MCU, ...). Selects the PDK.
+  TARGET: '{{.TARGET | default "SG13G2"}}'
+  PDK:
+    sh: |
+      case "{{.TARGET}}" in
+        SG13G2)     echo "ihp-sg13g2" ;;
+        SG13CMOS5L) echo "ihp-sg13cmos5l" ;;
+        GF180MCU)   echo "gf180mcuD" ;;
+        SKY130)     echo "sky130A" ;;
+        *) echo ""; echo "Unknown TARGET: {{.TARGET}}" >&2; exit 1 ;;
+      esac
   TECH:
     sh: |
       case "{{.PDK}}" in
@@ -59,8 +69,6 @@ vars:
 
   package:
     sh: echo "{{.SOC}}" | tr '[:upper:]' '[:lower:]' | tr '-' '_'
-  board:
-    sh: echo "{{.TECH}}" | tr '[:lower:]' '[:upper:]'
 
   KLAYOUT_HOME: "{{.PWD}}/pdks/IHP-Open-PDK/{{.PDK}}/libs.tech/klayout/"
   CONTAINER_NAME: elemrv_container
@@ -70,7 +78,8 @@ vars:
     -e PDK_FAMILY={{.PDK_FAMILY}} \
     -e PDK_ROOT={{.PDK_ROOT}} \
     -e SOC={{.SOC}} \
-    -e BOARD={{.board}} \
+    -e TARGET={{.TARGET}} \
+    -e BOARD={{.TARGET}} \
     -e FPGA_FAMILY={{.FPGA_FAMILY}} \
     -e FPGA_DEVICE={{.FPGA_DEVICE}} \
     -e FPGA_PACKAGE={{.FPGA_PACKAGE}} \
@@ -83,7 +92,7 @@ vars:
     -e USER={{.USER}} \
     -e ZEPHYR_SDK_INSTALL_DIR={{.ZEPHYR_SDK_INSTALL_DIR}} \
     -e GCC={{.GCC}} \
-    -e RULES_JSON={{.PWD}}/hardware/scala/{{.package}}/{{.board}}/rules.json \
+    -e RULES_JSON={{.PWD}}/hardware/scala/{{.package}}/{{.TARGET}}/rules.json \
 "
 
 env:
@@ -159,9 +168,9 @@ tasks:
           project: "modules/elements/vexiiriscv"
       - task: lib-generate
       - task: lib-sealring
-      - "mkdir -p {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/zibal/macros/bondpad"
-      - "cp tmp/{{.PDK}}/bondpad_70x70.lef {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/zibal/macros/bondpad/"
-      - "cp tmp/{{.PDK}}/bondpad_70x70.gds.gz {{.BUILD_ROOT}}/{{.SOC}}/{{.board}}/zibal/macros/bondpad/bondpad_70x70.gds.gz"
+      - "mkdir -p {{.BUILD_ROOT}}/{{.SOC}}/{{.TARGET}}/zibal/macros/bondpad"
+      - "cp tmp/{{.PDK}}/bondpad_70x70.lef {{.BUILD_ROOT}}/{{.SOC}}/{{.TARGET}}/zibal/macros/bondpad/"
+      - "cp tmp/{{.PDK}}/bondpad_70x70.gds.gz {{.BUILD_ROOT}}/{{.SOC}}/{{.TARGET}}/zibal/macros/bondpad/bondpad_70x70.gds.gz"
       # TODO: wait until bondpad.py got fixed
       #- task: lib-bondpad
 

@@ -66,7 +66,7 @@ This project uses Taskfile as its task runner tool. You can install Taskfile usi
 
 Most tasks accept the ``SOC`` and ``PDK`` variables to select a specific SoC variant and target PDK. For example::
 
-        task prepare SOC=ElemRV-H PDK=ihp-sg13cmos5l
+        task prepare SOC=ElemRV-H TARGET=SG13CMOS5L
 
 **Note:** By default, the X-Server is required for the `view-klayout` and `view-openroad` tasks. On headless systems, you can bypass this requirement by adding `IS_HEADLESS=true` before the task command. This is particularly useful when accessing the system via SSH, as it allows you to run the container without the need for X-Server.
 
