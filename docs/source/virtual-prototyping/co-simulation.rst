@@ -23,7 +23,7 @@ Co-simulation requires the generated netlist (run the relevant flow's
 ``renode-verilator-integration`` checkout provided by the manifest. Verilate and
 compile one library per peripheral with::
 
-    task cosim-build SOC=ElemRV-H PDK=ihp-sg13cmos5l
+    task cosim-build SOC=ElemRV-H TARGET=SG13CMOS5L
 
 The libraries are produced under ``build/<SOC>/<board>/cosim/<peripheral>/``.
 
@@ -33,11 +33,11 @@ Running
 ``cosim`` rebuilds the libraries (incrementally - unchanged peripherals are a
 no-op) and boots the firmware::
 
-    task cosim SOC=ElemRV-H PDK=ihp-sg13cmos5l
+    task cosim SOC=ElemRV-H TARGET=SG13CMOS5L
 
 For the full Renode GUI::
 
-    task cosim-gui SOC=ElemRV-H PDK=ihp-sg13cmos5l
+    task cosim-gui SOC=ElemRV-H TARGET=SG13CMOS5L
 
 The UART console (GUI window and host TCP socket on port 3456) works exactly as
 in :doc:`emulation`.

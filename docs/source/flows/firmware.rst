@@ -30,7 +30,7 @@ Compile
 
 To target a specific platform::
 
-    task baremetal:compile SOC=ElemRV-N board=SG13G2
+    task baremetal:compile SOC=ElemRV-N TARGET=SG13G2
 
 The compiled image is written to::
 
@@ -51,7 +51,7 @@ Compile
 
 To target a specific platform::
 
-    task zephyr:compile SOC=ElemRV-N board=SG13G2
+    task zephyr:compile SOC=ElemRV-N TARGET=SG13G2
 
 The compiled image is written to::
 

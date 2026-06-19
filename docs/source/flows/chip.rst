@@ -12,7 +12,7 @@ Two Taskfile variables control which platform is built:
 
 To build a different platform, prepend the variables to any task::
 
-    task SOC=ElemRV-H board=SG13G2 prepare
+    task SOC=ElemRV-H TARGET=SG13G2 prepare
 
 Full Flow
 *********

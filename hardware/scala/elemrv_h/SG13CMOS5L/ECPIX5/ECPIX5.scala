@@ -1,8 +1,10 @@
-// SPDX-FileCopyrightText: 2026 aesc silicon
+// SPDX-FileCopyrightText: 2025 aesc silicon
 //
 // SPDX-License-Identifier: CERN-OHL-W-2.0
 
-package elemrv_c
+package elemrv_h.SG13CMOS5L
+
+import elemrv_h.ElemRV
 
 import spinal.core._
 import spinal.core.sim._
@@ -16,7 +18,7 @@ import nafarr.system.clock.ClockControllerCtrl._
 import nafarr.blackboxes.lattice.ecp5._
 
 import zibal.misc._
-import zibal.platform.Carbon
+import zibal.platform.Hydrogen
 import zibal.board.{KitParameter, BoardParameter}
 import zibal.sim.hyperram.W956A8MBYA
 import zibal.sim.MT25Q
@@ -96,11 +98,10 @@ case class ECPIX5Top() extends Component {
   val kitParameter = KitParameter(resets, clocks, inputClock)
   val boardParameter = ECPIX5.Parameter(kitParameter, ECPIX5.SystemClock.frequency)
   val socParameter = ElemRV.Parameter(boardParameter)
-  val parameter = Carbon.Parameter(
+  val parameter = Hydrogen.Parameter(
     socParameter,
     onChipRamSize = 8 kB,
     spiFlashSize = 512 kB,
-    iCacheSize = 4 kB,
     (parameter: ResetControllerCtrl.Parameter) => {
       val resetCtrl = new ResetControllerCtrl.GeneratorResetController(parameter)
       resetCtrl
