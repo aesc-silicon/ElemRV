@@ -72,6 +72,10 @@ vars:
   package:
     sh: echo "{{.SOC}}" | tr '[:upper:]' '[:lower:]' | tr '-' '_'
 
+  # Floorplan profile: "relaxed" (default) for fast, robust iteration builds;
+  # "tapeout" for the tight signoff core/die sizes.
+  FLOORPLAN: '{{.FLOORPLAN | default "relaxed"}}'
+
   KLAYOUT_HOME: "{{.PWD}}/pdks/IHP-Open-PDK/{{.PDK}}/libs.tech/klayout/"
   CONTAINER_NAME: elemrv_container
   CONTAINER_ENV: " \
@@ -82,6 +86,7 @@ vars:
     -e SOC={{.SOC}} \
     -e TARGET={{.TARGET}} \
     -e BOARD={{.TARGET}} \
+    -e FLOORPLAN={{.FLOORPLAN}} \
     -e FPGA_FAMILY={{.FPGA_FAMILY}} \
     -e FPGA_DEVICE={{.FPGA_DEVICE}} \
     -e FPGA_PACKAGE={{.FPGA_PACKAGE}} \
