@@ -89,6 +89,8 @@ case class SG13G2Board() extends Component {
   spiNor.io.clock := io.clock
   spiNor.io.dataClock := io.spi.sck
   spiNor.io.reset := io.reset
+  // Nitrogen has no SoC flash RESET# yet; hold the model's RESET# deasserted.
+  spiNor.io.rst := analogTrue
   spiNor.io.chipSelect := io.spi.cs
   io.spi.cs := top.io.spi.cs(0).PAD
   io.spi.sck := top.io.spi.sck.PAD
