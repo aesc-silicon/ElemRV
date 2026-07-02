@@ -16,6 +16,8 @@ includes:
     taskfile: ./Taskfile.baremetal.yml
   zephyr:
     taskfile: ./Taskfile.zephyr.yml
+  flash:
+    taskfile: ./Taskfile.flash.yml
 
 vars:
   SOC: '{{.SOC | default "ElemRV-N"}}'
