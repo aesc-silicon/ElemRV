@@ -36,8 +36,9 @@ case class ECPIX5Board() extends Component {
       val cs = inout(Analog(Bool))
       val sck = inout(Analog(Bool))
       val dq = Vec(inout(Analog(Bool)), 4)
+      val rst = inout(Analog(Bool))
     }
-    val pins = Vec(inout(Analog(Bool())), 12)
+    val pins = Vec(inout(Analog(Bool())), 11)
   }
 
   val top = ECPIX5Top()
@@ -58,14 +59,15 @@ case class ECPIX5Board() extends Component {
   spiNor.io.dataClock := io.spi.sck
   spiNor.io.reset := io.reset
   spiNor.io.chipSelect := io.spi.cs
+  spiNor.io.rst := io.spi.rst
   io.spi.cs := top.io.spi.cs(0).PAD
   io.spi.sck := top.io.spi.sck.PAD
+  io.spi.rst := top.io.spi.rst.PAD
   for (index <- 0 until top.io.spi.dq.length) {
     spiNor.io.dqIn(index) := io.spi.dq(index)
     io.spi.dq(index) := top.io.spi.dq(index).PAD
     top.io.spi.dq(index).PAD := spiNor.io.dqOut(index)
   }
-  top.io.spi.rst.PAD := analogFalse
 
   for (index <- 0 until top.io.pins.length) {
     io.pins(index) <> top.io.pins(index).PAD
@@ -87,13 +89,16 @@ case class ECPIX5Board() extends Component {
 
 case class ECPIX5Top() extends Component {
   val resets = List[ResetParameter](
-    ResetParameter("system", 128),
-    ResetParameter("debug", 128)
+    ResetParameter("system", 4096),
+    ResetParameter("debug", 4096),
+    // Released ~38 us before the CPU so the external SPI flash finishes its
+    // reset recovery before the first XIP fetch (see io_plat.spiXip.reset).
+    ResetParameter("flash", 256)
   )
   val inputClock = ClockParameter("input", ECPIX5.SystemClock.frequency, "input")
   val clocks = List[ClockParameter](
     ClockParameter("system", 50 MHz, "system"),
-    ClockParameter("debug", 12.5 MHz, "debug", synchronousWith = "system")
+    ClockParameter("debug", 50 MHz, "debug", synchronousWith = "system")
   )
   val kitParameter = KitParameter(resets, clocks, inputClock)
   val boardParameter = ECPIX5.Parameter(kitParameter, ECPIX5.SystemClock.frequency)
@@ -144,7 +149,6 @@ case class ECPIX5Top() extends Component {
     val pins = Vec(
       LatticeCmosIo(ECPIX5.LEDs.LD5.blue),
       LatticeCmosIo(ECPIX5.LEDs.LD6.red),
-      LatticeCmosIo(ECPIX5.LEDs.LD7.green),
       LatticeCmosIo(ECPIX5.Buttons.sw0),
       LatticeCmosIo(ECPIX5.UartStd.txd),
       LatticeCmosIo(ECPIX5.UartStd.rxd),
@@ -178,32 +182,13 @@ case class ECPIX5Top() extends Component {
   io.jtag.tck <> FakeI(soc.io_plat.jtag.tck)
 
   for (index <- 0 until io.spi.cs.length) {
-    io.spi.cs(index) <> FakeO(soc.io_plat.spi.cs(index))
+    io.spi.cs(index) <> FakeO(soc.io_plat.spiXip.spi.cs(index))
   }
-  io.spi.sck <> FakeO(soc.io_plat.spi.sclk)
+  io.spi.sck <> FakeO(soc.io_plat.spiXip.spi.sclk)
   for (index <- 0 until io.spi.dq.length) {
-    io.spi.dq(index) <> FakeIo(soc.io_plat.spi.dq(index))
+    io.spi.dq(index) <> FakeIo(soc.io_plat.spiXip.spi.dq(index))
   }
-
-  // Generate psuedo-reset for external SPI flash
-  val spiResetClockDomain = ClockDomain(
-    clock = io.clock.PAD,
-    config = ClockDomainConfig(
-      resetKind = BOOT
-    )
-  )
-
-  val spiReset = new ClockingArea(spiResetClockDomain) {
-    val done = RegInit(False)
-    val counter = Reg(UInt(4 bits)).init(U(0))
-    when(!done) {
-      counter := counter + 1
-    }
-    when(counter === counter.maxValue) {
-      done := True
-    }
-  }
-  io.spi.rst <> FakeO(spiReset.done)
+  io.spi.rst <> FakeO(soc.io_plat.spiXip.reset)
 
   for (index <- 0 until 3) {
     io.pins(index) <> FakeIo(soc.io.pins.pins(index), true)

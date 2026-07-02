@@ -33,8 +33,9 @@ case class SG13CMOS5LBoard() extends Component {
       val cs = inout(Analog(Bool))
       val sck = inout(Analog(Bool))
       val dq = Vec(inout(Analog(Bool)), 4)
+      val rst = inout(Analog(Bool))
     }
-    val pins = Vec(inout(Analog(Bool())), 12)
+    val pins = Vec(inout(Analog(Bool())), 11)
   }
 
   val top = SG13CMOS5LTop()
@@ -56,8 +57,10 @@ case class SG13CMOS5LBoard() extends Component {
   spiNor.io.dataClock := io.spi.sck
   spiNor.io.reset := io.reset
   spiNor.io.chipSelect := io.spi.cs
+  spiNor.io.rst := io.spi.rst
   io.spi.cs := top.io.spi.cs(0).PAD
   io.spi.sck := top.io.spi.sck.PAD
+  io.spi.rst := top.io.spi.rst.PAD
   for (index <- 0 until top.io.spi.dq.length) {
     spiNor.io.dqIn(index) := io.spi.dq(index)
     io.spi.dq(index) := top.io.spi.dq(index).PAD
@@ -72,13 +75,16 @@ case class SG13CMOS5LBoard() extends Component {
 
 case class SG13CMOS5LTop() extends Component {
   val resets = List[ResetParameter](
-    ResetParameter("system", 128),
-    ResetParameter("debug", 128)
+    ResetParameter("system", 4096),
+    ResetParameter("debug", 4096),
+    // Released ~38 us before the CPU so the external SPI flash finishes its
+    // reset recovery before the first XIP fetch (see io_plat.spiXip.reset).
+    ResetParameter("flash", 256)
   )
   val inputClock = ClockParameter("input", ElemRVFlask.Carbon.oscillatorFrequency, "input")
   val clocks = List[ClockParameter](
     ClockParameter("system", inputClock.frequency, "system"),
-    ClockParameter("debug", inputClock.frequency / 4, "debug", synchronousWith = "system")
+    ClockParameter("debug", inputClock.frequency, "debug", synchronousWith = "system")
   )
   val kitParameter = KitParameter(resets, clocks, inputClock)
   val boardParameter = ElemRVFlask.Carbon.Parameter(kitParameter)
@@ -129,6 +135,7 @@ case class SG13CMOS5LTop() extends Component {
         IhpCmosIo(Edge.East, 3, "clk_main"),
         IhpCmosIo(Edge.East, 2, "clk_main")
       )
+      val rst = IhpCmosIo(Edge.North, 7, "clk_main")
     }
     val pins = Vec(
       IhpCmosIo(Edge.West, 2, "clk_main"),
@@ -141,8 +148,7 @@ case class SG13CMOS5LTop() extends Component {
       IhpCmosIo(Edge.North, 3, "clk_main"),
       IhpCmosIo(Edge.North, 4, "clk_main"),
       IhpCmosIo(Edge.North, 5, "clk_main"),
-      IhpCmosIo(Edge.North, 6, "clk_main"),
-      IhpCmosIo(Edge.North, 7, "clk_main")
+      IhpCmosIo(Edge.North, 6, "clk_main")
     )
   }
 
@@ -157,12 +163,13 @@ case class SG13CMOS5LTop() extends Component {
   io.jtag.tck <> IOPadIn(soc.io_plat.jtag.tck)
 
   for (index <- 0 until io.spi.cs.length) {
-    io.spi.cs(index) <> IOPadOut4mA(soc.io_plat.spi.cs(index))
+    io.spi.cs(index) <> IOPadOut4mA(soc.io_plat.spiXip.spi.cs(index))
   }
-  io.spi.sck <> IOPadOut4mA(soc.io_plat.spi.sclk)
+  io.spi.sck <> IOPadOut4mA(soc.io_plat.spiXip.spi.sclk)
   for (index <- 0 until io.spi.dq.length) {
-    io.spi.dq(index) <> IOPadInOut4mA(soc.io_plat.spi.dq(index))
+    io.spi.dq(index) <> IOPadInOut4mA(soc.io_plat.spiXip.spi.dq(index))
   }
+  io.spi.rst <> IOPadOut4mA(soc.io_plat.spiXip.reset)
 
   for (index <- 0 until io.pins.length) {
     io.pins(index) <> IOPadInOut4mA(soc.io.pins.pins(index))
@@ -190,29 +197,45 @@ object SG13CMOS5LGenerate extends ElementsApp {
   }
 
   val chip = OpenROADTools.IHP.Config(elementsConfig, OpenROADTools.PDKs.IHP.sg13cmos5l)
-  chip.dieArea = (0, 0, 2304.00, 2309.58)
-  chip.coreArea = (394.08, 396.9, 1907.04, 1912.68)
+  scala.util.Properties.envOrElse("FLOORPLAN", "relaxed") match {
+    case "tapeout" =>
+      chip.dieArea = (0, 0, 2392.80, 2400.30)
+      chip.coreArea = (394.08, 396.9, 1995.84, 2003.40)
+    case _ =>
+      SpinalWarning(
+        "FLOORPLAN=relaxed: oversized iteration floorplan - utilization/timing/" +
+          "congestion results are NOT tape-out representative. Run with " +
+          "FLOORPLAN=tapeout for signoff."
+      )
+      chip.dieArea = (0, 0, 2619.84, 2623.32)
+      chip.coreArea = (394.08, 396.9, 2222.88, 2226.42)
+  }
   chip.hasIoRing = true
+  chip.setAbcArea()
+
+  val sramNorthY = chip.coreArea._4 - 669.06
+  val sramNorthX =
+    scala.math.floor((chip.coreArea._1 + chip.coreArea._3 - 416.64) / 0.96) * 48 / 100
   chip.addMacro(
     report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[TileLinkIhpOnChipRam.OnePort].rams(0),
-    434.08,
-    409.12,
-    "MX",
-    depth = 3
-  )
-  chip.addMacro(
-    report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[TileLinkIhpOnChipRam.OnePort].rams(1),
-    1450.08,
-    409.12,
-    "MX",
+    sramNorthX,
+    sramNorthY,
+    "R0",
     depth = 3
   )
 
   chip.addMacro(
     report.toplevel.soc.core.cpu.iCacheRams(0),
-    942.24,
-    1709.12 - 20,
-    "R180",
+    434.08,
+    790.02,
+    "R0",
+    depth = 3
+  )
+  chip.addMacro(
+    report.toplevel.soc.core.cpu.iCacheTagRams(0),
+    434.08,
+    1217.16,
+    "MX",
     depth = 3
   )
 
@@ -228,7 +251,6 @@ object SG13CMOS5LGenerate extends ElementsApp {
   )
   chip.addReset(report.toplevel.io.reset.PAD)
   chip.setFalsePath("clk_main", "clk_jtag")
-  chip.setFalsePath("clk_system", "clk_jtag")
   chip.io = Some(report.toplevel.io)
   chip.ioPower = Some(report.toplevel.power)
   chip.pdnRingWidth = 30.0
