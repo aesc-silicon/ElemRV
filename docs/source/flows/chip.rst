@@ -5,14 +5,33 @@ The chip flow takes the design from RTL to a GDSII layout ready for tape-out,
 using the OpenROAD flow exclusively with open-source tools. The default target
 is the IHP SG13G2 130 nm BiCMOS open PDK.
 
-Two Taskfile variables control which platform is built:
+Three Taskfile variables control which platform is built and how:
 
 - ``SOC`` - the platform to build (default: ``ElemRV-N``)
-- ``board`` - the process node target (default: ``SG13G2``)
+- ``TARGET`` - the ASIC target / process node (default: ``SG13G2``)
+- ``FLOORPLAN`` - the floorplan profile (default: ``relaxed``)
 
 To build a different platform, prepend the variables to any task::
 
     task SOC=ElemRV-H TARGET=SG13G2 prepare
+
+Floorplan Profiles
+******************
+
+Chip targets provide two floorplan profiles, selected via ``FLOORPLAN``:
+
+- ``relaxed`` (default) - an oversized core (~60% utilization) that converges
+  fast and reliably. Use it for day-to-day RTL iteration. The generate step
+  prints a warning to the logs, because utilization, timing, and congestion
+  results are not tape-out representative.
+- ``tapeout`` - the tight signoff floorplan (~75-80% utilization). All numbers
+  used for signoff must come from this profile::
+
+    task SOC=ElemRV-H TARGET=SG13CMOS5L FLOORPLAN=tapeout
+
+The die and core sizes per profile are maintained with the ``update-chip-size``
+skill, which recalculates them from the density reported by a place-and-route
+run.
 
 Full Flow
 *********
