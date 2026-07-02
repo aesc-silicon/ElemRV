@@ -7,7 +7,8 @@ of the Zephyr RTOS. Both flows produce an image container that is flashed onto
 the SPI flash of the target hardware.
 
 The ``SOC`` variable selects the platform (default: ``ElemRV-N``) and the
-``board`` variable selects the target process node (default: ``SG13G2``).
+``TARGET`` variable selects the ASIC target / process node (default:
+``SG13G2``).
 
 Bare-Metal
 **********
@@ -34,7 +35,7 @@ To target a specific platform::
 
 The compiled image is written to::
 
-    build/<SOC>/<board>/firmware/baremetal_container.img
+    build/<SOC>/firmware/baremetal_container.img
 
 Zephyr
 ******
@@ -55,7 +56,7 @@ To target a specific platform::
 
 The compiled image is written to::
 
-    build/<SOC>/<board>/firmware/zephyr_container.img
+    build/<SOC>/firmware/zephyr_container.img
 
 Flash Layout
 ************
@@ -71,20 +72,38 @@ The image container is written into the ``flash`` region starting at address
 Flash
 *****
 
+Flashing is independent of the firmware flow: both ``baremetal:compile`` and
+``zephyr:compile`` update the ``image_container.img`` symlink, and the
+``flash`` namespace programs whichever firmware was built last. Two transports
+are available.
+
+Bus Pirate
+==========
+
 Programs the SPI flash using `flashrom <https://www.flashrom.org>`_ over a
-`Bus Pirate 5 <https://buspirate.com>`_ at 8 MHz. The target flash chip is a
-Micron MT25QL256.
+`Bus Pirate 5 <https://buspirate.com>`_. flashrom requires a chip-sized image,
+so the task pads a throwaway copy of the container to 32 MiB before writing::
 
-For bare-metal::
+    task flash:buspirate
 
-    task baremetal:flash
+To target a specific platform::
 
-For Zephyr::
+    task flash:buspirate SOC=ElemRV-H TARGET=SG13CMOS5L
 
-    task zephyr:flash
+JTAG
+====
+
+Programs the SPI flash over JTAG using OpenOCD. Unlike the Bus Pirate path,
+JTAG writes the unpadded image directly::
+
+    task flash:jtag
 
 .. note::
 
-   The flash task expects the Bus Pirate 5 to be connected and enumerated at
-   ``/dev/serial/by-id/usb-Bus_Pirate_Bus_Pirate_5_5buspirate-if02``. Adjust
-   the device path in the respective Taskfile if your setup differs.
+   ``flash:jtag`` is a placeholder until the toolchain container ships OpenOCD.
+
+The flash chip, Bus Pirate device path and SPI speed are configured in
+``Taskfile.flash.yml`` and can be overridden on the command line (for example
+``FLASH_CHIP=MT25QL128`` or ``BUSPIRATE_DEV=/dev/serial/by-id/...``). The
+defaults target a Micron MT25QL256 connected to a Bus Pirate 5 at
+``/dev/serial/by-id/usb-Bus_Pirate_Bus_Pirate_5_5buspirate-if02`` at 8 MHz.
