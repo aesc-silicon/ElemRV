@@ -14,7 +14,7 @@ SPDX-License-Identifier: CERN-OHL-W-2.0
 	<project name="aesc-silicon/elements-nafarr" path="modules/elements/nafarr" revision="main" />
 	<project name="aesc-silicon/elements-zibal" path="modules/elements/zibal" revision="main" />
 	<project name="SpinalHDL/SpinalCrypto" path="modules/elements/SpinalCrypto" revision="f2a4ae9db5e9434c5589d0651efec8719103498e" />
-	<project name="SpinalHDL/VexiiRiscv" path="modules/elements/vexiiriscv" revision="" />
+	<project name="SpinalHDL/VexiiRiscv" path="modules/elements/vexiiriscv" revision="03587f948b91f84197ecdbd958ba490977fd5671" />
 	<project name="aesc-silicon/elements-vexriscv" path="modules/elements/vexriscv" revision="6814d54a341562beb330d407bb9898024367e447" />
 	<project name="aesc-silicon/OpenROAD-flow-scripts" path="tools/OpenROAD-flow-scripts" revision="ede8b54b2a6015bf2929832bee21015a833ec5f7" />
 	<project name="antmicro/renode-verilator-integration" path="tools/renode-verilator-integration" revision="master" />
