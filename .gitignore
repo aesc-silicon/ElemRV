@@ -7,7 +7,8 @@ build/
 modules/
 oss-cad-suite/
 pdks/
-project/
+project/project/
+project/target/
 simWorkspace/
 target/
 tools/
