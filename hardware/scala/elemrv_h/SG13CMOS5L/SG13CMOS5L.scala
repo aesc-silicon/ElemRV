@@ -198,29 +198,37 @@ object SG13CMOS5LGenerate extends ElementsApp {
   val chip = OpenROADTools.IHP.Config(elementsConfig, OpenROADTools.PDKs.IHP.sg13cmos5l)
   scala.util.Properties.envOrElse("FLOORPLAN", "relaxed") match {
     case "tapeout" =>
-      chip.dieArea = (0, 0, 2011.68, 2018.52)
-      chip.coreArea = (394.08, 396.9, 1614.72, 1621.62)
+      // Reserved tape-out area: 2.2 x 2.35 mm, snapped down to the grid.
+      chip.dieArea = (0, 0, 2199.84, 2347.38)
+      chip.coreArea = (394.08, 396.9, 1802.88, 1950.48)
     case _ =>
       SpinalWarning(
         "FLOORPLAN=relaxed: oversized iteration floorplan - utilization/timing/" +
           "congestion results are NOT tape-out representative. Run with " +
           "FLOORPLAN=tapeout for signoff."
       )
-      chip.dieArea = (0, 0, 2181.60, 2188.62)
-      chip.coreArea = (394.08, 396.9, 1784.64, 1791.72)
+      chip.dieArea = (0, 0, 2397.60, 2566.62)
+      chip.coreArea = (394.08, 396.9, 2000.64, 2169.72)
   }
   chip.hasIoRing = true
   chip.setAbcArea()
 
-  val sramNorthY = chip.coreArea._4 - 680.40
-  val sramNorthX =
-    scala.math.floor((chip.coreArea._1 + chip.coreArea._3 - 416.64) / 0.96) * 48 / 100
+  val sramNorthY = chip.coreArea._4 - 686.70
+  val sramNorthX = 699.84
   chip.addMacro(
     report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[TileLinkIhpOnChipRam.OnePort].rams(0),
     sramNorthX,
     sramNorthY,
     "R0",
     depth = 3
+  )
+
+  chip.addMacro(
+    report.toplevel.soc.peripherals.aesMaskedCtrl.ctrl.ram,
+    chip.coreArea._3 - 476.64,
+    chip.coreArea._2 + 264.0,
+    "R0",
+    depth = 4
   )
 
   chip.addClock(report.toplevel.io.clock.PAD, report.toplevel.inputClock.frequency, "clk_main")
@@ -239,6 +247,7 @@ object SG13CMOS5LGenerate extends ElementsApp {
   chip.ioPower = Some(report.toplevel.power)
   chip.pdnRingWidth = 30.0
   chip.pdnRingSpace = 5.0
+  chip.additionalVerilogFiles ++= report.blackboxesSourcesPaths
   chip.generate
 
   val reporter = ReportTools.Report(report.toplevel.soc, elementsConfig)
