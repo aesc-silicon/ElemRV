@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+SPDX-FileCopyrightText: 2025 aesc silicon
+
+SPDX-License-Identifier: CERN-OHL-W-2.0
+-->
+
+<manifest>
+	<remote fetch="https://github.com" name="github" />
+
+	<default remote="github" sync-j="8" />
+
+	<project name="aesc-silicon/elements-nafarr" path="modules/elements/nafarr" revision="refs/tags/tapeout-ihp-sg13cmos5l-2026-06-r1" />
+	<project name="aesc-silicon/elements-zibal" path="modules/elements/zibal" revision="refs/tags/tapeout-ihp-sg13cmos5l-2026-06-r1" />
+	<project name="SpinalHDL/SpinalCrypto" path="modules/elements/SpinalCrypto" revision="f2a4ae9db5e9434c5589d0651efec8719103498e" />
+	<project name="SpinalHDL/VexiiRiscv" path="modules/elements/vexiiriscv" revision="03587f948b91f84197ecdbd958ba490977fd5671" />
+	<project name="aesc-silicon/elements-vexriscv" path="modules/elements/vexriscv" revision="6814d54a341562beb330d407bb9898024367e447" />
+	<project name="aesc-silicon/OpenROAD-flow-scripts" path="tools/OpenROAD-flow-scripts" revision="refs/tags/tapeout-ihp-sg13cmos5l-2026-06-r1" />
+	<project name="antmicro/renode-verilator-integration" path="tools/renode-verilator-integration" revision="c9692ca32c8c160e0c268bd0f5207359cee1626d" />
+	<project name="aesc-silicon/IHP-Open-PDK" sync-s="true" path="pdks/IHP-Open-PDK" revision="refs/tags/tapeout-ihp-sg13cmos5l-2026-06-r1" />
+</manifest>
