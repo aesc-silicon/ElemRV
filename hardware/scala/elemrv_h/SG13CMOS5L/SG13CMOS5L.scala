@@ -239,6 +239,7 @@ object SG13CMOS5LGenerate extends ElementsApp {
   chip.ioPower = Some(report.toplevel.power)
   chip.pdnRingWidth = 30.0
   chip.pdnRingSpace = 5.0
+  chip.additionalVerilogFiles ++= report.blackboxesSourcesPaths
   chip.generate
 
   val reporter = ReportTools.Report(report.toplevel.soc, elementsConfig)
