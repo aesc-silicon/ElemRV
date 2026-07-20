@@ -33,6 +33,9 @@ tasks:
   build:
     desc: Creates the physical layout of the chip (RTL-to-GDSII place-and-route).
     aliases: [layout]
+    preconditions:
+      - sh: 'test -f {{.BUILD_ROOT}}/{{.SOC}}/{{.TARGET}}/zibal/{{.TARGET}}Top.mk'
+        msg: "Design not prepared. Run 'task asic:prepare SOC={{.SOC}} TARGET={{.TARGET}}' first."
     cmds:
       - task: ':lib-layout'
 
