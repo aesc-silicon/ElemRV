@@ -1,0 +1,83 @@
+# SPDX-FileCopyrightText: 2026 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+tasks:
+  default:
+    desc: Executes the full RTL-to-GDSII flow and validates the layout afterwards.
+    cmds:
+      - task: prepare
+      - task: build
+      - task: fill
+      - task: drc
+      - task: check-logs
+      - task: check-metadata
+
+  prepare:
+    desc: Generates all necessary source files and metadata for chip layout creation.
+    cmds:
+      - task: ':lib-sbt-publishLocal'
+        vars:
+          project: "modules/elements/vexiiriscv"
+      - task: ':lib-generate'
+      - task: ':lib-sealring'
+      - "mkdir -p {{.BUILD_ROOT}}/{{.SOC}}/{{.TARGET}}/zibal/macros/bondpad"
+      - "cp tmp/{{.PDK}}/bondpad_70x70.lef {{.BUILD_ROOT}}/{{.SOC}}/{{.TARGET}}/zibal/macros/bondpad/"
+      - "cp tmp/{{.PDK}}/bondpad_70x70.gds.gz {{.BUILD_ROOT}}/{{.SOC}}/{{.TARGET}}/zibal/macros/bondpad/bondpad_70x70.gds.gz"
+      # TODO: wait until bondpad.py got fixed
+      #- task: ':lib-bondpad'
+
+  build:
+    desc: Creates the physical layout of the chip (RTL-to-GDSII place-and-route).
+    aliases: [layout]
+    cmds:
+      - task: ':lib-layout'
+
+  fill:
+    desc: Inserts filler cells into the layout to ensure proper chip functionality.
+    aliases: [filler]
+    cmds:
+      - task: ':lib-filler'
+
+  update-metadata:
+    desc: Generates ORFS metadata and updates design rules after layout completion.
+    cmds:
+      - task: ':lib-update-metadata'
+
+  drc:
+    desc: Performs Design Rule Checks and reports violations; use 'level=minimal' for a basic check.
+    aliases: [run-drc]
+    cmds:
+      - task: ':lib-run-drc'
+
+  check-logs:
+    desc: Checks the build directory for warnings or errors in the logs.
+    cmds:
+      - task: ':lib-check-logs'
+
+  check-metadata:
+    desc: Validates the ORFS metadata against the expected design rules.
+    cmds:
+      - task: ':lib-check-metadata'
+
+  klayout:
+    desc: >-
+      Opens KLayout on the chip layout. mode=empty starts a blank canvas,
+      mode=drc loads the layout with DRC results. Optional 'macro=NAME'.
+    cmds:
+      - task: ':{{if eq .mode "empty"}}open-klayout{{else if eq .mode "drc"}}lib-view-drc{{else}}lib-view-klayout{{end}}'
+        vars:
+          macro: '{{.macro}}'
+
+  openroad:
+    desc: >-
+      Loads the layout into OpenROAD for analysis. mode=empty starts an empty
+      session. Optional 'macro=NAME' and 'stage=NAME'.
+    cmds:
+      - task: ':{{if eq .mode "empty"}}open-openroad{{else}}lib-view-openroad{{end}}'
+        vars:
+          macro: '{{.macro}}'
+          stage: '{{.stage}}'

@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: 2026 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+tasks:
+  simulate:
+    desc: Runs simulations at the RTL level. Add 'duration=n' to specify the duration in n milliseconds.
+    cmds:
+      - task: ':lib-simulate'
+
+  waves:
+    desc: Opens the simulation result in GTKWave.
+    cmds:
+      - task: ':lib-view-simulation'
+
+  emulate:
+    desc: >-
+      Boots a bare-metal binary in Renode (functional emulation). Add 'bin=path/to/app.bin';
+      add 'gui=1' to launch the full Renode GUI (monitor window).
+    cmds:
+      - task: ':{{if .gui}}lib-emulate-gui{{else}}lib-emulate{{end}}'
+
+  cosim:
+    desc: >-
+      Boots a binary in Renode co-simulating the real GPIO RTL (rebuilds the co-sim library
+      first). Add 'bin=path/to/app.bin'; add 'gui=1' to launch the full Renode GUI.
+    cmds:
+      - task: ':lib-cosim-build'
+      - task: ':{{if .gui}}lib-cosim-gui{{else}}lib-cosim{{end}}'

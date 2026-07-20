@@ -16,12 +16,12 @@ Running
 
 Boot the platform's firmware image headless (console in the terminal)::
 
-    task emulate SOC=ElemRV-H TARGET=SG13CMOS5L
+    task sim:emulate SOC=ElemRV-H TARGET=SG13CMOS5L
 
 To launch the full Renode GUI (monitor window plus peripheral analyzers, e.g. an
-LED widget)::
+LED widget), add ``gui=1``::
 
-    task emulate-gui SOC=ElemRV-H TARGET=SG13CMOS5L
+    task sim:emulate gui=1 SOC=ElemRV-H TARGET=SG13CMOS5L
 
 The firmware image is taken from ``build/<SOC>/firmware/`` - build it with the
 :doc:`../flows/firmware` flow first.

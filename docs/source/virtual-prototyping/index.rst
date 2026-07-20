@@ -36,7 +36,7 @@ All three are driven by `Taskfile <https://taskfile.dev>`_ inside the container
 and select the platform with ``SOC`` and ``PDK`` (see :doc:`../installation`),
 for example::
 
-    task emulate SOC=ElemRV-H TARGET=SG13CMOS5L
+    task sim:emulate SOC=ElemRV-H TARGET=SG13CMOS5L
 
 .. toctree::
    :maxdepth: 2
