@@ -76,6 +76,12 @@ vars:
   package:
     sh: echo "{{.SOC}}" | tr '[:upper:]' '[:lower:]' | tr '-' '_'
 
+  # Chip top-cell name. Drives the generated Verilog top module, ORFS DESIGN_NAME/
+  # DESIGN_NICKNAME (hence the results dir and --topcell), and all generated file
+  # names. Defaults to "<TARGET>Top" (the SpinalHDL class name) so existing SoCs
+  # are unaffected. Override, e.g. 'TOPCELL=MyChipTop', to rename the whole design.
+  TOPCELL: '{{.TOPCELL | default (printf "%sTop" .TARGET)}}'
+
   # Floorplan profile: "relaxed" (default) for fast, robust iteration builds;
   # "tapeout" for the tight signoff core/die sizes.
   FLOORPLAN: '{{.FLOORPLAN | default "relaxed"}}'
@@ -90,6 +96,7 @@ vars:
     -e SOC={{.SOC}} \
     -e TARGET={{.TARGET}} \
     -e BOARD={{.TARGET}} \
+    -e TOPCELL={{.TOPCELL}} \
     -e FLOORPLAN={{.FLOORPLAN}} \
     -e FPGA_FAMILY={{.FPGA_FAMILY}} \
     -e FPGA_DEVICE={{.FPGA_DEVICE}} \
