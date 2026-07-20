@@ -187,8 +187,10 @@ case class SG13CMOS5LTop() extends Component {
 }
 
 object SG13CMOS5LGenerate extends ElementsApp {
+  val topCellName = scala.util.Properties.envOrElse("TOPCELL", "SG13CMOS5LTop")
   val report = elementsConfig.genASICSpinalConfig.ihpSramBlackboxes.generateVerilog {
     val top = SG13CMOS5LTop()
+    top.setDefinitionName(topCellName)
 
     top.soc.prepareBaremetal("demo", elementsConfig)
 
@@ -196,6 +198,7 @@ object SG13CMOS5LGenerate extends ElementsApp {
   }
 
   val chip = OpenROADTools.IHP.Config(elementsConfig, OpenROADTools.PDKs.IHP.sg13cmos5l)
+  chip.setTopCellName(topCellName)
   scala.util.Properties.envOrElse("FLOORPLAN", "relaxed") match {
     case "tapeout" =>
       chip.dieArea = (0, 0, 2011.68, 2018.52)
