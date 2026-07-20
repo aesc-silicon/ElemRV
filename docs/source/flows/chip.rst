@@ -13,7 +13,7 @@ Three Taskfile variables control which platform is built and how:
 
 To build a different platform, prepend the variables to any task::
 
-    task SOC=ElemRV-H TARGET=SG13G2 prepare
+    task SOC=ElemRV-H TARGET=SG13G2 asic:prepare
 
 Floorplan Profiles
 ******************
@@ -49,66 +49,66 @@ Step by Step
 Generates the Verilog netlist, sealring, and copies bondpad macros into the
 build directory::
 
-    task prepare
+    task asic:prepare
 
-**2. Layout**
+**2. Build**
 
 Runs the full OpenROAD place-and-route flow to produce the chip layout::
 
-    task layout
+    task asic:build
 
 If this step fails, check the `Known Issues`_ section below.
 
-**3. Filler**
+**3. Fill**
 
 Inserts filler cells and metal fill into the layout to meet density
 requirements::
 
-    task filler
+    task asic:fill
 
 Viewing the Layout
 ******************
 
 Open the finished layout in KLayout::
 
-    task view-klayout
+    task asic:klayout
 
 Open it in OpenROAD for further analysis::
 
-    task view-openroad
+    task asic:openroad
 
 To inspect a specific intermediate stage rather than the final result, pass the
 ``stage`` argument::
 
-    task view-openroad stage=6_final
+    task asic:openroad stage=6_final
 
 Design Rule Checks
 ******************
 
 Run DRC on the finished layout::
 
-    task run-drc
+    task asic:drc
 
 To run a faster minimal check first::
 
-    task run-drc level=minimal
+    task asic:drc level=minimal
 
 Open the DRC results in KLayout::
 
-    task view-drc
-    task view-drc level=minimal
+    task asic:klayout mode=drc
+    task asic:klayout mode=drc level=minimal
 
 Log Checks
 **********
 
 Scan the build logs for warnings and errors after any flow step::
 
-    task check-logs
+    task asic:check-logs
 
 Known Issues
 ************
 
-- **X server** - If ``view-klayout`` or ``view-openroad`` fails with an X
+- **X server** - If ``asic:klayout`` or ``asic:openroad`` fails with an X
   server permission error, grant access with::
 
       xhost +si:localuser:$USER

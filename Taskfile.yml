@@ -18,6 +18,10 @@ includes:
     taskfile: ./Taskfile.zephyr.yml
   flash:
     taskfile: ./Taskfile.flash.yml
+  asic:
+    taskfile: ./Taskfile.asic.yml
+  sim:
+    taskfile: ./Taskfile.sim.yml
 
 vars:
   SOC: '{{.SOC | default "ElemRV-N"}}'
@@ -167,103 +171,7 @@ tasks:
       - task: west-init
       - task: west-update
 
-  prepare:
-    desc: Generates all necessary source files and metadata for chip layout creation.
-    cmds:
-      - task: lib-sbt-publishLocal
-        vars:
-          project: "modules/elements/vexiiriscv"
-      - task: lib-generate
-      - task: lib-sealring
-      - "mkdir -p {{.BUILD_ROOT}}/{{.SOC}}/{{.TARGET}}/zibal/macros/bondpad"
-      - "cp tmp/{{.PDK}}/bondpad_70x70.lef {{.BUILD_ROOT}}/{{.SOC}}/{{.TARGET}}/zibal/macros/bondpad/"
-      - "cp tmp/{{.PDK}}/bondpad_70x70.gds.gz {{.BUILD_ROOT}}/{{.SOC}}/{{.TARGET}}/zibal/macros/bondpad/bondpad_70x70.gds.gz"
-      # TODO: wait until bondpad.py got fixed
-      #- task: lib-bondpad
-
-  simulate:
-    desc: Runs simulations at the RTL level. Add 'duration=n' to specify the duration in n milliseconds.
-    cmds:
-      - task: lib-simulate
-
-  view-simulation:
-    desc: Opens the simulation with GTKWave.
-    cmds:
-      - task: lib-view-simulation
-
-  emulate:
-    desc: Boots a bare-metal binary in Renode (functional emulation). Add 'bin=path/to/app.bin'.
-    cmds:
-      - task: lib-emulate
-
-  emulate-gui:
-    desc: Like 'emulate' but launches the full Renode GUI (monitor window). Add 'bin=path/to/app.bin'.
-    cmds:
-      - task: lib-emulate-gui
-
-  cosim:
-    desc: Boots a binary in Renode co-simulating the real GPIO RTL (rebuilds the co-sim library first). Add 'bin=path/to/app.bin'.
-    cmds:
-      - task: lib-cosim-build
-      - task: lib-cosim
-
-  cosim-gui:
-    desc: Like 'cosim' but launches the full Renode GUI (monitor window).
-    cmds:
-      - task: lib-cosim-build
-      - task: lib-cosim-gui
-
-  layout:
-    desc: Creates the physical layout of the chip.
-    cmds:
-      - task: lib-layout
-
-  update-metadata:
-    desc: Generates ORFS metadata and updates design rules after layout completion.
-    cmds:
-      - task: lib-update-metadata
-
-  filler:
-    desc: Inserts filler cells into the layout to ensure proper chip functionality.
-    cmds:
-      - task: lib-filler
-
-  run-drc:
-    desc: Performs Design Rule Checks and reports violations; use 'level=minimal' for a basic check.
-    cmds:
-      - task: lib-run-drc
-
-  view-drc:
-    desc: Displays DRC results in KLayout; 'level=minimal' opens minimal deck results.
-    cmds:
-      - task: lib-view-drc
-
-  view-openroad:
-    desc: Loads the layout into OpenROAD for further analysis or modification.
-    cmds:
-      - task: lib-view-openroad
-
-  view-klayout:
-    desc: Opens the chip layout in KLayout for inspection.
-    cmds:
-      - task: lib-view-klayout
-
-  check-logs:
-    desc: Checks the build directory for warnings or errors in the logs.
-    cmds:
-      - task: lib-check-logs
-
-  check-metadata:
-    desc: Validates the ORFS metadata against the expected design rules.
-    cmds:
-      - task: lib-check-metadata
-
   default:
     desc: Executes the full IHP SG13G2 RTL-to-GDSII flow and validates the layout afterwards.
     cmds:
-      - task: prepare
-      - task: layout
-      - task: filler
-      - task: run-drc
-      - task: check-logs
-      - task: check-metadata
+      - task: asic:default

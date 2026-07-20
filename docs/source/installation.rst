@@ -26,11 +26,11 @@ To list all available tasks::
 
 .. note::
 
-   By default, the ``view-klayout`` and ``view-openroad`` tasks require a running
+   By default, the ``asic:klayout`` and ``asic:openroad`` tasks require a running
    X server. On headless systems (e.g. over SSH), prefix the command with
    ``IS_HEADLESS=true`` to skip the X server requirement::
 
-       IS_HEADLESS=true task view-klayout
+       IS_HEADLESS=true task asic:klayout
 
 Using a Release Manifest
 ************************

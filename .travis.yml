@@ -51,9 +51,9 @@ script:
   - CI=true IS_HEADLESS=true task install-zephyr
 
   # Prepare files
-  - CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L prepare
-  - CI=true IS_HEADLESS=true task SOC=ElemRV-C TARGET=SG13CMOS5L prepare
-  - CI=true IS_HEADLESS=true task SOC=ElemRV-N TARGET=SG13G2 prepare
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L asic:prepare
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-C TARGET=SG13CMOS5L asic:prepare
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-N TARGET=SG13G2 asic:prepare
 
   # Compile baremetal firmware
   - CI=true IS_HEADLESS=true task SOC=ElemRV-H baremetal:compile
@@ -78,13 +78,13 @@ script:
 
   # TODO Full RTL to GDS flow takes too long for travis
   # Generate layout
-  #- CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L layout
+  #- CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L asic:build
 
   # Add metal fill
-  #- CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L filler
+  #- CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L asic:fill
 
   # Run maximal DRC
-  #- CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L run-drc
+  #- CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L asic:drc
 
 notifications:
   email:

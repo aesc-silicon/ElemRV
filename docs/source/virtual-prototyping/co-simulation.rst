@@ -19,25 +19,24 @@ Building
 ********
 
 Co-simulation requires the generated netlist (run the relevant flow's
-``prepare``/``generate`` step first) and the
-``renode-verilator-integration`` checkout provided by the manifest. Verilate and
-compile one library per peripheral with::
-
-    task cosim-build SOC=ElemRV-H TARGET=SG13CMOS5L
+``asic:prepare``/``fpga:prepare`` step first) and the
+``renode-verilator-integration`` checkout provided by the manifest. One library
+per peripheral is verilated and compiled automatically the first time you run
+co-simulation (see `Running`_ below).
 
 The libraries are produced under ``build/<SOC>/<board>/cosim/<peripheral>/``.
 
 Running
 *******
 
-``cosim`` rebuilds the libraries (incrementally - unchanged peripherals are a
+``sim:cosim`` rebuilds the libraries (incrementally - unchanged peripherals are a
 no-op) and boots the firmware::
 
-    task cosim SOC=ElemRV-H TARGET=SG13CMOS5L
+    task sim:cosim SOC=ElemRV-H TARGET=SG13CMOS5L
 
-For the full Renode GUI::
+For the full Renode GUI, add ``gui=1``::
 
-    task cosim-gui SOC=ElemRV-H TARGET=SG13CMOS5L
+    task sim:cosim gui=1 SOC=ElemRV-H TARGET=SG13CMOS5L
 
 The UART console (GUI window and host TCP socket on port 3456) works exactly as
 in :doc:`emulation`.

@@ -66,9 +66,9 @@ This project uses Taskfile as its task runner tool. You can install Taskfile usi
 
 Most tasks accept the ``SOC`` and ``PDK`` variables to select a specific SoC variant and target PDK. For example::
 
-        task prepare SOC=ElemRV-H TARGET=SG13CMOS5L
+        task asic:prepare SOC=ElemRV-H TARGET=SG13CMOS5L
 
-**Note:** By default, the X-Server is required for the `view-klayout` and `view-openroad` tasks. On headless systems, you can bypass this requirement by adding `IS_HEADLESS=true` before the task command. This is particularly useful when accessing the system via SSH, as it allows you to run the container without the need for X-Server.
+**Note:** By default, the X-Server is required for the `asic:klayout` and `asic:openroad` tasks. On headless systems, you can bypass this requirement by adding `IS_HEADLESS=true` before the task command. This is particularly useful when accessing the system via SSH, as it allows you to run the container without the need for X-Server.
 
 FPGA Flow
 #########
@@ -92,7 +92,7 @@ The ASIC flow closely resembles the FPGA flow. Begin by generating all required 
 
 .. code-block:: text
 
-    task prepare layout filler
+    task asic:prepare asic:build asic:fill
 
 If the chip layout process fails, consult the **Known Issues** section for troubleshooting tips.
 
@@ -100,14 +100,14 @@ Finally, review the chip layout using OpenROAD or KLayout.
 
 .. code-block:: text
 
-    task view-klayout
-    task view-openroad
+    task asic:klayout
+    task asic:openroad
 
 Earlier stages of the layout process can also be reviewed in OpenROAD by passing the `stage` argument.
 
 .. code-block:: text
 
-    task view-openroad stage=6_final
+    task asic:openroad stage=6_final
 
 Design Rule Checks
 ##################
@@ -116,15 +116,15 @@ Use the following tasks to perform Design Rule Checks (DRC) on the chip layout. 
 
 .. code-block:: text
 
-    task run-drc level=minimal
-    task view-drc level=minimal
+    task asic:drc level=minimal
+    task asic:klayout mode=drc level=minimal
 
 To run an enhanced rule set, use the standard DRC commands:
 
 .. code-block:: text
 
-    task run-drc
-    task view-drc
+    task asic:drc
+    task asic:klayout mode=drc
 
 Tape-out
 ########
@@ -138,7 +138,7 @@ The default task runs the complete RTL-to-GDSII tape-out flow in one step. The f
 Known Issues
 ############
 
-- **X-Server**: If you encounter an error when running `view-klayout` or `view-openroad`, it may be due to permission restrictions with the X-Server. To resolve this, run the following command in your terminal to add the current user to the X-Server backend:
+- **X-Server**: If you encounter an error when running `asic:klayout` or `asic:openroad`, it may be due to permission restrictions with the X-Server. To resolve this, run the following command in your terminal to add the current user to the X-Server backend:
 
   .. code-block:: text
 
