@@ -56,6 +56,18 @@ tasks:
     cmds:
       - task: ':lib-run-drc'
 
+  netlist:
+    desc: Generates the CDL schematic netlist (results/.../6_final.cdl) for LVS via ORFS. Add 'SRAM_CDL=...' to append extra master CDLs.
+    cmds:
+      - task: ':lib-generate-netlist'
+
+  lvs:
+    desc: Performs Layout Versus Schematic checking and reports violations. Generates the CDL netlist first.
+    aliases: [run-lvs]
+    cmds:
+      - task: ':lib-generate-netlist'
+      - task: ':lib-run-lvs'
+
   check-logs:
     desc: Checks the build directory for warnings or errors in the logs.
     cmds:
