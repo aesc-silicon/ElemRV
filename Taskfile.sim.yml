@@ -8,6 +8,9 @@ version: '3'
 tasks:
   simulate:
     desc: Runs simulations at the RTL level. Add 'duration=n' to specify the duration in n milliseconds.
+    preconditions:
+      - sh: 'test -f {{.BUILD_ROOT}}/{{.SOC}}/firmware/image_container.img'
+        msg: "Firmware image not found. Build it first with 'task baremetal:compile SOC={{.SOC}}' or 'task zephyr:compile SOC={{.SOC}}'."
     cmds:
       - task: ':lib-simulate'
 
@@ -20,6 +23,9 @@ tasks:
     desc: >-
       Boots a bare-metal binary in Renode (functional emulation). Add 'bin=path/to/app.bin';
       add 'gui=1' to launch the full Renode GUI (monitor window).
+    preconditions:
+      - sh: 'test -f {{.BUILD_ROOT}}/{{.SOC}}/firmware/image_container.img'
+        msg: "Firmware image not found. Build it first with 'task baremetal:compile SOC={{.SOC}}' or 'task zephyr:compile SOC={{.SOC}}'."
     cmds:
       - task: ':{{if .gui}}lib-emulate-gui{{else}}lib-emulate{{end}}'
 
@@ -27,6 +33,9 @@ tasks:
     desc: >-
       Boots a binary in Renode co-simulating the real GPIO RTL (rebuilds the co-sim library
       first). Add 'bin=path/to/app.bin'; add 'gui=1' to launch the full Renode GUI.
+    preconditions:
+      - sh: 'test -f {{.BUILD_ROOT}}/{{.SOC}}/firmware/image_container.img'
+        msg: "Firmware image not found. Build it first with 'task baremetal:compile SOC={{.SOC}}' or 'task zephyr:compile SOC={{.SOC}}'."
     cmds:
       - task: ':lib-cosim-build'
       - task: ':{{if .gui}}lib-cosim-gui{{else}}lib-cosim{{end}}'
