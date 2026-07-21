@@ -11,8 +11,8 @@ SPDX-License-Identifier: CERN-OHL-W-2.0
 
 	<default remote="github" sync-j="8" />
 
-	<project name="aesc-silicon/elements-nafarr" path="modules/elements/nafarr" revision="ab9e6ee69436e1d99774269b23326bbeaeebaea0" />
-	<project name="aesc-silicon/elements-zibal" path="modules/elements/zibal" revision="91794eeb6366c7399cfe36f486200ba756eab61d" />
+	<project name="aesc-silicon/elements-nafarr" path="modules/elements/nafarr" revision="8c951a69696f0ee04b23c3361dc5acbe4ad02755" />
+	<project name="aesc-silicon/elements-zibal" path="modules/elements/zibal" revision="168a6ee76bde6d06ae139823a463436dc80b575c" />
 	<project name="SpinalHDL/SpinalCrypto" path="modules/elements/SpinalCrypto" revision="f2a4ae9db5e9434c5589d0651efec8719103498e" />
 	<project name="SpinalHDL/VexiiRiscv" path="modules/elements/vexiiriscv" revision="03587f948b91f84197ecdbd958ba490977fd5671" />
 	<project name="aesc-silicon/elements-vexriscv" path="modules/elements/vexriscv" revision="6814d54a341562beb330d407bb9898024367e447" />
