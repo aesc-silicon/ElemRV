@@ -1,0 +1,43 @@
+[*]
+[*] SPDX-FileCopyrightText: 2026 aesc silicon
+[*] SPDX-License-Identifier: CERN-OHL-W-2.0
+[*]
+[*] Default signal selection for the ElemRV-N board simulations. Applies to both
+[*] SG13CMOS5LBoard and ECPIX5Board, which expose the same top-level names.
+[*] Pin 14 is uart0_tx and pin 15 is uart0_rx.
+[*]
+[size] 3840 2160
+[pos] 2160 1331
+[treeopen] TOP.
+[sst_width] 400
+[signals_width] 250
+[sst_expanded] 1
+@28
+TOP.io_clock
+TOP.io_reset
+TOP.io_pins_14
+TOP.io_pins_15
+TOP.io_pins_16
+TOP.io_pins_17
+TOP.io_pins_0
+TOP.io_pins_1
+TOP.io_spi_cs
+TOP.io_spi_sck
+TOP.io_spi_dq_0
+TOP.io_spi_dq_1
+TOP.io_spi_dq_2
+TOP.io_spi_dq_3
+TOP.io_spi_rst
+TOP.io_hyperbus_cs_0
+TOP.io_hyperbus_cs_1
+TOP.io_hyperbus_ck
+TOP.io_hyperbus_reset
+TOP.io_hyperbus_rwds
+TOP.io_hyperbus_dq_0
+TOP.io_hyperbus_dq_1
+TOP.io_hyperbus_dq_2
+TOP.io_hyperbus_dq_3
+TOP.io_hyperbus_dq_4
+TOP.io_hyperbus_dq_5
+TOP.io_hyperbus_dq_6
+TOP.io_hyperbus_dq_7

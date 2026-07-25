@@ -124,3 +124,8 @@ gpio_set_pin:
 	sw	a0, 0x10(t0)
 	sw	a0, 0x14(t0)
 	ret
+
+uart_putc:
+	li	t0, 0xf0006000
+	sw	a0, 0x18(t0)
+	ret

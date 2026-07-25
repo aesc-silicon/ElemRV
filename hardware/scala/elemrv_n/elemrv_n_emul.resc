@@ -1,0 +1,46 @@
+# SPDX-FileCopyrightText: 2026 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+:name: ElemRV-N
+:description: Functional emulation of ElemRV-N booting a bare-metal binary from XIP flash.
+
+# Path to the application binary (boots from XIP flash @ 0xA0000000).
+# Override on the command line, e.g.:  renode -e "set bin @build/app.bin; include @elemrv_n_emul.resc"
+$bin ?= @build/app.bin
+
+# Compile and register the custom Nafarr peripheral models (live next to their .scala).
+i @modules/elements/nafarr/hardware/scala/nafarr/peripherals/io/gpio/GpioCtrl.cs
+i @modules/elements/nafarr/hardware/scala/nafarr/peripherals/com/uart/UartCtrl.cs
+i @modules/elements/nafarr/hardware/scala/nafarr/peripherals/pinmux/PinmuxCtrl.cs
+i @modules/elements/nafarr/hardware/scala/nafarr/crypto/prng/PrngCtrl.cs
+i @modules/elements/nafarr/hardware/scala/nafarr/system/mtimer/MachineTimerCtrl.cs
+i @modules/elements/nafarr/hardware/scala/nafarr/system/plic/PlicCtrl.cs
+i @modules/elements/nafarr/hardware/scala/nafarr/system/syscon/Syscon.cs
+i @modules/elements/nafarr/hardware/scala/nafarr/system/clock/ClockControllerCtrl.cs
+i @modules/elements/nafarr/hardware/scala/nafarr/memory/spi/SpiXipControllerCtrl.cs
+i @modules/elements/nafarr/hardware/scala/nafarr/memory/hyperbus/HyperBusCtrl.cs
+
+mach create "elemrv_n"
+machine LoadPlatformDescription @hardware/scala/elemrv_n/elemrv_n_emul.repl
+
+# Load the application into XIP flash and point the reset vector at it.
+sysbus LoadBinary $bin 0xA0000000
+cpu PC 0xA0000000
+
+# Interactive UART0 console.
+#
+# GUI terminal window (requires the Renode GUI, i.e. an X display; ignored when headless):
+showAnalyzer uart0
+#
+# TCP socket backend, reachable from the HOST (a PTY device would only exist inside the
+# container). Port 3456 is published by podman-compose; from the host run:
+#   telnet localhost 3456      (or: nc localhost 3456)
+emulation CreateServerSocketTerminal 3456 "uart0term"
+connector Connect uart0 uart0term
+
+# GPIO0 pin 1 has an LED (led1) for the full Renode GUI: `showAnalyzer gpio0.led1`.
+# In --console / headless mode there's no LED widget, so GpioCtrl logs output-pin changes
+# instead (visible in the monitor). Raise GPIO verbosity if needed:  logLevel 0 gpio0
+
+echo "ElemRV-N ready."
