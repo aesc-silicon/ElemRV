@@ -26,7 +26,7 @@ includes:
 vars:
   SOC: '{{.SOC | default "ElemRV-N"}}'
   # ASIC target = process node + on-chip config (SG13CMOS5L, GF180MCU, ...). Selects the PDK.
-  TARGET: '{{.TARGET | default "SG13G2"}}'
+  TARGET: '{{.TARGET | default "SG13CMOS5L"}}'
   PDK:
     sh: |
       case "{{.TARGET}}" in
