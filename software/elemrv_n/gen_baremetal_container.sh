@@ -7,7 +7,7 @@
 FW_DIR=${BUILD_ROOT}/${SOC}/firmware/
 IMG_CONTAINER=${FW_DIR}/baremetal_container.img
 
-dd if=/dev/zero of=${IMG_CONTAINER} bs=32M count=1
+dd if=/dev/zero of=${IMG_CONTAINER} bs=1k count=512
 dd if=${FW_DIR}/bootrom/kernel.img of=${IMG_CONTAINER} conv=notrunc
-dd if=${FW_DIR}/demo/kernel.img of=${IMG_CONTAINER} seek=64 bs=1k conv=notrunc
+dd if=${FW_DIR}/demo/kernel.img of=${IMG_CONTAINER} seek=4 bs=1k conv=notrunc
 echo "Generated ${IMG_CONTAINER}"

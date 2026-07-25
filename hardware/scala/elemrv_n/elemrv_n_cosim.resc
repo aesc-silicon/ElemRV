@@ -1,0 +1,53 @@
+# SPDX-FileCopyrightText: 2026 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+:name: ElemRV-N (co-simulation)
+:description: Boots a binary with all peripherals as Verilated TileLink RTL; CPU/UART/PLIC/mtimer functional.
+
+# Application binary and the directory holding the per-peripheral co-sim libraries
+# (built by 'task cosim-build' -> <cosimdir>/<name>/libVtop.so).
+$bin ?= @build/app.bin
+$cosimdir ?= @build/ElemRV-N/SG13CMOS5L/cosim
+
+# Functional peripheral models that stay in Renode (the rest are co-simulated RTL).
+i @modules/elements/nafarr/hardware/scala/nafarr/peripherals/com/uart/UartCtrl.cs
+i @modules/elements/nafarr/hardware/scala/nafarr/system/mtimer/MachineTimerCtrl.cs
+i @modules/elements/nafarr/hardware/scala/nafarr/system/plic/PlicCtrl.cs
+i @modules/elements/nafarr/hardware/scala/nafarr/memory/spi/SpiXipControllerCtrl.cs
+i @modules/elements/nafarr/hardware/scala/nafarr/memory/hyperbus/HyperBusCtrl.cs
+i @modules/elements/nafarr/hardware/scala/nafarr/system/timer/TimerCtrl.cs
+
+mach create "elemrv_n_cosim"
+machine LoadPlatformDescription @hardware/scala/elemrv_n/elemrv_n_cosim.repl
+
+# Bind each co-simulated peripheral to its Verilated library. The library directory is the SoC
+# instance name from the generated cosim manifest (build/.../cosim/peripherals.tsv); the leading
+# token is the Renode peripheral (from the .repl). Keep these in sync with the manifest.
+gpio0     SimulationFilePathLinux $cosimdir/gpio0Ctrl/libVtop.so
+i2c0      SimulationFilePathLinux $cosimdir/i2c0Ctrl/libVtop.so
+i2c1      SimulationFilePathLinux $cosimdir/i2c1Ctrl/libVtop.so
+pio0      SimulationFilePathLinux $cosimdir/pio0Ctrl/libVtop.so
+pwm0      SimulationFilePathLinux $cosimdir/pwm0Ctrl/libVtop.so
+spi0      SimulationFilePathLinux $cosimdir/spi0Ctrl/libVtop.so
+uart1     SimulationFilePathLinux $cosimdir/uart1Ctrl/libVtop.so
+crc32     SimulationFilePathLinux $cosimdir/crc32Ctrl/libVtop.so
+prng      SimulationFilePathLinux $cosimdir/prngCtrl/libVtop.so
+pinmux    SimulationFilePathLinux $cosimdir/pinmuxCtrl/libVtop.so
+resetCtrl SimulationFilePathLinux $cosimdir/resetCtrlMapper/libVtop.so
+clockCtrl SimulationFilePathLinux $cosimdir/clockCtrlMapper/libVtop.so
+syscon    SimulationFilePathLinux $cosimdir/sysconCtrlMapper/libVtop.so
+watchdog  SimulationFilePathLinux $cosimdir/watchdogCtrlMapper/libVtop.so
+esm       SimulationFilePathLinux $cosimdir/TileLinkEsm/libVtop.so
+
+# Boot from XIP flash (same flow as elemrv_n_emul.resc).
+sysbus LoadBinary $bin 0xA0000000
+cpu PC 0xA0000000
+
+# UART0 console: GUI window plus a TCP socket reachable from the host (port published by
+# podman-compose). From the host run:  telnet localhost 3456   (or: nc localhost 3456)
+showAnalyzer uart0
+emulation CreateServerSocketTerminal 3456 "uart0term"
+connector Connect uart0 uart0term
+
+echo "ElemRV-N ready."

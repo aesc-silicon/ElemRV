@@ -16,7 +16,6 @@ _head:
 	jal	_init_memc
 	jal	_init_regs
 	jal	_init_bss
-
 	jal	_relocate
 
 	li	a0, 0
@@ -60,7 +59,7 @@ _init_regs:
 	ret
 
 _init_memc:
-	li	t0, 0xf0023000
+	li	t0, 0xf0029000
 	li	t1, 0x20
 	sw	t1, 0x14(t0) # reset pulse
 	li	t1, 0x40
@@ -92,9 +91,9 @@ loop_end:
 	nop
 
 _relocate:
-	li	t0, 0xa0010000
-	li	t1, 0xa0012000
-	li	t2, 0x90000000
+	la	t0, __hyperram_load_start
+	la	t1, __hyperram_load_end
+	la	t2, __hyperram_load_dest
 	beq	t0, t1, relocate_loop_end
 relocate_loop_head:
 	lw	a0, 0x0(t0)
@@ -103,6 +102,7 @@ relocate_loop_head:
 	addi	t2, t2, 4
 	bne	t0, t1, relocate_loop_head
 relocate_loop_end:
+	fence
 	ret
 	nop
 
