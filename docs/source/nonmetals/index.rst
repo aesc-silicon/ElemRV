@@ -46,13 +46,6 @@ prediction, and wider execution pipelines for increased performance.
      - ✓
      - ✓
      - ✓
-   * - Out-of-order
-     -
-     -
-     -
-     - ✓
-     - ✓
-     - ✓
    * - Dual-issue
      -
      -
@@ -65,7 +58,7 @@ prediction, and wider execution pipelines for increased performance.
      -
      -
      -
-     - ✓
+     -
      - ✓
    * - Privilege levels
      - M
@@ -97,7 +90,7 @@ prediction, and wider execution pipelines for increased performance.
    * - A (atomics)
      -
      -
-     - ✓
+     -
      - ✓
      - ✓
      - ✓
@@ -106,7 +99,7 @@ prediction, and wider execution pipelines for increased performance.
      -
      -
      -
-     - ✓
+     -
      - ✓
    * - D (double-precision FPU)
      -
@@ -145,7 +138,8 @@ prediction, and wider execution pipelines for increased performance.
      - ✓
 
 Every platform includes on-chip SRAM and boots from external SPI Flash in XIP
-mode. Starting with Nitrogen, HyperRAM and tightly-coupled memory are available.
+mode. HyperRAM is available starting with Nitrogen, and tightly-coupled memory
+with Oxygen.
 
 .. list-table:: Memory
    :header-rows: 1
@@ -218,7 +212,7 @@ crossbar for better throughput.
      - ✓
      - ✓
 
-A DMA controller is available starting with Nitrogen.
+A DMA controller is available starting with Oxygen.
 
 .. list-table:: DMA
    :header-rows: 1
@@ -235,7 +229,7 @@ A DMA controller is available starting with Nitrogen.
    * - Channels
      -
      -
-     - TBD
+     -
      - TBD
      - TBD
      - TBD
@@ -310,7 +304,7 @@ for higher-tier platforms is planned.
    * - Clock domains
      - 1
      - 1
-     - TBD
+     - 4
      - TBD
      - TBD
      - TBD
