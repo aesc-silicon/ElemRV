@@ -14,13 +14,13 @@ import nafarr.system.clock._
 import nafarr.blackboxes.ihp.sg13cmos5l._
 import nafarr.blackboxes.ihp.common._
 import nafarr.memory.ocram.ihp.sg13g2.TileLinkIhpOnChipRam
+import nafarr.memory.hyperbus.sim.W956A8MBYA
+import nafarr.peripherals.com.spi.sim.MT25Q
 
 import zibal.misc._
 import zibal.misc.ElementsConfig._
 import zibal.platform.Hydrogen
 import zibal.board.{KitParameter, BoardParameter}
-import zibal.sim.hyperram.W956A8MBYA
-import zibal.sim.MT25Q
 
 import elements.sdk.ElementsApp
 import elements.board.ElemRVFlask
