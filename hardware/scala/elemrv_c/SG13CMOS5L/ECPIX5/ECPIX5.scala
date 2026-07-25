@@ -16,14 +16,13 @@ import nafarr.system.reset.ResetControllerCtrl._
 import nafarr.system.clock._
 import nafarr.system.clock.ClockControllerCtrl._
 import nafarr.blackboxes.lattice.ecp5._
+import nafarr.memory.ocram.TileLinkOnChipRam
+import nafarr.memory.hyperbus.sim.W956A8MBYA
+import nafarr.peripherals.com.spi.sim.MT25Q
 
 import zibal.misc._
 import zibal.platform.Carbon
 import zibal.board.{KitParameter, BoardParameter}
-import zibal.sim.hyperram.W956A8MBYA
-import zibal.sim.MT25Q
-
-import nafarr.memory.ocram.TileLinkOnChipRam
 
 import elements.sdk.ElementsApp
 import elements.board.ECPIX5
