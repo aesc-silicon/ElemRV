@@ -15,8 +15,12 @@ services:
     environment:
       - DISPLAY=${DISPLAY}
     ports:
-      # Renode UART0 socket terminal (virtual prototyping), reachable from the host.
+      # Renode UART0 socket terminal
       - "3456:3456"
+      # OpenOCD ports
+      - "3333:3333"
+      - "4444:4444"
+      - "6666:6666"
     volumes:
       - /home:/home
       - ivy2-cache:/root/.ivy2
