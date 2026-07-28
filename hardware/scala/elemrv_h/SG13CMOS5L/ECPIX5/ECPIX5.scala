@@ -16,16 +16,18 @@ import nafarr.system.reset.ResetControllerCtrl._
 import nafarr.system.clock._
 import nafarr.system.clock.ClockControllerCtrl._
 import nafarr.blackboxes.lattice.ecp5._
-import nafarr.memory.ocram.TileLinkOnChipRam
+import nafarr.memory.ocram.ihp.TileLinkIhpOnChipRam
 import nafarr.memory.hyperbus.sim.W956A8MBYA
-import nafarr.peripherals.com.spi.sim.MT25Q
+import nafarr.memory.spi.MT25Q
 
 import zibal.misc._
+import zibal.misc.ElementsConfig._
 import zibal.platform.Hydrogen
 import zibal.board.{KitParameter, BoardParameter}
 
 import elements.sdk.ElementsApp
 import elements.board.ECPIX5
+import elements.board.ElemRVFlask
 
 case class ECPIX5Board() extends Component {
   val io = new Bundle {
@@ -37,7 +39,7 @@ case class ECPIX5Board() extends Component {
       val dq = Vec(inout(Analog(Bool)), 4)
       val rst = inout(Analog(Bool))
     }
-    val pins = Vec(inout(Analog(Bool())), 11)
+    val pins = Vec(inout(Analog(Bool())), 12)
   }
 
   val top = ECPIX5Top()
@@ -67,10 +69,14 @@ case class ECPIX5Board() extends Component {
     io.spi.dq(index) := top.io.spi.dq(index).PAD
     top.io.spi.dq(index).PAD := spiNor.io.dqOut(index)
   }
+  top.io.spi.rst.PAD := analogFalse
 
-  for (index <- 0 until top.io.pins.length) {
+  // UART RX is pins 4 - drive this pin high to prevent interrupts
+  for (index <- 0 until top.io.pins.length if index != 4) {
     io.pins(index) <> top.io.pins(index).PAD
   }
+  top.io.pins(4).PAD := analogTrue
+  io.pins(4) := analogTrue
 
   for (index <- 0 until top.io.ledPullDown.length) {
     top.io.ledPullDown(index).PAD := analogFalse
@@ -95,9 +101,10 @@ case class ECPIX5Top() extends Component {
     ResetParameter("flash", 256)
   )
   val inputClock = ClockParameter("input", ECPIX5.SystemClock.frequency, "input")
+  val refClock = ElemRVFlask.Hydrogen.oscillatorFrequency
   val clocks = List[ClockParameter](
-    ClockParameter("system", 50 MHz, "system"),
-    ClockParameter("debug", 50 MHz, "debug", synchronousWith = "system")
+    ClockParameter("system", refClock, "system"),
+    ClockParameter("debug", refClock, "debug", synchronousWith = "system")
   )
   val kitParameter = KitParameter(resets, clocks, inputClock)
   val boardParameter = ECPIX5.Parameter(kitParameter, ECPIX5.SystemClock.frequency)
@@ -106,11 +113,11 @@ case class ECPIX5Top() extends Component {
     socParameter,
     onChipRamSize = 8 kB,
     spiFlashSize = 512 kB,
-    (parameter: ResetControllerCtrl.Parameter) => {
+    resetCtrl = (parameter: ResetControllerCtrl.Parameter) => {
       val resetCtrl = new ResetControllerCtrl.GeneratorResetController(parameter)
       resetCtrl
     },
-    (
+    clockCtrl = (
         parameter: ClockControllerCtrl.Parameter,
         resetCtrl: ResetControllerCtrl.ResetControllerBase
     ) => {
@@ -120,6 +127,10 @@ case class ECPIX5Top() extends Component {
         List("system", "debug")
       )
       clockCtrl
+    },
+    onChipRamLogic = (parameter: TileLinkParameter, ramSize: BigInt) => {
+      val ram = TileLinkIhpOnChipRam.OnePort(parameter, ramSize.toInt)
+      (ram, ram.io.bus)
     }
   )
 
@@ -135,13 +146,13 @@ case class ECPIX5Top() extends Component {
       val cs = Vec(
         LatticeCmosIo(ECPIX5.Pmods.Pmod6.pin0)
       )
+      val sck = LatticeCmosIo(ECPIX5.Pmods.Pmod6.pin3).slewRateFast
       val dq = Vec(
         LatticeCmosIo(ECPIX5.Pmods.Pmod6.pin1).slewRateFast,
         LatticeCmosIo(ECPIX5.Pmods.Pmod6.pin2).slewRateFast,
         LatticeCmosIo(ECPIX5.Pmods.Pmod6.pin6).slewRateFast,
         LatticeCmosIo(ECPIX5.Pmods.Pmod6.pin7).slewRateFast
       )
-      val sck = LatticeCmosIo(ECPIX5.Pmods.Pmod6.pin3).slewRateFast
       val rst = LatticeCmosIo(ECPIX5.Pmods.Pmod6.pin5)
     }
     val pins = Vec(
@@ -155,7 +166,8 @@ case class ECPIX5Top() extends Component {
       LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin2),
       LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin3),
       LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin4),
-      LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin5)
+      LatticeCmosIo(ECPIX5.Pmods.Pmod2.pin5),
+      LatticeCmosIo(ECPIX5.LEDs.LD7.green)
     )
     val ledPullDown = Vec(
       LatticeCmosIo(ECPIX5.LEDs.LD5.red),
@@ -188,12 +200,13 @@ case class ECPIX5Top() extends Component {
   }
   io.spi.rst <> FakeO(soc.io_plat.spiXip.reset)
 
-  for (index <- 0 until 3) {
+  for (index <- 0 until 2) {
     io.pins(index) <> FakeIo(soc.io.pins.pins(index), true)
   }
-  for (index <- 3 until io.pins.length) {
+  for (index <- 2 until io.pins.length - 1) {
     io.pins(index) <> FakeIo(soc.io.pins.pins(index))
   }
+  io.pins(io.pins.length - 1) <> FakeIo(soc.io.pins.pins(io.pins.length - 1), true)
 
   for (index <- 0 until io.ledPullDown.length) {
     io.ledPullDown(index) <> FakeO(True)
@@ -204,10 +217,6 @@ case class ECPIX5Top() extends Component {
 object ECPIX5Generate extends ElementsApp {
   val report = elementsConfig.genFPGASpinalConfig.generateVerilog {
     val top = ECPIX5Top()
-    BinTools.initRam(
-      top.soc.system.onChipRam.ctrl.asInstanceOf[TileLinkOnChipRam].ram,
-      elementsConfig.swStorageImageContainer
-    )
 
     val lpf = LatticeTools.Lpf(elementsConfig)
     lpf.generate(top.io)
@@ -237,14 +246,12 @@ object ECPIX5Simulate extends ElementsApp {
           simDuration.toString.toInt ms
         )
         testCases.addReset(dut.io.reset, 1000 ns)
-        testCases.uartRxIdle(dut.io.pins(6))
       }
     case "boot" =>
       compiled.doSimUntilVoid("boot") { dut =>
         dut.simHook()
         val testCases = TestCases()
         testCases.addClockWithTimeout(dut.io.clock, ECPIX5.SystemClock.frequency, 20 ms)
-        testCases.uartRxIdle(dut.io.pins(6))
         testCases.boot(dut.io.pins(5), dut.baudPeriod)
       }
     case "mtimer" =>
@@ -252,7 +259,6 @@ object ECPIX5Simulate extends ElementsApp {
         dut.simHook()
         val testCases = TestCases()
         testCases.addClockWithTimeout(dut.io.clock, ECPIX5.SystemClock.frequency, 20 ms)
-        testCases.uartRxIdle(dut.io.pins(6))
         testCases.heartbeat(dut.io.pins(0), true)
       }
     case "reset" =>
@@ -260,7 +266,6 @@ object ECPIX5Simulate extends ElementsApp {
         dut.simHook()
         val testCases = TestCases()
         testCases.addClockWithTimeout(dut.io.clock, ECPIX5.SystemClock.frequency, 25 ms)
-        testCases.uartRxIdle(dut.io.pins(6))
         testCases.reset(dut.io.pins(5), dut.baudPeriod)
       }
     case _ =>

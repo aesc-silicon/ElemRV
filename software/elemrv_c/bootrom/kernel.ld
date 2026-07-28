@@ -9,9 +9,9 @@
 MEMORY
 {
 	OCRAM (xrw): ORIGIN = 0x80000000, LENGTH = 8k
-	FLASH (xr ): ORIGIN = 0xA0000000, LENGTH = 512k
+	FLASH (xr ): ORIGIN = 0xA0000000, LENGTH = 4k
 }
-stack_size = 4k;
+stack_size = 8k;
 heap_size = 0;
 
 /* define beginning and ending of stack */

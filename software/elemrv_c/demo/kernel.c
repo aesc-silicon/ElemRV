@@ -42,7 +42,7 @@ void isr_handle(unsigned int mcause)
 void _kernel(void)
 {
 	struct mtimer_driver mtimer;
-	unsigned char banner[15 + 1] = "\r\nElemRV-H\r\n>- ";
+	unsigned char banner[15 + 1] = "\r\nElemRV-C\r\n>- ";
 
 	gpio_init(&gpio, GPIO0CTRL_BASE);
 	mtimer_init(&mtimer, MTIMERCTRL_BASE);

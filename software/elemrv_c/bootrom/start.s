@@ -9,7 +9,7 @@
 .section .text
 .global _head
 _head:
-	li	a0, 1
+	li	a0, 2
 	jal	gpio_set_pin
 
 	jal	_init_xip
@@ -20,7 +20,7 @@ _head:
 	jal	gpio_set_pin
 
 	# Jump to application
-	li	ra, 0xa0010000
+	li	ra, 0xa0001000
 	ret
 
 _init_regs:

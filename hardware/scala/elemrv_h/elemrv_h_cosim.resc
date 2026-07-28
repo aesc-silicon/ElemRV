@@ -19,18 +19,20 @@ i @modules/elements/nafarr/hardware/scala/nafarr/memory/spi/SpiXipControllerCtrl
 mach create "elemrv_h_cosim"
 machine LoadPlatformDescription @hardware/scala/elemrv_h/elemrv_h_cosim.repl
 
-# Bind each co-simulated peripheral to its Verilated library.
-gpio0     SimulationFilePathLinux $cosimdir/gpio0/libVtop.so
-i2c0      SimulationFilePathLinux $cosimdir/i2c0/libVtop.so
-pio0      SimulationFilePathLinux $cosimdir/pio0/libVtop.so
-pwm0      SimulationFilePathLinux $cosimdir/pwm0/libVtop.so
-prng      SimulationFilePathLinux $cosimdir/prng/libVtop.so
-pinmux    SimulationFilePathLinux $cosimdir/pinmux/libVtop.so
-resetCtrl SimulationFilePathLinux $cosimdir/resetCtrl/libVtop.so
-clockCtrl SimulationFilePathLinux $cosimdir/clockCtrl/libVtop.so
-syscon    SimulationFilePathLinux $cosimdir/syscon/libVtop.so
-watchdog  SimulationFilePathLinux $cosimdir/watchdog/libVtop.so
-esm       SimulationFilePathLinux $cosimdir/esm/libVtop.so
+# Bind each co-simulated peripheral to its Verilated library. The library directory is the SoC
+# instance name from the generated cosim manifest (build/.../cosim/peripherals.tsv); the leading
+# token is the Renode peripheral (from the .repl). Keep these in sync with the manifest.
+gpio0     SimulationFilePathLinux $cosimdir/gpio0Ctrl/libVtop.so
+i2c0      SimulationFilePathLinux $cosimdir/i2c0Ctrl/libVtop.so
+pio0      SimulationFilePathLinux $cosimdir/pio0Ctrl/libVtop.so
+pwm0      SimulationFilePathLinux $cosimdir/pwm0Ctrl/libVtop.so
+prng      SimulationFilePathLinux $cosimdir/prngCtrl/libVtop.so
+pinmux    SimulationFilePathLinux $cosimdir/pinmuxCtrl/libVtop.so
+resetCtrl SimulationFilePathLinux $cosimdir/resetCtrlMapper/libVtop.so
+clockCtrl SimulationFilePathLinux $cosimdir/clockCtrlMapper/libVtop.so
+syscon    SimulationFilePathLinux $cosimdir/sysconCtrlMapper/libVtop.so
+watchdog  SimulationFilePathLinux $cosimdir/watchdogCtrlMapper/libVtop.so
+esm       SimulationFilePathLinux $cosimdir/TileLinkEsm/libVtop.so
 
 # Boot from XIP flash (same flow as elemrv_h_emul.resc).
 sysbus LoadBinary $bin 0xA0000000
