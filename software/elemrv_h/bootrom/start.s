@@ -9,7 +9,7 @@
 .section .text
 .global _head
 _head:
-	li	a0, 1
+	li	a0, 2
 	jal	gpio_set_pin
 
 	jal	_init_xip

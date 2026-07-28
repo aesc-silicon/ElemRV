@@ -13,9 +13,9 @@ import nafarr.system.reset._
 import nafarr.system.clock._
 import nafarr.blackboxes.ihp.sg13cmos5l._
 import nafarr.blackboxes.ihp.common._
-import nafarr.memory.ocram.ihp.sg13g2.TileLinkIhpOnChipRam
+import nafarr.memory.ocram.ihp.TileLinkIhpOnChipRam
 import nafarr.memory.hyperbus.sim.W956A8MBYA
-import nafarr.peripherals.com.spi.sim.MT25Q
+import nafarr.memory.spi.MT25Q
 
 import zibal.misc._
 import zibal.misc.ElementsConfig._
@@ -35,7 +35,7 @@ case class SG13CMOS5LBoard() extends Component {
       val dq = Vec(inout(Analog(Bool)), 4)
       val rst = inout(Analog(Bool))
     }
-    val pins = Vec(inout(Analog(Bool())), 11)
+    val pins = Vec(inout(Analog(Bool())), 12)
   }
 
   val top = SG13CMOS5LTop()
@@ -52,6 +52,10 @@ case class SG13CMOS5LBoard() extends Component {
   top.io.jtag.tdi.PAD := analogFalse
   analogFalse := top.io.jtag.tdo.PAD
 
+  for (index <- 0 until top.io.forFutureUse.length) {
+    top.io.forFutureUse(index).PAD := analogFalse
+  }
+
   val spiNor = MT25Q.MultiProtocol()
   spiNor.io.clock := io.clock
   spiNor.io.dataClock := io.spi.sck
@@ -67,9 +71,12 @@ case class SG13CMOS5LBoard() extends Component {
     top.io.spi.dq(index).PAD := spiNor.io.dqOut(index)
   }
 
-  for (index <- 0 until top.io.pins.length) {
+  // UART RX is pins 4 - drive this pin high to prevent interrupts
+  for (index <- 0 until top.io.pins.length if index != 4) {
     io.pins(index) <> top.io.pins(index).PAD
   }
+  top.io.pins(4).PAD := analogTrue
+  io.pins(4) := analogTrue
 
 }
 
@@ -94,11 +101,11 @@ case class SG13CMOS5LTop() extends Component {
     onChipRamSize = 8 kB,
     spiFlashSize = 512 kB,
     iCacheSize = 4 kB,
-    (parameter: ResetControllerCtrl.Parameter) => {
+    resetCtrl = (parameter: ResetControllerCtrl.Parameter) => {
       val resetCtrl = new ResetControllerCtrl.DummyResetController(parameter)
       resetCtrl
     },
-    (
+    clockCtrl = (
         parameter: ClockControllerCtrl.Parameter,
         resetCtrl: ResetControllerCtrl.ResetControllerBase
     ) => {
@@ -135,7 +142,7 @@ case class SG13CMOS5LTop() extends Component {
         IhpCmosIo(Edge.East, 3, "clk_main"),
         IhpCmosIo(Edge.East, 2, "clk_main")
       )
-      val rst = IhpCmosIo(Edge.North, 7, "clk_main")
+      val rst = IhpCmosIo(Edge.East, 6, "clk_main")
     }
     val pins = Vec(
       IhpCmosIo(Edge.West, 2, "clk_main"),
@@ -144,11 +151,17 @@ case class SG13CMOS5LTop() extends Component {
       IhpCmosIo(Edge.West, 5, "clk_main"),
       IhpCmosIo(Edge.West, 6, "clk_main"),
       IhpCmosIo(Edge.West, 7, "clk_main"),
+      IhpCmosIo(Edge.West, 8, "clk_main"),
       IhpCmosIo(Edge.North, 2, "clk_main"),
       IhpCmosIo(Edge.North, 3, "clk_main"),
       IhpCmosIo(Edge.North, 4, "clk_main"),
       IhpCmosIo(Edge.North, 5, "clk_main"),
       IhpCmosIo(Edge.North, 6, "clk_main")
+    )
+    val forFutureUse = Vec(
+      IhpCmosIo(Edge.South, 6),
+      IhpCmosIo(Edge.North, 7),
+      IhpCmosIo(Edge.North, 8)
     )
   }
 
@@ -175,11 +188,16 @@ case class SG13CMOS5LTop() extends Component {
     io.pins(index) <> IOPadInOut4mA(soc.io.pins.pins(index))
   }
 
+  val forFutureUse = False
+  for (index <- 0 until io.forFutureUse.length) {
+    io.forFutureUse(index) <> IOPadOut4mA(forFutureUse)
+  }
+
   val power = Seq(
-    IhpPowerIo(Edge.South, 6, IhpPowerIoCell.SG13CMOS5L.Vss),
-    IhpPowerIo(Edge.South, 7, IhpPowerIoCell.SG13CMOS5L.Vdd),
-    IhpPowerIo(Edge.East, 6, IhpPowerIoCell.SG13CMOS5L.IOVss),
-    IhpPowerIo(Edge.East, 7, IhpPowerIoCell.SG13CMOS5L.IOVdd),
+    IhpPowerIo(Edge.South, 7, IhpPowerIoCell.SG13CMOS5L.Vss),
+    IhpPowerIo(Edge.South, 8, IhpPowerIoCell.SG13CMOS5L.Vdd),
+    IhpPowerIo(Edge.East, 7, IhpPowerIoCell.SG13CMOS5L.IOVss),
+    IhpPowerIo(Edge.East, 8, IhpPowerIoCell.SG13CMOS5L.IOVdd),
     IhpPowerIo(Edge.North, 0, IhpPowerIoCell.SG13CMOS5L.Vdd),
     IhpPowerIo(Edge.North, 1, IhpPowerIoCell.SG13CMOS5L.Vss),
     IhpPowerIo(Edge.West, 0, IhpPowerIoCell.SG13CMOS5L.IOVdd),
@@ -193,22 +211,24 @@ object SG13CMOS5LGenerate extends ElementsApp {
     val top = SG13CMOS5LTop()
     top.setDefinitionName(topCellName)
 
-    top.soc.prepareBaremetal("demo", elementsConfig)
+    BaremetalTools
+      .Header(elementsConfig, "demo")
+      .generate(top.soc.baremetalDevices, top.soc.baremetalIrqs, top.soc.baremetalErrors)
+    RenodeTools.dumpCosimManifest(top.soc, elementsConfig.cosimManifest)
 
     top
   }
 
   val chip = OpenROADTools.IHP.Config(elementsConfig, OpenROADTools.PDKs.IHP.sg13cmos5l)
   chip.setTopCellName(topCellName)
-  scala.util.Properties.envOrElse("FLOORPLAN", "relaxed") match {
+  scala.util.Properties.envOrElse("FLOORPLAN", "tapeout") match {
     case "tapeout" =>
       chip.dieArea = (0, 0, 2392.80, 2400.30)
       chip.coreArea = (394.08, 396.9, 1995.84, 2003.40)
-    case _ =>
+    case "relaxed" =>
       SpinalWarning(
         "FLOORPLAN=relaxed: oversized iteration floorplan - utilization/timing/" +
-          "congestion results are NOT tape-out representative. Run with " +
-          "FLOORPLAN=tapeout for signoff."
+          "congestion results are NOT tape-out representative."
       )
       chip.dieArea = (0, 0, 2619.84, 2623.32)
       chip.coreArea = (394.08, 396.9, 2222.88, 2226.42)
@@ -253,7 +273,7 @@ object SG13CMOS5LGenerate extends ElementsApp {
     report.toplevel.soc.clockCtrl.getClockDomainByName("debug").frequency.getValue
   )
   chip.addReset(report.toplevel.io.reset.PAD)
-  chip.setFalsePath("clk_main", "clk_jtag")
+  chip.setAsynchronousClockGroups(Seq("clk_main", "clk_debug"), Seq("clk_jtag"))
   chip.io = Some(report.toplevel.io)
   chip.ioPower = Some(report.toplevel.power)
   chip.pdnRingWidth = 30.0
@@ -283,7 +303,6 @@ object SG13CMOS5LSimulate extends ElementsApp {
           simDuration.toString.toInt ms
         )
         testCases.addReset(dut.io.reset, 100 us)
-        testCases.uartRxIdle(dut.io.pins(1))
       }
   }
 }

@@ -25,14 +25,13 @@ object ElemRV {
   def apply(parameter: Carbon.Parameter) = ElemRV(parameter)
 
   case class Parameter(boardParameter: BoardParameter) extends SocParameter(boardParameter) {
-    val gpio0 = GpioCtrl.Parameter(Gpio.Parameter(11), 3)
+    val gpio0 = GpioCtrl.Parameter(Gpio.Parameter(12), 3)
     val i2c0 = I2cControllerCtrl.Parameter.default(1)
-    val pio0 = PioCtrl.Parameter.default(2)
+    val pio0 = PioCtrl.Parameter.default(3)
     val pwm0 = PwmCtrl.Parameter.default(1)
     val uart0 = UartCtrl.Parameter.full()
     val prng = PrngCtrl.Parameter()
-    val crc32 = Crc32Ctrl.Parameter()
-    val pinmux = PinmuxCtrl.Parameter(Pinmux.Parameter(11), 22, 2)
+    val pinmux = PinmuxCtrl.Parameter(Pinmux.Parameter(12), 24, 2)
 
     override val irqSources = Seq(gpio0, i2c0, pio0, pwm0, uart0)
     override val errorSources = Seq(pio0, pwm0, uart0, prng)
@@ -105,6 +104,7 @@ object ElemRV {
       addPinmuxOption(8, List("gpio0_8", "i2c0_scl"))
       addPinmuxOption(9, List("gpio0_9", "i2c0_sda"))
       addPinmuxOption(10, List("gpio0_10", "i2c0_interrupt_0"))
+      addPinmuxOption(11, List("gpio0_11", "pio0_2"))
 
       val pinmuxCtrl = TileLinkPinmux(socParameter.pinmux, getPinmuxMapping())
       addPeripheralDevice(pinmuxCtrl.io.bus, 0x10000, 4 kB)

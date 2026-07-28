@@ -12,7 +12,7 @@
 cpu: CPU.RiscV32 @ sysbus
     cpuType: "rv32i_zicsr"
     timeProvider: empty
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
 
 // On-chip RAM: 8 KB @ 0x80000000
 ram: Memory.MappedMemory @ sysbus 0x80000000

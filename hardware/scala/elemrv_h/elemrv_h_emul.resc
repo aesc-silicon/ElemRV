@@ -42,6 +42,4 @@ connector Connect uart0 uart0term
 # In --console / headless mode there's no LED widget, so GpioCtrl logs output-pin changes
 # instead (visible in the monitor). Raise GPIO verbosity if needed:  logLevel 0 gpio0
 
-# To trace GPIO register access, raise its verbosity:  logLevel 0 gpio0
-
 echo "ElemRV-H ready."
