@@ -36,6 +36,8 @@ tasks:
     preconditions:
       - sh: 'test -f {{.BUILD_ROOT}}/{{.SOC}}/firmware/image_container.img'
         msg: "Firmware image not found. Build it first with 'task baremetal:compile SOC={{.SOC}}' or 'task zephyr:compile SOC={{.SOC}}'."
+      - sh: 'test -f {{.BUILD_ROOT}}/{{.SOC}}/{{.TARGET}}/cosim/peripherals.tsv'
+        msg: "Cosim peripheral manifest not found. Generate the SoC first with 'task SOC={{.SOC}} asic:prepare'."
     cmds:
       - task: ':lib-cosim-build'
       - task: ':{{if .gui}}lib-cosim-gui{{else}}lib-cosim{{end}}'

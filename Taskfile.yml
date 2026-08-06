@@ -18,6 +18,8 @@ includes:
     taskfile: ./Taskfile.zephyr.yml
   flash:
     taskfile: ./Taskfile.flash.yml
+  jtag:
+    taskfile: ./Taskfile.jtag.yml
   asic:
     taskfile: ./Taskfile.asic.yml
   sim:
@@ -82,9 +84,10 @@ vars:
   # are unaffected. Override, e.g. 'TOPCELL=MyChipTop', to rename the whole design.
   TOPCELL: '{{.TOPCELL | default (printf "%sTop" .TARGET)}}'
 
-  # Floorplan profile: "relaxed" (default) for fast, robust iteration builds;
-  # "tapeout" for the tight signoff core/die sizes.
-  FLOORPLAN: '{{.FLOORPLAN | default "relaxed"}}'
+  # Floorplan profiles:
+  # "tapeout" (default) for the tight signoff core/die sizes.
+  # "relaxed" for fast, robust iteration builds;
+  FLOORPLAN: '{{.FLOORPLAN | default "tapeout"}}'
 
   KLAYOUT_HOME: "{{.PWD}}/pdks/IHP-Open-PDK/{{.PDK}}/libs.tech/klayout/"
   CONTAINER_NAME: elemrv_container

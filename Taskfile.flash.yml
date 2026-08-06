@@ -5,13 +5,6 @@
 
 version: '3'
 
-# Programs the external SPI NOR flash with the current firmware image.
-#
-# The image is firmware-agnostic: zephyr:compile and baremetal:compile both
-# maintain the image_container.img symlink, so these tasks flash whichever
-# firmware was built last. Transport (Bus Pirate / JTAG) is independent of how
-# the image was produced.
-
 vars:
   # SPI NOR part on the board. Single source of truth for both transports.
   FLASH_CHIP: '{{.FLASH_CHIP | default "MT25QL256"}}'
@@ -26,8 +19,3 @@ tasks:
       - "{{.RUN}} 'cp {{.BUILD_ROOT}}/{{.SOC}}/firmware/image_container.img {{.BUILD_ROOT}}/{{.SOC}}/firmware/image_container_flashrom.img'"
       - "{{.RUN}} 'truncate -s 32M {{.BUILD_ROOT}}/{{.SOC}}/firmware/image_container_flashrom.img'"
       - "{{.RUN}} 'flashrom -p buspirate_spi:dev={{.BUSPIRATE_DEV}},spispeed={{.BUSPIRATE_SPEED}} -c {{.FLASH_CHIP}} -l software/{{.package}}/spi.layout -i flash -n -w {{.BUILD_ROOT}}/{{.SOC}}/firmware/image_container_flashrom.img'"
-
-  jtag:
-    desc: Flash the current firmware image to SPI NOR via JTAG (OpenOCD).
-    cmds:
-      - "{{.RUN}} 'openocd -f modules/elements/zibal/openocd/flash_spi_flash.cfg'"

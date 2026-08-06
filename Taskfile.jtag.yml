@@ -1,0 +1,27 @@
+# SPDX-FileCopyrightText: 2026 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+vars:
+  # SPI NOR part on the board. Single source of truth for both transports.
+  FLASH_CHIP: '{{.FLASH_CHIP | default "MT25QL256"}}'
+
+tasks:
+  flash:
+    desc: Flash the current firmware image to SPI NOR via JTAG (OpenOCD).
+    cmds:
+      - "{{.RUN}} 'openocd -f modules/elements/zibal/openocd/flash_spi_flash.cfg'"
+
+  server:
+    desc: >-
+      Start OpenOCD (gdb on 3333 + telnet on 4444)
+    cmds:
+      - "{{.RUN}} 'openocd -f modules/elements/zibal/openocd/debug.cfg'"
+
+  telnet:
+    desc: Attach telnet to the running server  (port 4444)
+    cmds:
+      - "telnet localhost 4444"

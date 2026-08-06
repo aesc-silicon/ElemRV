@@ -30,3 +30,8 @@ tasks:
           app: "demo"
       - "{{.RUN}} './software/{{.package}}/gen_baremetal_container.sh'"
       - "{{.RUN}} 'ln -sf {{.BUILD_ROOT}}/{{.SOC}}/firmware/baremetal_container.img {{.BUILD_ROOT}}/{{.SOC}}/firmware/image_container.img'"
+
+  debug:
+    desc: Attach GDB over JTAG and debug the bare metal firmware.
+    cmds:
+      - "{{.RUN}} '${GCC}-gdb {{.BUILD_ROOT}}/{{.SOC}}/firmware/demo/output.elf -x modules/elements/zibal/gdb/debug.cmd'"
