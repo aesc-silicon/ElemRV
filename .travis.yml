@@ -53,7 +53,7 @@ script:
   # Prepare files
   - CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L asic:prepare
   - CI=true IS_HEADLESS=true task SOC=ElemRV-C TARGET=SG13CMOS5L asic:prepare
-  - CI=true IS_HEADLESS=true task SOC=ElemRV-N TARGET=SG13G2 asic:prepare
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-N TARGET=SG13CMOS5L asic:prepare
 
   # Compile baremetal firmware
   - CI=true IS_HEADLESS=true task SOC=ElemRV-H baremetal:compile
@@ -63,7 +63,7 @@ script:
   # Prepare FPGA files
   - CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L fpga:prepare
   - CI=true IS_HEADLESS=true task SOC=ElemRV-C TARGET=SG13CMOS5L fpga:prepare
-  - CI=true IS_HEADLESS=true task SOC=ElemRV-N TARGET=SG13G2 fpga:prepare
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-N TARGET=SG13CMOS5L fpga:prepare
 
   # TODO ElemRV-C is currently missing in Zephyr
   # Compile Zephyr firmware
@@ -74,7 +74,7 @@ script:
   # Synthesize FPGA design
   - CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L fpga:synthesize
   - CI=true IS_HEADLESS=true task SOC=ElemRV-C TARGET=SG13CMOS5L fpga:synthesize
-  - CI=true IS_HEADLESS=true task SOC=ElemRV-N TARGET=SG13G2 fpga:synthesize
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-N TARGET=SG13CMOS5L fpga:synthesize
 
   # TODO Full RTL to GDS flow takes too long for travis
   # Generate layout
