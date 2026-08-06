@@ -19,24 +19,32 @@ static struct uart_driver uart;
 static struct gpio_driver gpio;
 static struct plic_driver plic;
 
+#define GPIO_IRQ_NO	3
+
 void isr_handle(unsigned int mcause)
 {
 	unsigned char chr;
+	unsigned int source;
 
-	interrupt_disable();
+	/* Claim until no source is pending (pending clears on the claim read);
+	 * dispatch on the claimed id. mret restores MIE, so don't touch it. */
+	while ((source = plic_irq_claim(&plic)) != 0) {
+		if (source == UART0CTRL_IRQ) {
+			while (uart_getc(&uart, &chr) == 0) {
+				uart_putc(&uart, chr);
+			}
+			uart_irq_rx_clear(&uart);
+		}
+		if (source == GPIO0CTRL_IRQ) {
+			uart_puts(&uart, (unsigned char *)"IRQ GPIO: ");
+			uart_putc(&uart, '0' + GPIO_IRQ_NO);
+			uart_puts(&uart, (unsigned char *)"\r\n");
 
-	if (uart_irq_rx_ready(&uart)) {
-		uart_irq_rx_disable(&uart);
-		plic_irq_claim(&plic, UART0CTRL_IRQ);
-
-		while (uart_getc(&uart, &chr) == 0) {
-			uart_putc(&uart, chr);
+			gpio_irq_clear(&gpio, GPIO_IRQ_NO, GPIO_IRQ_FALLING_EDGE);
 		}
 
-		uart_irq_rx_enable(&uart);
+		plic_irq_complete(&plic, source);
 	}
-
-	interrupt_enable();
 }
 
 void _kernel(void)
@@ -59,6 +67,7 @@ void _kernel(void)
 
 	uart_puts(&uart, banner);
 	uart_irq_rx_enable(&uart);
+	gpio_irq_enable(&gpio, GPIO_IRQ_NO, GPIO_IRQ_FALLING_EDGE);
 
 	while(1) {
 		// ON - 150ms - OFF - 50ms - ON - 150ms - OFF - 1000ms
