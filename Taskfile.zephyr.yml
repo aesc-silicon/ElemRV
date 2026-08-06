@@ -11,8 +11,16 @@ vars:
       case "{{.SOC}}" in
         ElemRV-H) echo "rv32i_zicsr" ;;
         ElemRV-C) echo "rv32imc_zicsr" ;;
-        ElemRV-N) echo "rv32im_zicsr" ;;
+        ElemRV-N) echo "rv32imc_zicsr_zicntr_zihpm" ;;
         *) echo ""; echo "Unknown SOC: {{.SOC}}" >&2; exit 1 ;;
+      esac
+  zephyr_board:
+    sh: |
+      case "{{.SOC}}" in
+        ElemRV-H) echo "elemrv_flask_h" ;;
+        ElemRV-C) echo "elemrv_flask_c" ;;
+        ElemRV-N) echo "elemrv_flask_n" ;;
+        *) echo ""; echo "No Zephyr board for SOC: {{.SOC}}" >&2; exit 1 ;;
       esac
 
 tasks:
@@ -24,7 +32,12 @@ tasks:
           app: "bootrom"
       - task: ':lib-zephyr-firmware'
         vars:
-          boardname: "elemrv_flask/{{.package}}"
+          boardname: "{{.zephyr_board}}"
           app: "{{.ZEPHYR_APP | default \"modules/elements/zephyr/samples/basic/blinky\"}}"
       - "{{.RUN}} './software/{{.package}}/gen_zephyr_container.sh'"
       - "{{.RUN}} 'ln -sf {{.BUILD_ROOT}}/{{.SOC}}/firmware/zephyr_container.img {{.BUILD_ROOT}}/{{.SOC}}/firmware/image_container.img'"
+
+  debug:
+    desc: Attach GDB over JTAG and debug the Zephyr firmware.
+    cmds:
+      - "{{.RUN}} '${GCC}-gdb {{.BUILD_ROOT}}/{{.SOC}}/firmware/zephyr/zephyr/zephyr.elf -x modules/elements/zibal/gdb/debug.cmd'"

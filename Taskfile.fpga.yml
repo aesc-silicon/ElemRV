@@ -32,11 +32,12 @@ tasks:
           vendor: "Lattice"
 
   flash:
-    desc: Programs the FPGA with the generated bitstream.
+    desc: Programs the FPGA with the generated bitstream. Add 'mode=spi' to write the external SPI flash (default loads volatile SRAM).
     cmds:
       - task: ':lib-flash-bitstream'
         vars:
           FPGA: "ECPIX5"
+          mode: "{{ .mode }}"
 
   simulate:
     desc: Runs simulations at the RTL level. Add 'duration=n' to specify the duration in n milliseconds.
