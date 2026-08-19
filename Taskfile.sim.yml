@@ -15,9 +15,13 @@ tasks:
       - task: ':lib-simulate'
 
   waves:
-    desc: Opens the simulation result in GTKWave.
+    desc: >-
+      Opens the simulation result in GTKWave. Uses hardware/scala/<soc>/wave.gtkw
+      as the signal selection when that file exists.
     cmds:
       - task: ':lib-view-simulation'
+        vars:
+          savefile: "hardware/scala/{{.package}}/wave.gtkw"
 
   emulate:
     desc: >-
