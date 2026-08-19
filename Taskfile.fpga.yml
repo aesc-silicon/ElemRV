@@ -46,9 +46,12 @@ tasks:
         vars:
           FPGA: "ECPIX5"
 
-  view-simulation:
-    desc: Opens the simulation with GTKWave.
+  waves:
+    desc: >-
+      Opens the simulation result in GTKWave. Uses hardware/scala/<soc>/wave.gtkw
+      as the signal selection when that file exists.
     cmds:
       - task: ':lib-view-simulation'
         vars:
           FPGA: "ECPIX5"
+          savefile: "hardware/scala/{{.package}}/wave.gtkw"
