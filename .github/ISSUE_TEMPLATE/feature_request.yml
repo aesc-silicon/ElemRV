@@ -1,0 +1,70 @@
+# SPDX-FileCopyrightText: 2026 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+name: Feature request
+description: Propose a new SoC feature, flow or capability.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A new **IP core** belongs in
+        [Nafarr](https://github.com/aesc-silicon/elements-nafarr/issues), and a new
+        **platform or build-flow** capability belongs in
+        [Zibal](https://github.com/aesc-silicon/elements-zibal/issues). Use this
+        template for SoC variants, integration work and project-level features.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: >-
+        Describe the use case rather than the implementation. What can you not do
+        today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to see?
+      description: >-
+        If you have an implementation in mind, sketch it. If you have hardware
+        requirements — pin count, memory, throughput, latency — state them here.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Which SoC or tier does this target?
+      options:
+        - ElemRV-H
+        - ElemRV-C
+        - ElemRV-N
+        - A future SoC
+        - All / not SoC specific
+    validations:
+      required: true
+
+  - type: dropdown
+    id: contributing
+    attributes:
+      label: Would you like to implement it?
+      description: >-
+        Either answer is fine. We ask because it changes how much detail the
+        ticket needs.
+      options:
+        - "Yes, I would like to work on this"
+        - "Yes, with some guidance"
+        - "No, I am suggesting it"
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: >-
+        Existing workarounds, or other designs you rejected and why.

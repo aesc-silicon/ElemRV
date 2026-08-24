@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: 2026 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+blank_issues_enabled: false
+contact_links:
+  - name: Question or idea
+    url: https://github.com/aesc-silicon/ElemRV/discussions
+    about: Ask about the project, propose a larger change, or find a place to start.
+  - name: Contribution guide
+    url: https://github.com/aesc-silicon/ElemRV/blob/main/CONTRIBUTING.md
+    about: Which repository to use, how to set up the workspace, and what CI checks.
+  - name: IP cores, drivers and Renode models
+    url: https://github.com/aesc-silicon/elements-nafarr/issues
+    about: Peripherals and their drivers live in Nafarr — open the issue there.
+  - name: Platforms and build tooling
+    url: https://github.com/aesc-silicon/elements-zibal/issues
+    about: Hydrogen/Carbon/Nitrogen, the interconnect and the EDA flows live in Zibal.
