@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: 2026 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+name: Documentation
+description: Something is missing, wrong or hard to follow in the documentation.
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Documentation issues are genuinely useful — a wrong register offset or a
+        setup step that does not work costs somebody an afternoon. Small fixes are
+        also a good first pull request if you would rather send one directly.
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of problem is it?
+      options:
+        - Wrong — it does not match the hardware or the code
+        - Missing — there is no documentation for this
+        - Unclear — it is there but I could not follow it
+        - Setup instructions did not work
+    validations:
+      required: true
+
+  - type: input
+    id: where
+    attributes:
+      label: Where?
+      description: >-
+        A page URL, or a path such as `docs/source/nonmetals/elemrv_h.rst`.
+      placeholder: "docs/source/nonmetals/elemrv_h.rst, pinmux table"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is the problem?
+      description: >-
+        If something is wrong, please say what the correct value is and where you
+        found it — the RTL is the authority, and a pointer to the relevant
+        `.scala` file makes the fix quick and verifiable.
+    validations:
+      required: true

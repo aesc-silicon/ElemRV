@@ -1,0 +1,93 @@
+# SPDX-FileCopyrightText: 2026 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+
+name: Bug report
+description: Something does not behave the way it should.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: if this is about an IP core or its driver, it belongs in
+        [Nafarr](https://github.com/aesc-silicon/elements-nafarr/issues). If it is
+        about a platform or a build flow, it belongs in
+        [Zibal](https://github.com/aesc-silicon/elements-zibal/issues). When in
+        doubt, file it here and we will move it.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you expected, and what you got instead.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: soc
+    attributes:
+      label: Which SoC?
+      options:
+        - ElemRV-H
+        - ElemRV-C
+        - ElemRV-N
+        - Several / not SoC specific
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target
+    attributes:
+      label: Where did you see it?
+      description: >-
+        This matters more than anything else in the report. The same symptom on an
+        FPGA and in simulation usually has a completely different cause.
+      options:
+        - RTL simulation (task sim:simulate)
+        - Renode emulation (task sim:emulate)
+        - FPGA (ECPIX5)
+        - Silicon
+        - ASIC flow / OpenROAD
+        - Build or tooling only
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How do we reproduce it?
+      description: The exact commands, including any SOC/TARGET variables.
+      placeholder: |
+        task fpga:prepare fpga:synthesize SOC=ElemRV-H
+        task jtag:flash SOC=ElemRV-H
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output
+      description: >-
+        Console output, OpenOCD log, simulation transcript or synthesis report.
+        Paste the text rather than a screenshot where you can.
+      render: text
+
+  - type: input
+    id: commit
+    attributes:
+      label: Commit
+      description: >-
+        Output of `git rev-parse --short HEAD`. If a sub-repository is involved,
+        please give its commit too — the manifest pins them independently.
+      placeholder: "e80a38ced (nafarr 8b3a3d4)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else?
+      description: >-
+        Host OS, podman version, whether you changed the manifest revisions, or
+        anything else you think is relevant.
