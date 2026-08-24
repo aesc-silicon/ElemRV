@@ -18,6 +18,9 @@ vars:
 tasks:
   compile:
     desc: Compiles bare metal firmwares.
+    preconditions:
+      - sh: 'test -f {{.BUILD_ROOT}}/{{.SOC}}/firmware/storages.yaml'
+        msg: "Design not generated. Run 'task SOC={{.SOC}} asic:prepare' first."
     cmds:
       - task: ':lib-baremetal-firmware'
         vars:
