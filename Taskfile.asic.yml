@@ -19,9 +19,6 @@ tasks:
   prepare:
     desc: Generates all necessary source files and metadata for chip layout creation.
     cmds:
-      - task: ':lib-sbt-publishLocal'
-        vars:
-          project: "modules/elements/vexiiriscv"
       - task: ':lib-generate'
       - task: ':lib-sealring'
       - "mkdir -p {{.BUILD_ROOT}}/{{.SOC}}/{{.TARGET}}/zibal/macros/bondpad"
