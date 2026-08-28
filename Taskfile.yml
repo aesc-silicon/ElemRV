@@ -106,9 +106,8 @@ vars:
     -e FPGA_PACKAGE={{.FPGA_PACKAGE}} \
     -e FPGA_FREQUENCY={{.FPGA_FREQUENCY}} \
     -e KLAYOUT_HOME={{.KLAYOUT_HOME}} \
-    -e NAFARR_BASE={{.NAFARR_BASE}} \
     -e ZIBAL_BASE={{.ZIBAL_BASE}} \
-    -e VEXRISCV_ROOT={{.VEXRISCV_ROOT}} \
+    -e NAFARR_BASE={{.NAFARR_BASE}} \
     -e BUILD_ROOT={{.BUILD_ROOT}} \
     -e USER={{.USER}} \
     -e ZEPHYR_SDK_INSTALL_DIR={{.ZEPHYR_SDK_INSTALL_DIR}} \
@@ -123,10 +122,9 @@ env:
   FPGA_FREQUENCY: 50
   OPENFPGALOADER_BOARD: ecpix5_r03
   PDK_ROOT: "{{.PWD}}/pdks"
-  NAFARR_BASE: "{{.PWD}}/modules/elements/nafarr/"
-  ZIBAL_BASE: "{{.PWD}}/modules/elements/zibal/"
-  VEXRISCV_ROOT: "{{.PWD}}/modules/elements/vexriscv/"
-  BUILD_ROOT: "{{.PWD}}/build/"
+  ZIBAL_BASE: "{{.PWD}}/modules/elements/zibal"
+  NAFARR_BASE: "{{.ZIBAL_BASE}}/ext/nafarr"
+  BUILD_ROOT: "{{.PWD}}/build"
   ZEPHYR_SDK_INSTALL_DIR: "/opt/elements/zephyr-sdk-1.0.1"
   GCC: "{{.ZEPHYR_SDK_INSTALL_DIR}}/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf"
   OPENROAD_FLOW_ROOT: "{{.PWD}}/tools/OpenROAD-flow-scripts/flow"
@@ -163,7 +161,6 @@ tasks:
     desc: Downloads and synchronizes all required dependencies.
     cmds:
       - ./repo sync {{if .CI}}-q{{end}}
-      - ./repo forall modules/elements/vexiiriscv -c 'git submodule update --init --recursive'
 
   install:
     desc: Installs all dependencies and prepares the project for FPGA and chip workflows.
