@@ -72,9 +72,9 @@ script:
   - CI=true IS_HEADLESS=true task SOC=ElemRV-N zephyr:compile
 
   # Synthesize FPGA design
-  - CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L fpga:synthesize
-  - CI=true IS_HEADLESS=true task SOC=ElemRV-C TARGET=SG13CMOS5L fpga:synthesize
-  - CI=true IS_HEADLESS=true task SOC=ElemRV-N TARGET=SG13CMOS5L fpga:synthesize
+  - CI=true IS_HEADLESS=true travis_wait 20 task SOC=ElemRV-H TARGET=SG13CMOS5L fpga:synthesize
+  - CI=true IS_HEADLESS=true travis_wait 20 task SOC=ElemRV-C TARGET=SG13CMOS5L fpga:synthesize
+  - CI=true IS_HEADLESS=true travis_wait 20 task SOC=ElemRV-N TARGET=SG13CMOS5L fpga:synthesize
 
   # TODO Full RTL to GDS flow takes too long for travis
   # Generate layout
