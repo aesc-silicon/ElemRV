@@ -235,9 +235,9 @@ object SG13CMOS5LGenerate extends ElementsApp {
   chip.hasIoRing = true
   chip.setAbcArea()
 
-  val sramNorthY = chip.coreArea._4 - 680.40
-  val sramNorthX =
-    scala.math.floor((chip.coreArea._1 + chip.coreArea._3 - 416.64) / 0.96) * 48 / 100
+  val sramHeight = 626.7
+  val sramNorthY = chip.coreArea._4 - sramHeight - 30.24
+  val sramNorthX = chip.coreArea._1 + 20.16
   chip.addMacro(
     report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[TileLinkIhpOnChipRam.OnePort].rams(0),
     sramNorthX,
