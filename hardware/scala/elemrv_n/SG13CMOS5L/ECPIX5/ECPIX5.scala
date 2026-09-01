@@ -16,6 +16,7 @@ import nafarr.system.reset.ResetControllerCtrl._
 import nafarr.system.clock._
 import nafarr.system.clock.ClockControllerCtrl._
 import nafarr.blackboxes.lattice.ecp5._
+import nafarr.memory.ocram.TileLinkOnChipRam
 import nafarr.memory.ocram.ihp.TileLinkIhpOnChipRam
 import nafarr.memory.hyperbus.sim.W956A8MBYA
 import nafarr.memory.spi.MT25Q
@@ -178,7 +179,7 @@ case class ECPIX5Top() extends Component {
       clockCtrl
     },
     onChipRamLogic = (parameter: TileLinkParameter, ramSize: BigInt) => {
-      val ram = TileLinkIhpOnChipRam.OnePort(parameter, ramSize.toInt)
+      val ram = TileLinkOnChipRam(p = parameter, size = ramSize)
       (ram, ram.io.bus)
     }
   )
