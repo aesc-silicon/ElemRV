@@ -1,0 +1,38 @@
+# SPDX-FileCopyrightText: 2026 aesc silicon
+#
+# SPDX-License-Identifier: CERN-OHL-W-2.0
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+vars:
+  arch:
+    sh: |
+      case "{{.SOC}}" in
+        ElemRV-H) echo "rv32i_zicsr" ;;
+        ElemRV-C) echo "rv32imc_zicsr" ;;
+        ElemRV-N) echo "rv32imc_zicsr_zicntr_zihpm" ;;
+        *) echo ""; echo "Unknown SOC: {{.SOC}}" >&2; exit 1 ;;
+      esac
+
+tasks:
+  compile:
+    desc: Compiles the CoreMark benchmark firmware.
+    preconditions:
+      - sh: 'test -f {{.BUILD_ROOT}}/{{.SOC}}/firmware/storages.yaml'
+        msg: "Design not generated. Run 'task SOC={{.SOC}} asic:prepare' first."
+    cmds:
+      - task: ':lib-baremetal-firmware'
+        vars:
+          app: "bootrom"
+      - task: ':lib-baremetal-firmware'
+        vars:
+          app: "coremark"
+          makefile: "coremark"
+      - "{{.RUN}} './software/{{.package}}/gen_coremark_container.sh'"
+      - "{{.RUN}} 'ln -sf {{.BUILD_ROOT}}/{{.SOC}}/firmware/coremark_container.img {{.BUILD_ROOT}}/{{.SOC}}/firmware/image_container.img'"
+
+  debug:
+    desc: Attach GDB over JTAG and debug the CoreMark benchmark firmware.
+    cmds:
+      - "{{.RUN}} '${GCC}-gdb {{.BUILD_ROOT}}/{{.SOC}}/firmware/coremark/output.elf -x modules/elements/zibal/gdb/debug.cmd'"
