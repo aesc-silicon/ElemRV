@@ -14,6 +14,8 @@ includes:
     taskfile: ./Taskfile.fpga.yml
   baremetal:
     taskfile: ./Taskfile.baremetal.yml
+  coremark:
+    taskfile: ./Taskfile.coremark.yml
   zephyr:
     taskfile: ./Taskfile.zephyr.yml
   flash:
@@ -108,6 +110,7 @@ vars:
     -e KLAYOUT_HOME={{.KLAYOUT_HOME}} \
     -e ZIBAL_BASE={{.ZIBAL_BASE}} \
     -e NAFARR_BASE={{.NAFARR_BASE}} \
+    -e COREMARK_BASE={{.COREMARK_BASE}} \
     -e BUILD_ROOT={{.BUILD_ROOT}} \
     -e USER={{.USER}} \
     -e ZEPHYR_SDK_INSTALL_DIR={{.ZEPHYR_SDK_INSTALL_DIR}} \
@@ -124,6 +127,7 @@ env:
   PDK_ROOT: "{{.PWD}}/pdks"
   ZIBAL_BASE: "{{.PWD}}/modules/elements/zibal"
   NAFARR_BASE: "{{.ZIBAL_BASE}}/ext/nafarr"
+  COREMARK_BASE: "{{.PWD}}/tools/coremark"
   BUILD_ROOT: "{{.PWD}}/build"
   ZEPHYR_SDK_INSTALL_DIR: "/opt/elements/zephyr-sdk-1.0.1"
   GCC: "{{.ZEPHYR_SDK_INSTALL_DIR}}/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf"
