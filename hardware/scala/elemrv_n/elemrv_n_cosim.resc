@@ -11,12 +11,12 @@ $bin ?= @build/app.bin
 $cosimdir ?= @build/ElemRV-N/SG13CMOS5L/cosim
 
 # Functional peripheral models that stay in Renode (the rest are co-simulated RTL).
-i @modules/elements/nafarr/hardware/scala/nafarr/peripherals/com/uart/UartCtrl.cs
-i @modules/elements/nafarr/hardware/scala/nafarr/system/mtimer/MachineTimerCtrl.cs
-i @modules/elements/nafarr/hardware/scala/nafarr/system/plic/PlicCtrl.cs
-i @modules/elements/nafarr/hardware/scala/nafarr/memory/spi/SpiXipControllerCtrl.cs
-i @modules/elements/nafarr/hardware/scala/nafarr/memory/hyperbus/HyperBusCtrl.cs
-i @modules/elements/nafarr/hardware/scala/nafarr/system/timer/TimerCtrl.cs
+i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/peripherals/com/uart/UartCtrl.cs
+i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/system/mtimer/MachineTimerCtrl.cs
+i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/system/plic/PlicCtrl.cs
+i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/memory/spi/SpiXipControllerCtrl.cs
+i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/memory/hyperbus/HyperBusCtrl.cs
+i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/system/timer/TimerCtrl.cs
 
 mach create "elemrv_n_cosim"
 machine LoadPlatformDescription @hardware/scala/elemrv_n/elemrv_n_cosim.repl
