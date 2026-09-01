@@ -10,15 +10,15 @@
 $bin ?= @build/app.bin
 
 # Compile and register the custom Nafarr peripheral models (live next to their .scala).
-i @modules/elements/nafarr/hardware/scala/nafarr/peripherals/io/gpio/GpioCtrl.cs
-i @modules/elements/nafarr/hardware/scala/nafarr/peripherals/com/uart/UartCtrl.cs
-i @modules/elements/nafarr/hardware/scala/nafarr/peripherals/pinmux/PinmuxCtrl.cs
-i @modules/elements/nafarr/hardware/scala/nafarr/crypto/prng/PrngCtrl.cs
-i @modules/elements/nafarr/hardware/scala/nafarr/system/mtimer/MachineTimerCtrl.cs
-i @modules/elements/nafarr/hardware/scala/nafarr/system/plic/PlicCtrl.cs
-i @modules/elements/nafarr/hardware/scala/nafarr/system/syscon/Syscon.cs
-i @modules/elements/nafarr/hardware/scala/nafarr/system/clock/ClockControllerCtrl.cs
-i @modules/elements/nafarr/hardware/scala/nafarr/memory/spi/SpiXipControllerCtrl.cs
+i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/peripherals/io/gpio/GpioCtrl.cs
+i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/peripherals/com/uart/UartCtrl.cs
+i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/peripherals/pinmux/PinmuxCtrl.cs
+i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/crypto/prng/PrngCtrl.cs
+i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/system/mtimer/MachineTimerCtrl.cs
+i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/system/plic/PlicCtrl.cs
+i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/system/syscon/Syscon.cs
+i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/system/clock/ClockControllerCtrl.cs
+i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/memory/spi/SpiXipControllerCtrl.cs
 
 mach create "elemrv_h"
 machine LoadPlatformDescription @hardware/scala/elemrv_h/elemrv_h_emul.repl

@@ -21,7 +21,7 @@ project is split across four repositories that are assembled into one workspace:
 
 | I want to change | Repository | Path in the workspace |
 | --- | --- | --- |
-| An IP core, its register map, its tests, its documentation, its bare-metal driver or its Renode model | [elements-nafarr](https://github.com/aesc-silicon/elements-nafarr) | `modules/elements/nafarr` |
+| An IP core, its register map, its tests, its documentation, its bare-metal driver or its Renode model | [elements-nafarr](https://github.com/aesc-silicon/elements-nafarr) | `modules/elements/zibal/ext/nafarr` |
 | A platform (Hydrogen, Carbon, Nitrogen), the interconnect, or the EDA/build tooling — OpenROAD, Lattice, OpenOCD, report generators | [elements-zibal](https://github.com/aesc-silicon/elements-zibal) | `modules/elements/zibal` |
 | An SoC variant, a chip top level, a Taskfile flow, the platform documentation, or board bring-up | **ElemRV** (this one) | the workspace root |
 | A Zephyr driver, board or devicetree binding | [elements-zephyr](https://github.com/aesc-silicon/elements-zephyr) | `modules/elements/zephyr` |
