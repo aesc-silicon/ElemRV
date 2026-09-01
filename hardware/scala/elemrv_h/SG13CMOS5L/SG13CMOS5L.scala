@@ -213,6 +213,10 @@ object SG13CMOS5LGenerate extends ElementsApp {
     BaremetalTools
       .Header(elementsConfig, "demo")
       .generate(top.soc.baremetalDevices, top.soc.baremetalIrqs, top.soc.baremetalErrors)
+    BaremetalTools
+      .Header(elementsConfig, "coremark")
+      .generate(top.soc.baremetalDevices, top.soc.baremetalIrqs, top.soc.baremetalErrors)
+
     RenodeTools.dumpCosimManifest(top.soc, elementsConfig.cosimManifest)
 
     top
