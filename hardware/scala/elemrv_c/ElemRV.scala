@@ -18,7 +18,6 @@ import nafarr.peripherals.io.pwm.{TileLinkPwm, Pwm, PwmCtrl}
 import nafarr.peripherals.com.uart.{TileLinkUart, Uart, UartCtrl}
 import nafarr.peripherals.com.i2c.{TileLinkI2cController, I2c, I2cControllerCtrl}
 import nafarr.peripherals.pinmux.{TileLinkPinmux, Pinmux, PinmuxCtrl}
-import nafarr.crypto.crc.{TileLinkCrc32, Crc32Ctrl}
 import nafarr.crypto.prng.{TileLinkPrng, PrngCtrl}
 
 object ElemRV {
