@@ -8,7 +8,7 @@ labels: ["documentation"]
 body:
   - type: markdown
     attributes:
-      value: |
+      value: >-
         Documentation issues are genuinely useful — a wrong register offset or a
         setup step that does not work costs somebody an afternoon. Small fixes are
         also a good first pull request if you would rather send one directly.

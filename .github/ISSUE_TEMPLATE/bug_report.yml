@@ -8,7 +8,7 @@ labels: ["bug"]
 body:
   - type: markdown
     attributes:
-      value: |
+      value: >-
         Before filing: if this is about an IP core or its driver, it belongs in
         [Nafarr](https://github.com/aesc-silicon/elements-nafarr/issues). If it is
         about a platform or a build flow, it belongs in

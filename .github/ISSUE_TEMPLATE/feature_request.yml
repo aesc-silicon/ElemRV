@@ -8,7 +8,7 @@ labels: ["enhancement"]
 body:
   - type: markdown
     attributes:
-      value: |
+      value: >-
         A new **IP core** belongs in
         [Nafarr](https://github.com/aesc-silicon/elements-nafarr/issues), and a new
         **platform or build-flow** capability belongs in
