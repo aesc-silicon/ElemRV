@@ -9,9 +9,9 @@ vars:
   arch:
     sh: |
       case "{{.SOC}}" in
-        ElemRV-H) echo "rv32i_zicsr" ;;
-        ElemRV-C) echo "rv32imc_zicsr" ;;
-        ElemRV-N) echo "rv32imc_zicsr_zicntr_zihpm" ;;
+        ElemRV-H) echo "rv32i_zicsr_zifencei" ;;
+        ElemRV-C) echo "rv32imc_zicsr_zifencei" ;;
+        ElemRV-N) echo "rv32imc_zicsr_zifencei_zicntr_zihpm" ;;
         *) echo ""; echo "Unknown SOC: {{.SOC}}" >&2; exit 1 ;;
       esac
 
