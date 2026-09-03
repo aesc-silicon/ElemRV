@@ -227,41 +227,49 @@ object SG13CMOS5LGenerate extends ElementsApp {
   chip.setTopCellName(topCellName)
   scala.util.Properties.envOrElse("FLOORPLAN", "tapeout") match {
     case "tapeout" =>
-      chip.dieArea = (0, 0, 2392.80, 2400.30)
-      chip.coreArea = (394.08, 396.9, 1995.84, 2003.40)
+      chip.dieArea = (0, 0, 2328.96, 2336.04)
+      chip.coreArea = (394.08, 396.9, 1932.00, 1939.14)
     case "relaxed" =>
       SpinalWarning(
         "FLOORPLAN=relaxed: oversized iteration floorplan - utilization/timing/" +
           "congestion results are NOT tape-out representative."
       )
-      chip.dieArea = (0, 0, 2619.84, 2623.32)
-      chip.coreArea = (394.08, 396.9, 2222.88, 2226.42)
+      chip.dieArea = (0, 0, 2451.84, 2460.78)
+      chip.coreArea = (394.08, 396.9, 2054.88, 2063.88)
   }
   chip.hasIoRing = true
   chip.setAbcArea()
 
-  val sramNorthY = chip.coreArea._4 - 669.06
-  val sramNorthX =
-    scala.math.floor((chip.coreArea._1 + chip.coreArea._3 - 416.64) / 0.96) * 48 / 100
+  val onChipRamSramWidth = 416.64
+  val onChipRamSramHeight = 626.7
+  val onChipRamSramX = chip.coreArea._3 - onChipRamSramWidth - 20.16
+  val onChipRamSramY = chip.coreArea._4 - onChipRamSramHeight - 34.02
   chip.addMacro(
     report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[TileLinkOnChipRam].rams(0),
-    sramNorthX,
-    sramNorthY,
+    onChipRamSramX,
+    onChipRamSramY,
     "R0",
     depth = 3
   )
 
+  val iCacheHeight = 385.37
+  val iCacheSramX = chip.coreArea._1 + 20.16
+  val iCacheSramY = chip.coreArea._4 - iCacheHeight - 30.24
   chip.addMacro(
     report.toplevel.soc.core.cpu.iCacheRams(0),
-    434.08,
-    790.02,
+    iCacheSramX,
+    iCacheSramY,
     "R0",
     depth = 3
   )
+
+  val iCacheTagWidth = 526.03
+  val iCacheTagX = chip.coreArea._1 + 20.16
+  val iCacheTagY = chip.coreArea._2 + 30.24
   chip.addMacro(
     report.toplevel.soc.core.cpu.iCacheTagRams(0),
-    434.08,
-    1217.16,
+    iCacheTagX,
+    iCacheTagY,
     "MX",
     depth = 3
   )
