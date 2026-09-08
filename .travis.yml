@@ -78,7 +78,7 @@ script:
 
   # TODO Full RTL to GDS flow takes too long for travis
   # Generate layout
-  #- CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L asic:build
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L asic:build stage=floorplan
 
   # Add metal fill
   #- CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L asic:fill
