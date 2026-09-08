@@ -124,7 +124,8 @@ env:
   FPGA_PACKAGE: CABGA554
   FPGA_FREQUENCY: 50
   OPENFPGALOADER_BOARD: ecpix5_r03
-  PDK_ROOT: "{{.PWD}}/pdks"
+  # TODO CMOS5L is not yet supported in Ciel
+  PDK_ROOT: "{{.PWD}}/pdks/IHP-Open-PDK"
   ZIBAL_BASE: "{{.PWD}}/modules/elements/zibal"
   NAFARR_BASE: "{{.ZIBAL_BASE}}/ext/nafarr"
   COREMARK_BASE: "{{.PWD}}/tools/coremark"
