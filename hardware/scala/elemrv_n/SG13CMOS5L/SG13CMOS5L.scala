@@ -13,6 +13,7 @@ import nafarr.system.reset._
 import nafarr.system.clock._
 import nafarr.blackboxes.ihp.sg13cmos5l._
 import nafarr.blackboxes.ihp.common._
+import nafarr.memory.ocram.TileLinkOnChipRam
 import nafarr.memory.ocram.ihp.TileLinkIhpOnChipRam
 import nafarr.memory.hyperbus.sim.W956A8MBYA
 import nafarr.memory.spi.MT25Q
@@ -160,7 +161,7 @@ case class SG13CMOS5LTop() extends Component {
       clockCtrl
     },
     onChipRamLogic = (parameter: TileLinkParameter, ramSize: BigInt) => {
-      val ram = TileLinkIhpOnChipRam.OnePort(parameter, ramSize.toInt)
+      val ram = TileLinkOnChipRam(parameter, ramSize.toInt)
       (ram, ram.io.bus)
     }
   )
@@ -397,7 +398,7 @@ object SG13CMOS5LGenerate extends ElementsApp {
     depth = 4
   )
   chip.addMacro(
-    report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[TileLinkIhpOnChipRam.OnePort].rams(0),
+    report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[TileLinkOnChipRam].rams(0),
     chip.coreArea._1 + 50.0,
     chip.coreArea._4 - 626.7 - 49.2,
     "R0",
