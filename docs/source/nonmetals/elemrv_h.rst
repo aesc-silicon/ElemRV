@@ -194,32 +194,32 @@ pinmux controller. The first function listed is the default.
      - GPIO0_2
      - PIO0_1
    * - 3
-     - GPIO0_3
-     - PIO0_2
-   * - 4
      - UART0_TX
+     - GPIO0_3
+   * - 4
+     - UART0_RX
      - GPIO0_4
    * - 5
-     - UART0_RX
+     - UART0_CTS
      - GPIO0_5
    * - 6
-     - UART0_CTS
+     - UART0_RTS
      - GPIO0_6
    * - 7
-     - UART0_RTS
      - GPIO0_7
+     - PWM0_COMP_0
    * - 8
      - GPIO0_8
-     - PWM0_1
+     - I2C0_SCL
    * - 9
      - GPIO0_9
-     - I2C0_SCL
+     - I2C0_SDA
    * - 10
      - GPIO0_10
-     - I2C0_SDA
+     - I2C0_INT_0
    * - 11
      - GPIO0_11
-     - I2C0_INT_0
+     - PIO0_2
 
 Board Targets
 *************
