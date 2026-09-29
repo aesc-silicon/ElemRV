@@ -136,7 +136,7 @@ case class SG13CMOS5LTop() extends Component {
     (8 MB, true)
   )
   val kitParameter = KitParameter(resets, clocks, inputClock)
-  val boardParameter = ElemRVFlask.Hydrogen.Parameter(kitParameter)
+  val boardParameter = ElemRVFlask.Nitrogen.Parameter(kitParameter)
   val socParameter = ElemRV.Parameter(boardParameter)
   val parameter = Nitrogen.Parameter(
     socParameter,
