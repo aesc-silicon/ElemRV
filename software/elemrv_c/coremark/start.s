@@ -59,6 +59,8 @@ loop_end:
 	ret
 	nop
 
+	/* mtvec BASE must be 4-byte aligned */
+	.balign 4
 _irq_wrapper:
 	add	sp, sp, -16*REGBYTES
 	sw	a0,  1*REGBYTES(sp)
