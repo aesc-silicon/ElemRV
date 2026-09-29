@@ -85,9 +85,9 @@ case class SG13CMOS5LTop() extends Component {
   val resets = List[ResetParameter](
     ResetParameter("system", 4096),
     ResetParameter("debug", 4096),
-    // Released ~38 us before the CPU so the external SPI flash finishes its
+    // Shorter than the system reset so the external SPI flash finishes its
     // reset recovery before the first XIP fetch (see io_plat.spiXip.reset).
-    ResetParameter("flash", 256)
+    ResetParameter("flash", 1024)
   )
   val inputClock = ClockParameter("input", ElemRVFlask.Carbon.oscillatorFrequency, "input")
   val clocks = List[ClockParameter](
