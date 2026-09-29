@@ -20,13 +20,15 @@ vars:
         ElemRV-H) echo "elemrv_flask_h" ;;
         ElemRV-C) echo "elemrv_flask_c" ;;
         ElemRV-N) echo "elemrv_flask_n" ;;
-        *) echo ""; echo "No Zephyr board for SOC: {{.SOC}}" >&2; exit 1 ;;
+        *) echo "" ;;
       esac
 
 tasks:
   compile:
     desc: Compiles the bootrom and Zephyr firmware and packages them into an image container.
     preconditions:
+      - sh: 'test -n "{{.zephyr_board}}"'
+        msg: "No Zephyr board for SOC: {{.SOC}}"
       - sh: 'test -f {{.BUILD_ROOT}}/{{.SOC}}/firmware/storages.yaml'
         msg: "Design not generated. Run 'task SOC={{.SOC}} asic:prepare' first."
     cmds:
