@@ -31,7 +31,7 @@ mtimer: Timers.MachineTimerCtrl @ sysbus 0xF0020000
     -> cpu@7
 
 // PLIC @ 0xF0800000 - output context 0 -> CPU external-interrupt line (cause 11).
-// Source order (addInterrupt sequence): watchdog=1, timer=2, esm=3, then the
+// Source order (addInterrupt sequence): timer=1, watchdog=2, esm=3, then the
 // peripheral-domain sources gpio0=4, i2c0=5, i2c1=6, pio0=7, pwm0=8, spi0=9,
 // uart0=10, uart1=11.  (Verify against the generated soc.h.)
 plic: IRQControllers.PlicCtrl @ sysbus 0xF0800000
