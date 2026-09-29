@@ -44,8 +44,13 @@ led1: Miscellaneous.LED @ gpio0 1
 uart0: UART.UartCtrl @ sysbus 0xF0004000
     IRQ -> plic@7
 
-// PRNG @ 0xF0005000 (Nafarr PrngCtrl) - xorshift output (not the RTL LFSR sequence).
+// PRNG @ 0xF0005000 (Nafarr PrngCtrl) - RTL LFSR sequence, advanced once per output read.
 prng: Miscellaneous.PrngCtrl @ sysbus 0xF0005000
+
+// Reset controller @ 0xF0021000 (Nafarr ResetControllerCtrl) - domains system, debug, flash.
+// Acknowledging the system domain resets the whole machine.
+resetCtrl: Miscellaneous.ResetControllerCtrl @ sysbus 0xF0021000
+    numberOfDomains: 3
 
 // Syscon @ 0xF0023000 (Nafarr Syscon) - read-only platform identity + 50 MHz reference clock.
 syscon: Miscellaneous.Syscon @ sysbus 0xF0023000
