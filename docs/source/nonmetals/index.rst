@@ -387,3 +387,4 @@ See the available platforms for detailed specifications and usage instructions.
 
    elemrv_h.rst
    elemrv_c.rst
+   elemrv_n.rst
