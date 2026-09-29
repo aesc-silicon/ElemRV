@@ -141,7 +141,7 @@ tasks:
       - venv/bin/pip3 install podman-compose==1.0.6
       - curl https://storage.googleapis.com/git-repo-downloads/repo > repo
       - chmod a+rx repo
-      - ./repo init -u https://github.com/aesc-silicon/ElemRV.git -b {{if .branch}}{{.branch}}{{else}}main{{end}} -m manifest{{.manifest_suffix}}.xml
+      - ./repo init -u {{.manifest_repo | default "https://github.com/aesc-silicon/ElemRV.git"}} -b {{if .branch}}{{.branch}}{{else}}main{{end}} -m manifest{{.manifest_suffix}}.xml
 
   _build-container:
     cmds:
