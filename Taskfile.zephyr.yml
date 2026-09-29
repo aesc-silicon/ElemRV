@@ -12,6 +12,7 @@ vars:
         ElemRV-H) echo "rv32i_zicsr_zifencei" ;;
         ElemRV-C) echo "rv32imc_zicsr_zifencei" ;;
         ElemRV-N) echo "rv32imc_zicsr_zifencei_zicntr_zihpm" ;;
+        ElemRV-O) echo "rv32imac_zicsr_zifencei_zicntr_zihpm_zba_zbb_zbc_zbs_zicbom" ;;
         *) echo ""; echo "Unknown SOC: {{.SOC}}" >&2; exit 1 ;;
       esac
   zephyr_board:

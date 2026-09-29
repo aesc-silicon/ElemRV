@@ -115,7 +115,14 @@ prediction, and wider execution pipelines for increased performance.
      - ✓
      - ✓
      - ✓
-   * - Zba/Zbb/Zbs (bit manipulation)
+   * - Zba/Zbb/Zbc/Zbs (bit manipulation)
+     -
+     -
+     -
+     - ✓
+     - ✓
+     - ✓
+   * - Zicbom (cache-block management)
      -
      -
      -
@@ -138,8 +145,8 @@ prediction, and wider execution pipelines for increased performance.
      - ✓
 
 Every platform includes on-chip SRAM and boots from external SPI Flash in XIP
-mode. HyperRAM is available starting with Nitrogen, and tightly-coupled memory
-with Oxygen.
+mode. HyperRAM is available starting with Nitrogen. Tightly-coupled memory is
+planned.
 
 .. list-table:: Memory
    :header-rows: 1
@@ -164,7 +171,7 @@ with Oxygen.
      -
      -
      -
-     - ✓
+     - TBD
      - ✓
      - ✓
    * - SPI Flash XIP
@@ -230,7 +237,7 @@ A DMA controller is available starting with Oxygen.
      -
      -
      -
-     - TBD
+     - 4
      - TBD
      - TBD
 
@@ -282,7 +289,7 @@ support for real-time instruction tracing.
      -
      -
      -
-     - ✓
+     - TBD
      - ✓
      - ✓
 
@@ -305,7 +312,7 @@ for higher-tier platforms is planned.
      - 1
      - 1
      - 4
-     - TBD
+     - 4
      - TBD
      - TBD
 
@@ -351,11 +358,11 @@ no longer starved for instructions.
      - rv32imc_zicsr_zifencei_zicntr_zihpm
      - HyperRAM
    * - Oxygen
-     -
-     -
-     -
-     -
-     -
+     - 2.419
+     - 72.56
+     - 30 MHz
+     - rv32imac_zicsr_zifencei_zicntr_zihpm_zba_zbb_zbc_zbs_zicbom
+     - HyperRAM
    * - Phosphorus
      -
      -
@@ -380,6 +387,12 @@ and 313,653 instructions per iteration, an IPC of 0.74. Its cycle count matches
 the machine timer to seven digits, confirming that the CPU and the timer share
 one clock.
 
+Oxygen runs the same pipeline and memory system, so its 2.5% gain over Nitrogen
+comes from the bit manipulation instructions alone: 302,672 instructions per
+iteration (3.5% fewer) in 413,473 cycles, an IPC of 0.73. Atomics and the DMA
+controller do not affect CoreMark, which has no atomic operations and no bulk
+transfers in its timed loop.
+
 See the available platforms for detailed specifications and usage instructions.
 
 .. toctree::
@@ -388,3 +401,4 @@ See the available platforms for detailed specifications and usage instructions.
    elemrv_h.rst
    elemrv_c.rst
    elemrv_n.rst
+   elemrv_o.rst
