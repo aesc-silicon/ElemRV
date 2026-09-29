@@ -31,6 +31,7 @@ body:
         - ElemRV-H
         - ElemRV-C
         - ElemRV-N
+        - ElemRV-O
         - Several / not SoC specific
     validations:
       required: true

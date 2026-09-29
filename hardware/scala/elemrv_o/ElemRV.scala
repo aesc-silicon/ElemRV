@@ -1,0 +1,164 @@
+// SPDX-FileCopyrightText: 2026 aesc silicon
+//
+// SPDX-License-Identifier: CERN-OHL-W-2.0
+
+package elemrv_o
+
+import spinal.core._
+import spinal.lib._
+
+import zibal.misc._
+import zibal.platform.Oxygen
+import zibal.board.BoardParameter
+import zibal.soc.SocParameter
+
+import nafarr.peripherals.io.gpio.{TileLinkGpio, Gpio, GpioCtrl}
+import nafarr.peripherals.io.pio.{TileLinkPio, Pio, PioCtrl}
+import nafarr.peripherals.io.pwm.{TileLinkPwm, Pwm, PwmCtrl}
+import nafarr.peripherals.com.uart.{TileLinkUart, Uart, UartCtrl}
+import nafarr.peripherals.com.i2c.{TileLinkI2cController, I2c, I2cControllerCtrl}
+import nafarr.peripherals.com.spi.{TileLinkSpiController, Spi, SpiControllerCtrl}
+import nafarr.peripherals.pinmux.{TileLinkPinmux, Pinmux, PinmuxCtrl}
+import nafarr.crypto.crc.{TileLinkCrc32, Crc32Ctrl}
+import nafarr.crypto.prng.{TileLinkPrng, PrngCtrl}
+
+object ElemRV {
+  def apply(parameter: Oxygen.Parameter) = ElemRV(parameter)
+
+  case class Parameter(boardParameter: BoardParameter) extends SocParameter(boardParameter) {
+    val gpio0 = GpioCtrl.Parameter(Gpio.Parameter(20), 3)
+    val i2c0 = I2cControllerCtrl.Parameter.default(1)
+    val i2c1 = I2cControllerCtrl.Parameter.lightweight()
+    val pio0 = PioCtrl.Parameter.default(3)
+    val pwm0 = PwmCtrl.Parameter.default(2)
+    val spi0 = SpiControllerCtrl.Parameter.default()
+    val uart0 = UartCtrl.Parameter.full()
+    val uart1 = UartCtrl.Parameter.lightweight()
+    val crc32 = Crc32Ctrl.Parameter()
+    val prng = PrngCtrl.Parameter()
+    val pinmux = PinmuxCtrl.Parameter(Pinmux.Parameter(20), 40, 2)
+
+    override val irqSources = Seq(gpio0, i2c0, i2c1, pio0, pwm0, spi0, uart0, uart1)
+    override val errorSources = Seq(pio0, pwm0, uart0, uart1, prng)
+  }
+
+  case class ElemRV(parameter: Oxygen.Parameter) extends Oxygen.Oxygen(parameter) {
+    var socParameter = parameter.getSocParameter.asInstanceOf[Parameter]
+    val io = new Bundle {
+      val pins = Pinmux.Io(socParameter.pinmux.io)
+    }
+
+    val peripherals = new ClockingArea(clockCtrl.getClockDomainByName("peripheral")) {
+
+      val gpio0Ctrl = TileLinkGpio(socParameter.gpio0)
+      addPeripheralDevice(gpio0Ctrl.io.bus, 0x0000, 4 kB, "peripheral")
+      addInterrupt(gpio0Ctrl.io.interrupt, "peripheral")
+      for (pin <- 0 until socParameter.gpio0.io.width) {
+        addPinmuxInput(gpio0Ctrl.io.gpio.pins(pin), s"gpio0_$pin")
+      }
+
+      val i2c0Ctrl = TileLinkI2cController(socParameter.i2c0)
+      addPeripheralDevice(i2c0Ctrl.io.bus, 0x1000, 4 kB, "peripheral")
+      addInterrupt(i2c0Ctrl.io.interrupt, "peripheral")
+      addPinmuxInput(i2c0Ctrl.io.i2c.scl, "i2c0_scl")
+      addPinmuxInput(i2c0Ctrl.io.i2c.sda, "i2c0_sda")
+      addPinmuxInput(i2c0Ctrl.io.i2c.interrupts(0), "i2c0_interrupt_0", output = false)
+
+      val i2c1Ctrl = TileLinkI2cController(socParameter.i2c1)
+      addPeripheralDevice(i2c1Ctrl.io.bus, 0x2000, 4 kB, "peripheral")
+      addInterrupt(i2c1Ctrl.io.interrupt, "peripheral")
+      addPinmuxInput(i2c1Ctrl.io.i2c.scl, "i2c1_scl")
+      addPinmuxInput(i2c1Ctrl.io.i2c.sda, "i2c1_sda")
+
+      val pio0Ctrl = TileLinkPio(socParameter.pio0)
+      addPeripheralDevice(pio0Ctrl.io.bus, 0x3000, 4 kB, "peripheral")
+      addInterrupt(pio0Ctrl.io.interrupt, "peripheral")
+      addError(pio0Ctrl.io.error, "peripheral")
+      for (pin <- 0 until socParameter.pio0.io.width) {
+        addPinmuxInput(pio0Ctrl.io.pio.pins(pin), s"pio0_$pin")
+      }
+
+      val pwm0Ctrl = TileLinkPwm(socParameter.pwm0)
+      addPeripheralDevice(pwm0Ctrl.io.bus, 0x4000, 4 kB, "peripheral")
+      addInterrupt(pwm0Ctrl.io.interrupt, "peripheral")
+      addError(pwm0Ctrl.io.error, "peripheral")
+      for (pin <- 0 until socParameter.pwm0.io.channels) {
+        addPinmuxInput(pwm0Ctrl.io.pwm.output(pin), s"pwm0_$pin")
+      }
+      pwm0Ctrl.io.pwm.syncIn := False
+      pwm0Ctrl.io.pwm.faultIn := False
+
+      val spi0Ctrl = TileLinkSpiController(socParameter.spi0)
+      addPeripheralDevice(spi0Ctrl.io.bus, 0x5000, 4 kB, "peripheral")
+      addInterrupt(spi0Ctrl.io.interrupt, "peripheral")
+      addPinmuxInput(spi0Ctrl.io.spi.cs(0), "spi0_cs0")
+      addPinmuxInput(spi0Ctrl.io.spi.sclk, "spi0_sclk")
+      addPinmuxInput(spi0Ctrl.io.spi.dq(0), "spi0_dq0")
+      addPinmuxInput(spi0Ctrl.io.spi.dq(1), "spi0_dq1")
+
+      val uart0Ctrl = TileLinkUart(socParameter.uart0)
+      addPeripheralDevice(uart0Ctrl.io.bus, 0x6000, 4 kB, "peripheral")
+      addInterrupt(uart0Ctrl.io.interrupt, "peripheral")
+      addError(uart0Ctrl.io.error, "peripheral")
+      addPinmuxInput(uart0Ctrl.io.uart.txd, "uart0_tx")
+      addPinmuxInput(uart0Ctrl.io.uart.rxd, "uart0_rx", output = false)
+      addPinmuxInput(uart0Ctrl.io.uart.cts, "uart0_cts", output = false)
+      addPinmuxInput(uart0Ctrl.io.uart.rts, "uart0_rts")
+
+      val uart1Ctrl = TileLinkUart(socParameter.uart1)
+      addPeripheralDevice(uart1Ctrl.io.bus, 0x7000, 4 kB, "peripheral")
+      addInterrupt(uart1Ctrl.io.interrupt, "peripheral")
+      addError(uart1Ctrl.io.error, "peripheral")
+      addPinmuxInput(uart1Ctrl.io.uart.txd, "uart1_tx")
+      addPinmuxInput(uart1Ctrl.io.uart.rxd, "uart1_rx", output = false)
+      uart1Ctrl.io.uart.cts := True
+
+      val crc32Ctrl = TileLinkCrc32(socParameter.crc32)
+      addPeripheralDevice(crc32Ctrl.io.bus, 0x8000, 4 kB, "peripheral")
+
+      val prngCtrl = TileLinkPrng(socParameter.prng)
+      addPeripheralDevice(prngCtrl.io.bus, 0x9000, 4 kB, "peripheral")
+      addError(prngCtrl.io.error, "peripheral")
+
+      /* DMA request lines, listed in soc.h as <NAME>_DMA_{TX,RX} */
+      for (ctrl <- Seq(i2c0Ctrl, i2c1Ctrl, spi0Ctrl, uart0Ctrl, uart1Ctrl)) {
+        for (request <- ctrl.getDmaRequests) {
+          addDmaRequest(request.tx)
+          addDmaRequest(request.rx)
+        }
+      }
+      for (request <- pio0Ctrl.getDmaRequests) {
+        addDmaRequest(request.rx)
+      }
+
+      /* Pin Mapping */
+      addPinmuxOption(0, List("gpio0_0", "i2c0_scl"))
+      addPinmuxOption(1, List("gpio0_1", "i2c0_sda"))
+      addPinmuxOption(2, List("gpio0_2", "i2c0_interrupt_0"))
+      addPinmuxOption(3, List("gpio0_3", "i2c1_scl"))
+      addPinmuxOption(4, List("gpio0_4", "i2c1_sda"))
+      addPinmuxOption(5, List("gpio0_5", "pio0_0"))
+      addPinmuxOption(6, List("gpio0_6", "pio0_1"))
+      addPinmuxOption(7, List("gpio0_7", "pio0_2"))
+      addPinmuxOption(8, List("gpio0_8", "pwm0_0"))
+      addPinmuxOption(9, List("gpio0_9", "pwm0_1"))
+      addPinmuxOption(10, List("gpio0_10", "spi0_cs0"))
+      addPinmuxOption(11, List("gpio0_11", "spi0_sclk"))
+      addPinmuxOption(12, List("gpio0_12", "spi0_dq0"))
+      addPinmuxOption(13, List("gpio0_13", "spi0_dq1"))
+      addPinmuxOption(14, List("uart0_tx", "gpio0_14"))
+      addPinmuxOption(15, List("uart0_rx", "gpio0_15"))
+      addPinmuxOption(16, List("uart0_cts", "gpio0_16"))
+      addPinmuxOption(17, List("uart0_rts", "gpio0_17"))
+      addPinmuxOption(18, List("gpio0_18", "uart1_tx"))
+      addPinmuxOption(19, List("gpio0_19", "uart1_rx"))
+
+      val pinmuxCtrl = TileLinkPinmux(socParameter.pinmux, getPinmuxMapping())
+      addPeripheralDevice(pinmuxCtrl.io.bus, 0x10000, 4 kB, "peripheral")
+      io.pins <> pinmuxCtrl.io.pins
+      connectPinmuxInputs(pinmuxCtrl)
+
+      connectPeripherals()
+    }
+  }
+}

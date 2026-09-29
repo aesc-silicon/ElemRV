@@ -54,31 +54,36 @@ script:
   - CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L asic:prepare
   - CI=true IS_HEADLESS=true task SOC=ElemRV-C TARGET=SG13CMOS5L asic:prepare
   - CI=true IS_HEADLESS=true task SOC=ElemRV-N TARGET=SG13CMOS5L asic:prepare
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-O TARGET=SG13CMOS5L asic:prepare
 
   # Compile baremetal firmware
   - CI=true IS_HEADLESS=true task SOC=ElemRV-H baremetal:compile
   - CI=true IS_HEADLESS=true task SOC=ElemRV-C baremetal:compile
   - CI=true IS_HEADLESS=true task SOC=ElemRV-N baremetal:compile
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-O baremetal:compile
 
   # Prepare FPGA files
   - CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L fpga:prepare
   - CI=true IS_HEADLESS=true task SOC=ElemRV-C TARGET=SG13CMOS5L fpga:prepare
   - CI=true IS_HEADLESS=true task SOC=ElemRV-N TARGET=SG13CMOS5L fpga:prepare
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-O TARGET=SG13CMOS5L fpga:prepare
 
-  # TODO ElemRV-C is currently missing in Zephyr
+  # TODO ElemRV-C and ElemRV-O are currently missing in Zephyr
   # Compile Zephyr firmware
   - CI=true IS_HEADLESS=true task SOC=ElemRV-H zephyr:compile
   #- CI=true IS_HEADLESS=true task SOC=ElemRV-C zephyr:compile
   - CI=true IS_HEADLESS=true task SOC=ElemRV-N zephyr:compile
+  #- CI=true IS_HEADLESS=true task SOC=ElemRV-O zephyr:compile
 
   # Synthesize FPGA design
   - CI=true IS_HEADLESS=true travis_wait 20 task SOC=ElemRV-H TARGET=SG13CMOS5L fpga:synthesize
   - CI=true IS_HEADLESS=true travis_wait 20 task SOC=ElemRV-C TARGET=SG13CMOS5L fpga:synthesize
-  - CI=true IS_HEADLESS=true travis_wait 20 task SOC=ElemRV-N TARGET=SG13CMOS5L fpga:synthesize
+  - CI=true IS_HEADLESS=true travis_wait 25 task SOC=ElemRV-N TARGET=SG13CMOS5L fpga:synthesize
+  - CI=true IS_HEADLESS=true travis_wait 25 task SOC=ElemRV-O TARGET=SG13CMOS5L fpga:synthesize
 
   # TODO Full RTL to GDS flow takes too long for travis
   # Generate layout
-  - CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L asic:build stage=floorplan
+  - CI=true IS_HEADLESS=true travis_wait 15 task SOC=ElemRV-H TARGET=SG13CMOS5L asic:build stage=floorplan
 
   # Add metal fill
   #- CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L asic:fill
