@@ -119,9 +119,9 @@ case class SG13CMOS5LTop() extends Component {
     ResetParameter("hyperbus", 4096),
     ResetParameter("xip", 4096),
     ResetParameter("peripheral", 4096),
-    // Released ~38 us before the CPU so the external SPI flash finishes its
+    // Shorter than the system reset so the external SPI flash finishes its
     // reset recovery before the first XIP fetch (see io_plat.spiXip.reset).
-    ResetParameter("flash", 256)
+    ResetParameter("flash", 1024)
   )
   val inputClock = ClockParameter("input", ElemRVFlask.Nitrogen.oscillatorFrequency, "input")
   val clocks = List[ClockParameter](
