@@ -18,14 +18,20 @@ i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/system/mtimer/Machine
 i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/system/plic/PlicCtrl.cs
 i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/system/syscon/Syscon.cs
 i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/system/clock/ClockControllerCtrl.cs
+i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/system/reset/ResetControllerCtrl.cs
 i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/memory/spi/SpiXipControllerCtrl.cs
 
 mach create "elemrv_h"
 machine LoadPlatformDescription @hardware/scala/elemrv_h/elemrv_h_emul.repl
 
-# Load the application into XIP flash and point the reset vector at it.
-sysbus LoadBinary $bin 0xA0000000
-cpu PC 0xA0000000
+# Load the application into XIP flash and point the reset vector at it. Runs again on every
+# machine reset, e.g. when software resets the system domain through the reset controller.
+macro reset
+"""
+    sysbus LoadBinary $bin 0xA0000000
+    cpu PC 0xA0000000
+"""
+runMacro $reset
 
 # Interactive UART0 console.
 #

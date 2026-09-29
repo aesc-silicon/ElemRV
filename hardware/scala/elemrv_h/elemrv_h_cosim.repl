@@ -4,7 +4,8 @@
 
 // ElemRV-H co-simulation platform.
 // All I/O + system peripherals are the *real* Verilated TileLink RTL; CPU, interconnect, OCRAM,
-// flash, plus uart0 (console), plic and mtimer (interrupt timing) stay functional for speed.
+// flash, plus uart0 (console), plic and mtimer (interrupt timing) stay functional for speed,
+// resetCtrl stays functional to reset the machine.
 // Each co-simulated peripheral is its own Verilated library (build/<SOC>/<board>/cosim/<name>/libVtop.so);
 // the .resc binds the SimulationFilePath for each. cosim->Renode signal 0 = io_interrupt, 1 = io_error.
 
@@ -39,6 +40,11 @@ uart0: UART.UartCtrl @ sysbus 0xF0004000
 
 // SPI XIP config bus @ 0xF0025000 - kept FUNCTIONAL (multi-bus controller, not a single TL slave).
 spiXipCfg: Miscellaneous.SpiXipControllerCtrl @ sysbus 0xF0025000
+
+// Reset controller @ 0xF0021000 - kept FUNCTIONAL: acknowledging the system domain resets the
+// whole machine. The Verilated register mapper alone cannot reset the Renode machine.
+resetCtrl: Miscellaneous.ResetControllerCtrl @ sysbus 0xF0021000
+    numberOfDomains: 3
 
 // ---------------------------------------------------------------------------
 // Co-simulated peripherals (real Verilated RTL). signal 0 = io_interrupt, 1 = io_error.
@@ -85,12 +91,6 @@ prng: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0005000, +0x1000>
 
 // Pinmux @ 0xF0010000 (TileLinkPinmux) - no interrupt/error.
 pinmux: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0010000, +0x1000>
-    frequency: 50000000
-    limitBuffer: 1000000
-    timeout: 10000
-
-// Reset controller @ 0xF0021000 (TileLinkResetController) - no interrupt/error.
-resetCtrl: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0021000, +0x1000>
     frequency: 50000000
     limitBuffer: 1000000
     timeout: 10000
