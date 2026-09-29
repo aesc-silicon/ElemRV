@@ -36,18 +36,21 @@ install:
   - sudo apt-get install -y virtualenv
 
 script:
-  # Use appropriate branch: PR branch for PRs, main for cron
+  # Use appropriate branch: PR branch for PRs, main for cron. A PR branch lives in the
+  # repository the PR comes from, which is a fork for external contributions.
   - |
     if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then
       BRANCH="main"
       MANIFEST_SUFFIX="manifest_suffix=-nightly"
+      MANIFEST_REPO="https://github.com/${TRAVIS_REPO_SLUG}.git"
     else
       BRANCH="${TRAVIS_PULL_REQUEST_BRANCH:-main}"
       MANIFEST_SUFFIX=""
+      MANIFEST_REPO="https://github.com/${TRAVIS_PULL_REQUEST_SLUG:-$TRAVIS_REPO_SLUG}.git"
     fi
 
   # Prepare the project
-  - CI=true IS_HEADLESS=true task install branch=${BRANCH} ${MANIFEST_SUFFIX}
+  - CI=true IS_HEADLESS=true task install branch=${BRANCH} manifest_repo=${MANIFEST_REPO} ${MANIFEST_SUFFIX}
   - CI=true IS_HEADLESS=true task install-zephyr
 
   # Prepare files
