@@ -167,7 +167,10 @@ esm: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0028000, +0x1000>
     timeout: 10000
 
 // DMA @ 0xF002A000 (TileLinkDma) - PLIC source 4. Not modeled: it is a bus master, not a
-// single-TL-bus co-sim target (skipped by build-cosim.sh).
+// single-TL-bus co-sim target (skipped by build-cosim.sh). Zeroed registers report no
+// channels (info.channels == 0), so the bootrom and demo fall back to their CPU paths.
+dma: Memory.MappedMemory @ sysbus 0xF002A000
+    size: 0x1000
 
 // HyperBus controller config bus @ 0xF0029000. The SoC exposes this through a FifoCc clock-crossing
 // bridge (not a standalone TileLink peripheral), so it is not co-simulated; the functional

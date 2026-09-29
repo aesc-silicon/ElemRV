@@ -32,7 +32,7 @@ SECTIONS {
 	} > MEM
 
 	.rodata : {
-		*(.rodata)
+		*(.rodata .rodata.*)
 	} > MEM
 
 	.data : {

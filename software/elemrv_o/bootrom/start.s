@@ -16,7 +16,7 @@ _head:
 	jal	_init_memc
 	jal	_init_regs
 	jal	_init_bss
-	jal	_relocate
+	jal	_relocate_dma
 
 	li	a0, 0
 	jal	gpio_set_pin
@@ -105,6 +105,38 @@ relocate_loop_end:
 	fence
 	ret
 	nop
+
+# Copies the application with DMA channel 0 (memory to memory, 64 byte bursts).
+# Falls back to the CPU copy when no DMA is present (info.channels == 0, e.g. in
+# the Renode emulation) or the transfer fails.
+_relocate_dma:
+	li	t3, 0xf002a000		# DMA base
+	lw	a0, 0x08(t3)		# info[7:0]: number of channels
+	andi	a0, a0, 0xff
+	beqz	a0, _relocate
+	la	t0, __hyperram_load_start
+	la	t1, __hyperram_load_end
+	la	t2, __hyperram_load_dest
+	sub	t1, t1, t0
+	beqz	t1, relocate_dma_end
+	addi	t3, t3, 0x18		# channel 0
+	li	a0, 0x3
+	sw	a0, 0x04(t3)		# config: src_inc | dst_inc
+	sw	t0, 0x08(t3)		# src
+	sw	t2, 0x0c(t3)		# dst
+	sw	t1, 0x10(t3)		# length
+	sw	zero, 0x14(t3)		# next: no descriptor chain
+	li	a0, 1
+	sw	a0, 0x00(t3)		# control: start
+relocate_dma_wait:
+	lw	a0, 0x00(t3)		# control: [0] busy, [1] error
+	andi	a1, a0, 1
+	bnez	a1, relocate_dma_wait
+	andi	a1, a0, 2
+	bnez	a1, _relocate
+relocate_dma_end:
+	fence
+	ret
 
 # Basic driver for debugging
 

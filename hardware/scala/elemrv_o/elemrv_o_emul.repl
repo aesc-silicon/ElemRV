@@ -41,7 +41,10 @@ plic: IRQControllers.PlicCtrl @ sysbus 0xF0800000
     0 -> cpu@11
     numberOfSources: 31
 
-// DMA @ 0xF002A000 (PLIC source 4) is not modeled.
+// DMA @ 0xF002A000 (PLIC source 4) is not modeled. Zeroed registers report no channels
+// (info.channels == 0), so the bootrom and demo fall back to their CPU copy/print paths.
+dma: Memory.MappedMemory @ sysbus 0xF002A000
+    size: 0x1000
 
 // GPIO0: 20 pins @ 0xF0000000 (Nafarr GpioCtrl) - IRQ is PLIC source 5.
 gpio0: GPIOPort.GpioCtrl @ sysbus 0xF0000000

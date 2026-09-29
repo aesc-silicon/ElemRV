@@ -77,7 +77,8 @@ Memory Map
 
 The boot ROM runs from flash and copies the application image from flash to
 HyperRAM through the uncached alias, so no stale cache lines remain, before it
-jumps to ``0x90000000``.
+jumps to ``0x90000000``. It uses DMA channel 0 for the copy and falls back to a
+CPU copy when no DMA is present (see `DMA`_).
 
 Atomic instructions execute in the data cache and are only supported on the
 cached regions (on-chip SRAM and the cached HyperRAM window); on the uncached
@@ -328,6 +329,17 @@ the DMA wrote with ``cbo.inval`` before the CPU reads it. Buffers the CPU never
 accessed through the cache, such as the application image the boot ROM copies,
 need no maintenance. The uncached HyperRAM alias at ``0xb0000000`` avoids cache
 maintenance at the cost of uncached CPU accesses.
+
+Examples
+========
+
+- ``software/elemrv_o/bootrom/start.s`` (``_relocate_dma``) copies the
+  application image from flash to HyperRAM with a memory-to-memory transfer.
+- ``software/elemrv_o/demo/kernel.c`` (``print_banner``) sends the boot banner to
+  UART0 with byte elements paced by ``UART0CTRL_DMA_TX``.
+
+Both read the DMA ``info`` register first and fall back to the CPU when it
+reports no channels, as in the Renode emulation, which does not model the DMA.
 
 Pinmux
 ******
