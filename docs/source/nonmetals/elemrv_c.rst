@@ -17,7 +17,7 @@ Specifications
    * - **CPU**
      - VexiiRiscv RV32IMC_zicsr_zifencei, single-issue in-order, M-mode only, barrel shifter
    * - **I-Cache**
-     - 4 kB (32 sets, 1 way, 64 B line)
+     - 4 kB (64 sets, 1 way, 64 B line)
    * - **Clock**
      - 50 MHz system
    * - **Interconnect**
