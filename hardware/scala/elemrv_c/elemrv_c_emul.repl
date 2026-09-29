@@ -27,22 +27,23 @@ mtimer: Timers.MachineTimerCtrl @ sysbus 0xF0020000
 
 // PLIC @ 0xF0800000 (Nafarr PLIC, standard SiFive map; gateway latch + write-to-complete,
 // read-claim optional). Output context 0 -> CPU external-interrupt line (cause 11).
-// Sources match soc.h IRQ numbers: gpio0=3, i2c0=4, pio0=5, pwm0=6, uart0=7, watchdog=1.
+// Sources match soc.h IRQ numbers: timer=1, watchdog=2, esm=3, gpio0=4, i2c0=5, pio0=6,
+// pwm0=7, uart0=8.
 plic: IRQControllers.PlicCtrl @ sysbus 0xF0800000
     0 -> cpu@11
     numberOfSources: 31
 
-// GPIO0: 12 pins @ 0xF0000000 (Nafarr GpioCtrl) - IRQ is PLIC source 3.
+// GPIO0: 12 pins @ 0xF0000000 (Nafarr GpioCtrl) - IRQ is PLIC source 4.
 gpio0: GPIOPort.GpioCtrl @ sysbus 0xF0000000
     numberOfPins: 12
-    IRQ -> plic@3
+    IRQ -> plic@4
 
 // LED on GPIO0 pin 1 - lit when the pin is driven high.
 led1: Miscellaneous.LED @ gpio0 1
 
-// UART0 @ 0xF0004000 (Nafarr UartCtrl) - console output / RX injection; IRQ is PLIC source 7.
+// UART0 @ 0xF0004000 (Nafarr UartCtrl) - console output / RX injection; IRQ is PLIC source 8.
 uart0: UART.UartCtrl @ sysbus 0xF0004000
-    IRQ -> plic@7
+    IRQ -> plic@8
 
 // PRNG @ 0xF0005000 (Nafarr PrngCtrl) - RTL LFSR sequence, advanced once per output read.
 prng: Miscellaneous.PrngCtrl @ sysbus 0xF0005000
