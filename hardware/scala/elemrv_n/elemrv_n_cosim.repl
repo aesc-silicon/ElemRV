@@ -143,17 +143,17 @@ syscon: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0023000, +0x1000>
     timeout: 10000
 
 // Timer @ 0xF0026000 (TileLinkTimer) - FUNCTIONAL (standard timer, exercised every run; not the
-// driver-under-test, so kept out of co-simulation for speed). IRQ -> PLIC source 2.
+// driver-under-test, so kept out of co-simulation for speed). IRQ -> PLIC source 1.
 timer: Timers.TimerCtrl @ sysbus 0xF0026000
     frequency: 30000000
-    IRQ -> plic@2
+    IRQ -> plic@1
 
-// Watchdog @ 0xF0027000 (TileLinkWatchdog) - IRQ -> PLIC source 1; signal 1 = error (unrouted).
+// Watchdog @ 0xF0027000 (TileLinkWatchdog) - IRQ -> PLIC source 2; signal 1 = error (unrouted).
 watchdog: CoSimulated.CoSimulatedPeripheral @ sysbus <0xF0027000, +0x1000>
     frequency: 30000000
     limitBuffer: 1000000
     timeout: 10000
-    0 -> plic@1
+    0 -> plic@2
     cosimToRenodeSignalRange: <0, +2>
 
 // ESM @ 0xF0028000 (TileLinkEsm) - register RTL only; its non-standard signal outputs
