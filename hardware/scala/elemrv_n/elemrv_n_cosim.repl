@@ -19,8 +19,11 @@ cpu: CPU.RiscV32 @ sysbus
 ram: Memory.MappedMemory @ sysbus 0x80000000
     size: 0x00002000
 
-// HyperRAM: 64 MB @ 0x90000000
-hyperram: Memory.MappedMemory @ sysbus 0x90000000
+// HyperRAM: 64 MB @ 0x90000000, aliased uncached @ 0xB0000000
+hyperram: Memory.MappedMemory @ {
+        sysbus 0x90000000;
+        sysbus 0xB0000000
+    }
     size: 0x04000000
 
 // SPI XIP flash: 8 MB @ 0xA0000000 (reset/boot region)
