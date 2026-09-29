@@ -40,7 +40,7 @@ tasks:
     desc: Inserts filler cells into the layout to ensure proper chip functionality.
     aliases: [filler]
     cmds:
-      - task: ':lib-filler'
+      - task: ':lib-gdsfill'
 
   update-metadata:
     desc: Generates ORFS metadata and updates design rules after layout completion.
