@@ -172,8 +172,8 @@ planned.
      -
      -
      - TBD
-     - ✓
-     - ✓
+     - TBD
+     - TBD
    * - SPI Flash XIP
      - ✓
      - ✓
@@ -190,7 +190,9 @@ planned.
      - ✓
 
 Simpler variants use a shared bus, while higher-tier platforms switch to a
-crossbar for better throughput.
+crossbar for better throughput. Starting with Phosphorus, the memory side of the
+crossbar is 64 bits wide by default (32 to 128 bits); the peripheral bus stays
+32 bits wide on every platform.
 
 .. list-table:: Interconnect
    :header-rows: 1
@@ -218,6 +220,13 @@ crossbar for better throughput.
      - ✓
      - ✓
      - ✓
+   * - Memory bus width
+     - 32 bit
+     - 32 bit
+     - 32 bit
+     - 32 bit
+     - 64 bit
+     - 64 bit
 
 A DMA controller is available starting with Oxygen.
 
@@ -238,8 +247,8 @@ A DMA controller is available starting with Oxygen.
      -
      -
      - 4
-     - TBD
-     - TBD
+     - 4
+     - 4
 
 All platforms include a PLIC for interrupt handling.
 
@@ -290,8 +299,8 @@ support for real-time instruction tracing.
      -
      -
      - TBD
-     - ✓
-     - ✓
+     - TBD
+     - TBD
 
 Hydrogen and Carbon run on a single clock domain. Advanced power management
 for higher-tier platforms is planned.
@@ -313,8 +322,8 @@ for higher-tier platforms is planned.
      - 1
      - 4
      - 4
-     - TBD
-     - TBD
+     - 4
+     - 4
 
 
 Performance
@@ -364,11 +373,11 @@ no longer starved for instructions.
      - rv32imac_zicsr_zifencei_zicntr_zihpm_zba_zbb_zbc_zbs_zicbom
      - HyperRAM
    * - Phosphorus
-     -
-     -
-     -
-     -
-     -
+     - 3.149
+     - 94.47
+     - 30 MHz
+     - rv32imac_zicsr_zifencei_zicntr_zihpm_zba_zbb_zbc_zbs_zicbom
+     - HyperRAM
    * - Sulfur
      -
      -
@@ -393,6 +402,12 @@ iteration (3.5% fewer) in 413,473 cycles, an IPC of 0.73. Atomics and the DMA
 controller do not affect CoreMark, which has no atomic operations and no bulk
 transfers in its timed loop.
 
+Phosphorus executes the same 302,672 instructions per iteration as Oxygen, so
+its 30% gain comes from the pipeline and the memory system alone: dual issue,
+the 64-bit memory bus and the 512 B GShare bring an iteration down to 317,571
+cycles (23% fewer), an IPC of 0.95. Of that, the larger GShare accounts for 1.6%
+fewer cycles than the 256 B table of Oxygen.
+
 See the available platforms for detailed specifications and usage instructions.
 
 .. toctree::
@@ -402,3 +417,4 @@ See the available platforms for detailed specifications and usage instructions.
    elemrv_c.rst
    elemrv_n.rst
    elemrv_o.rst
+   elemrv_p.rst
