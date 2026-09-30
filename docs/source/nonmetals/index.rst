@@ -418,3 +418,4 @@ See the available platforms for detailed specifications and usage instructions.
    elemrv_n.rst
    elemrv_o.rst
    elemrv_p.rst
+   elemrv_s.rst

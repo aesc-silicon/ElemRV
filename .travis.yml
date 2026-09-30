@@ -59,6 +59,7 @@ script:
   - CI=true IS_HEADLESS=true task SOC=ElemRV-N TARGET=SG13CMOS5L asic:prepare
   - CI=true IS_HEADLESS=true task SOC=ElemRV-O TARGET=SG13CMOS5L asic:prepare
   - CI=true IS_HEADLESS=true task SOC=ElemRV-P TARGET=SG13CMOS5L asic:prepare
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-S TARGET=SG13CMOS5L asic:prepare
 
   # Compile baremetal firmware
   - CI=true IS_HEADLESS=true task SOC=ElemRV-H baremetal:compile
@@ -66,6 +67,7 @@ script:
   - CI=true IS_HEADLESS=true task SOC=ElemRV-N baremetal:compile
   - CI=true IS_HEADLESS=true task SOC=ElemRV-O baremetal:compile
   - CI=true IS_HEADLESS=true task SOC=ElemRV-P baremetal:compile
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-S baremetal:compile
 
   # Prepare FPGA files
   - CI=true IS_HEADLESS=true task SOC=ElemRV-H TARGET=SG13CMOS5L fpga:prepare
@@ -73,14 +75,16 @@ script:
   - CI=true IS_HEADLESS=true task SOC=ElemRV-N TARGET=SG13CMOS5L fpga:prepare
   - CI=true IS_HEADLESS=true task SOC=ElemRV-O TARGET=SG13CMOS5L fpga:prepare
   - CI=true IS_HEADLESS=true task SOC=ElemRV-P TARGET=SG13CMOS5L fpga:prepare
+  - CI=true IS_HEADLESS=true task SOC=ElemRV-S TARGET=SG13CMOS5L fpga:prepare
 
-  # TODO ElemRV-C, ElemRV-O and ElemRV-P are currently missing in Zephyr
+  # TODO ElemRV-C, ElemRV-O, ElemRV-P and ElemRV-S are currently missing in Zephyr
   # Compile Zephyr firmware
   - CI=true IS_HEADLESS=true task SOC=ElemRV-H zephyr:compile
   #- CI=true IS_HEADLESS=true task SOC=ElemRV-C zephyr:compile
   - CI=true IS_HEADLESS=true task SOC=ElemRV-N zephyr:compile
   #- CI=true IS_HEADLESS=true task SOC=ElemRV-O zephyr:compile
   #- CI=true IS_HEADLESS=true task SOC=ElemRV-P zephyr:compile
+  #- CI=true IS_HEADLESS=true task SOC=ElemRV-S zephyr:compile
 
   # Synthesize FPGA design
   - CI=true IS_HEADLESS=true travis_wait 20 task SOC=ElemRV-H TARGET=SG13CMOS5L fpga:synthesize
