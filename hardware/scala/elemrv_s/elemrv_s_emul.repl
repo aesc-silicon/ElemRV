@@ -1,0 +1,94 @@
+// SPDX-FileCopyrightText: 2026 aesc silicon
+//
+// SPDX-License-Identifier: CERN-OHL-W-2.0
+
+// ElemRV-S (Sulfur platform) - Renode functional model.
+// Mirrors hardware/scala/elemrv_s/ElemRV.scala + zibal Sulfur.scala.
+
+// CPU: VexiiRiscv RV32IMC + Zicntr/Zihpm, M+U with PMP, modeled as a generic
+// RISC-V 32-bit core.
+cpu: CPU.RiscV32 @ sysbus
+    cpuType: "rv32imafdc_zicsr_zifencei_zba_zbb_zbc_zbs"
+    timeProvider: empty
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
+
+// On-chip RAM: 8 KB @ 0x80000000
+ram: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x00002000
+
+// HyperRAM: 64 MB @ 0x90000000, aliased uncached @ 0xB0000000 (Sulfur adds external HyperRAM).
+hyperram: Memory.MappedMemory @ {
+        sysbus 0x90000000;
+        sysbus 0xB0000000
+    }
+    size: 0x04000000
+
+// SPI XIP flash: 8 MB @ 0xA0000000 (reset/boot region)
+flash: Memory.MappedMemory @ sysbus 0xA0000000
+    size: 0x00800000
+
+// Machine timer (mtime/mtimecmp) @ 0xF0020000 - drives the CPU MTIP line (cause 7).
+// Kept in the system domain (30 MHz).
+mtimer: Timers.MachineTimerCtrl @ sysbus 0xF0020000
+    frequency: 30000000
+    -> cpu@7
+
+// PLIC @ 0xF0800000 - output context 0 -> CPU external-interrupt line (cause 11).
+// Source order (addInterrupt sequence): timer=1, watchdog=2, esm=3, dma=4, then the
+// peripheral-domain sources gpio0=5, i2c0=6, i2c1=7, pio0=8, pwm0=9, spi0=10,
+// uart0=11, uart1=12.  (Verify against the generated soc.h.)
+plic: IRQControllers.PlicCtrl @ sysbus 0xF0800000
+    0 -> cpu@11
+    numberOfSources: 31
+
+// DMA @ 0xF002A000 (PLIC source 4) is not modeled. Zeroed registers report no channels
+// (info.channels == 0), so the bootrom and demo fall back to their CPU copy/print paths.
+dma: Memory.MappedMemory @ sysbus 0xF002A000
+    size: 0x1000
+
+// GPIO0: 20 pins @ 0xF0000000 (Nafarr GpioCtrl) - IRQ is PLIC source 5.
+gpio0: GPIOPort.GpioCtrl @ sysbus 0xF0000000
+    numberOfPins: 20
+    IRQ -> plic@5
+
+// LED on GPIO0 pin 1 - lit when the pin is driven high.
+led1: Miscellaneous.LED @ gpio0 1
+
+// UART0 @ 0xF0006000 (Nafarr UartCtrl) - console output / RX injection; IRQ is PLIC source 11.
+uart0: UART.UartCtrl @ sysbus 0xF0006000
+    IRQ -> plic@11
+
+// UART1 @ 0xF0007000 (Nafarr UartCtrl, lightweight) - IRQ is PLIC source 12.
+uart1: UART.UartCtrl @ sysbus 0xF0007000
+    IRQ -> plic@12
+
+// PRNG @ 0xF0009000 (Nafarr PrngCtrl) - RTL LFSR sequence, advanced once per output read.
+prng: Miscellaneous.PrngCtrl @ sysbus 0xF0009000
+
+// Reset controller @ 0xF0021000 (Nafarr ResetControllerCtrl) - domains system, debug, hyperbus, xip, peripheral, flash.
+// Acknowledging the system domain resets the whole machine.
+resetCtrl: Miscellaneous.ResetControllerCtrl @ sysbus 0xF0021000
+    numberOfDomains: 6
+
+// Syscon @ 0xF0023000 (Nafarr Syscon) - read-only platform identity + 60 MHz reference clock.
+syscon: Miscellaneous.Syscon @ sysbus 0xF0023000
+    refClockHz: 60000000
+
+// Clock controller @ 0xF0022000 (Nafarr ClockControllerCtrl) - 5 domains
+// (system, debug, hyperram, xip, peripheral); ratios placeholder.
+clockCtrl: Miscellaneous.ClockControllerCtrl @ sysbus 0xF0022000
+    numberOfDomains: 5
+
+// SPI XIP config bus @ 0xF0025000 (Nafarr SpiXipControllerCtrl) - flash XIP cfg only.
+// (0xF0024000 is the separate SPI controller command interface - not modeled.)
+spiXipCfg: Miscellaneous.SpiXipControllerCtrl @ sysbus 0xF0025000
+
+// HyperBus controller config bus @ 0xF0029000 (Nafarr HyperBusCtrl) - reset/latency/register
+// config only. The HyperRAM data plane is the plain 'hyperram' MappedMemory @ 0x90000000, so
+// transactions here are no-ops (config writes are stored and read back).
+hyperbus: Miscellaneous.HyperBusCtrl @ sysbus 0xF0029000
+
+// Pinmux @ 0xF0010000 (Nafarr PinmuxCtrl) - stores per-pin mux selection.
+pinmux: Miscellaneous.PinmuxCtrl @ sysbus 0xF0010000
+    width: 20
+    options: 2

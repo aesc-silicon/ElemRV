@@ -45,6 +45,7 @@ body:
         - ElemRV-N
         - ElemRV-O
         - ElemRV-P
+        - ElemRV-S
         - A future SoC
         - All / not SoC specific
     validations:
