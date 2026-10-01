@@ -31,6 +31,7 @@ tasks:
       - task: ':lib-baremetal-firmware'
         vars:
           app: "demo"
+          common: "{{.PWD}}/software/common/"
       - "{{.RUN}} './software/{{.package}}/gen_baremetal_container.sh'"
       - "{{.RUN}} 'ln -sf {{.BUILD_ROOT}}/{{.SOC}}/firmware/baremetal_container.img {{.BUILD_ROOT}}/{{.SOC}}/firmware/image_container.img'"
 
