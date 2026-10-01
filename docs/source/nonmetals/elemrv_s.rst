@@ -369,7 +369,7 @@ Examples
 
 - ``software/elemrv_s/bootrom/start.s`` (``_relocate_dma``) copies the
   application image from flash to HyperRAM with a memory-to-memory transfer.
-- ``software/elemrv_s/demo/kernel.c`` (``print_banner``) sends the boot banner to
+- ``software/elemrv_s/demo/kernel.c`` (``print_banner_dma``) sends the boot banner to
   UART0 with byte elements paced by ``UART0CTRL_DMA_TX``.
 
 Both read the DMA ``info`` register first and fall back to the CPU when it

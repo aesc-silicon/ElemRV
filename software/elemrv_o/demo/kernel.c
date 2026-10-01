@@ -10,6 +10,8 @@
 #include "mtimer.h"
 #include "plic.h"
 #include "dma.h"
+#include "console.h"
+#include "sysinfo.h"
 
 extern void hang(void);
 extern void init_trap(void);
@@ -26,7 +28,7 @@ static struct dma_driver dma;
  * caches any of it, so the DMA reads the same bytes as the CPU. A buffer the CPU
  * writes must first be cleaned from the data cache (Zicbom cbo.clean).
  */
-static const unsigned char banner[] = "\r\nElemRV-O\r\n>- ";
+static const unsigned char banner[] = "\r\nElemRV-O\r\n";
 
 #define GPIO_IRQ_NO	3
 
@@ -58,7 +60,7 @@ void isr_handle(unsigned int mcause)
 }
 
 /* Sends the banner to UART0 with DMA channel 0, paced by the UART0 TX request line. */
-static void print_banner(void)
+static void print_banner_dma(void)
 {
 	dma_init(&dma, DMACTRL_BASE);
 	if (dma.channels == 0) {
@@ -95,7 +97,10 @@ void _kernel(void)
 
 	gpio_dir_set(&gpio, 0);
 
-	print_banner();
+	console_init(&uart);
+	print_banner_dma();
+	print_system_info();
+	print(">- ");
 	uart_irq_rx_enable(&uart);
 	gpio_irq_enable(&gpio, GPIO_IRQ_NO, GPIO_IRQ_FALLING_EDGE);
 

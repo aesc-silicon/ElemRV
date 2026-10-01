@@ -9,6 +9,8 @@
 #include "uart.h"
 #include "mtimer.h"
 #include "plic.h"
+#include "console.h"
+#include "sysinfo.h"
 
 extern void hang(void);
 extern void init_trap(void);
@@ -50,7 +52,6 @@ void isr_handle(unsigned int mcause)
 void _kernel(void)
 {
 	struct mtimer_driver mtimer;
-	unsigned char banner[15 + 1] = "\r\nElemRV-H\r\n>- ";
 
 	gpio_init(&gpio, GPIO0CTRL_BASE);
 	mtimer_init(&mtimer, MTIMERCTRL_BASE);
@@ -65,7 +66,10 @@ void _kernel(void)
 
 	gpio_dir_set(&gpio, 0);
 
-	uart_puts(&uart, banner);
+	console_init(&uart);
+	print_banner("ElemRV-H");
+	print_system_info();
+	print(">- ");
 	uart_irq_rx_enable(&uart);
 	gpio_irq_enable(&gpio, GPIO_IRQ_NO, GPIO_IRQ_FALLING_EDGE);
 
