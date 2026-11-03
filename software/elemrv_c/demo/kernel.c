@@ -9,8 +9,10 @@
 #include "uart.h"
 #include "mtimer.h"
 #include "plic.h"
+#include "tsetlin.h"
 #include "console.h"
 #include "sysinfo.h"
+#include "command.h"
 
 extern void hang(void);
 extern void init_trap(void);
@@ -20,8 +22,10 @@ extern void interrupt_disable(void);
 static struct uart_driver uart;
 static struct gpio_driver gpio;
 static struct plic_driver plic;
+static struct tsetlin_driver tsetlin;
 
 #define GPIO_IRQ_NO	3
+#define LED_PIN		1
 
 void isr_handle(unsigned int mcause)
 {
@@ -33,7 +37,7 @@ void isr_handle(unsigned int mcause)
 	while ((source = plic_irq_claim(&plic)) != 0) {
 		if (source == UART0CTRL_IRQ) {
 			while (uart_getc(&uart, &chr) == 0) {
-				uart_putc(&uart, chr);
+				command_input(chr);
 			}
 			uart_irq_rx_clear(&uart);
 		}
@@ -43,6 +47,9 @@ void isr_handle(unsigned int mcause)
 			uart_puts(&uart, (unsigned char *)"\r\n");
 
 			gpio_irq_clear(&gpio, GPIO_IRQ_NO, GPIO_IRQ_FALLING_EDGE);
+		}
+		if (source == TSETLINCTRL_IRQ) {
+			command_result();
 		}
 
 		plic_irq_complete(&plic, source);
@@ -58,17 +65,22 @@ void _kernel(void)
 	plic_init(&plic, PLICCTRL_BASE);
 	uart_init(&uart, UART0CTRL_BASE,
 		  UART_CALC_FREQUENCY(UART0CTRL_FREQ, UART0CTRL_BAUD, 8));
+	tsetlin_init(&tsetlin, TSETLINCTRL_BASE);
 
 	init_trap();
 	interrupt_enable();
 	plic_irq_enable(&plic, UART0CTRL_IRQ);
 	plic_irq_enable(&plic, GPIO0CTRL_IRQ);
+	plic_irq_enable(&plic, TSETLINCTRL_IRQ);
 
 	gpio_dir_set(&gpio, 0);
 
 	console_init(&uart);
 	print_banner("ElemRV-C");
 	print_system_info();
+	if (command_init(&tsetlin, &gpio, LED_PIN) != 0) {
+		print("Tsetlin layout does not match the console model\r\n");
+	}
 	print(">- ");
 	uart_irq_rx_enable(&uart);
 	gpio_irq_enable(&gpio, GPIO_IRQ_NO, GPIO_IRQ_FALLING_EDGE);
