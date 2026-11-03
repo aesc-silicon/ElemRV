@@ -28,7 +28,7 @@ mtimer: Timers.MachineTimerCtrl @ sysbus 0xF0020000
 // PLIC @ 0xF0800000 (Nafarr PLIC, standard SiFive map; gateway latch + write-to-complete,
 // read-claim optional). Output context 0 -> CPU external-interrupt line (cause 11).
 // Sources match soc.h IRQ numbers: timer=1, watchdog=2, esm=3, gpio0=4, i2c0=5, pio0=6,
-// pwm0=7, uart0=8.
+// pwm0=7, uart0=8, tsetlin=9.
 plic: IRQControllers.PlicCtrl @ sysbus 0xF0800000
     0 -> cpu@11
     numberOfSources: 31
@@ -47,6 +47,14 @@ uart0: UART.UartCtrl @ sysbus 0xF0004000
 
 // PRNG @ 0xF0005000 (Nafarr PrngCtrl) - RTL LFSR sequence, advanced once per output read.
 prng: Miscellaneous.PrngCtrl @ sysbus 0xF0005000
+
+// Tsetlin machine @ 0xF0006000 (Nafarr TsetlinCtrl) - 64x80 clause array, 6 classes;
+// IRQ is PLIC source 9.
+tsetlin: Miscellaneous.TsetlinCtrl @ sysbus 0xF0006000
+    rows: 64
+    columns: 80
+    classes: 6
+    IRQ -> plic@9
 
 // Reset controller @ 0xF0021000 (Nafarr ResetControllerCtrl) - domains system, debug, flash.
 // Acknowledging the system domain resets the whole machine.

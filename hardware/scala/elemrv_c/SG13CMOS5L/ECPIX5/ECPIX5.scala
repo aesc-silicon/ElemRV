@@ -109,7 +109,7 @@ case class ECPIX5Top() extends Component {
   )
   val kitParameter = KitParameter(resets, clocks, inputClock)
   val boardParameter = ECPIX5.Parameter(kitParameter, ECPIX5.SystemClock.frequency)
-  val socParameter = ElemRV.Parameter(boardParameter)
+  val socParameter = ElemRV.Parameter(boardParameter, hardTcam = false)
   val parameter = Carbon.Parameter(
     socParameter,
     onChipRamSize = 8 kB,

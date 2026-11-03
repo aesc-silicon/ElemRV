@@ -4,6 +4,8 @@
 
 package elemrv_c
 
+import scala.language.reflectiveCalls
+
 import spinal.core._
 import spinal.core.sim._
 import spinal.lib._
@@ -17,6 +19,7 @@ import nafarr.memory.ocram.TileLinkOnChipRam
 import nafarr.memory.ocram.ihp.TileLinkIhpOnChipRam
 import nafarr.memory.hyperbus.sim.W956A8MBYA
 import nafarr.memory.spi.MT25Q
+import nafarr.blackboxes.muninn.{Tcam, MuninnTcam}
 
 import zibal.misc._
 import zibal.misc.ElementsConfig._
@@ -223,12 +226,56 @@ object SG13CMOS5LGenerate extends ElementsApp {
     top
   }
 
+  val tsetlinCtrl = report.toplevel.soc.peripherals.tsetlinCtrl
+  val tcam = tsetlinCtrl.parameter.tcam
+  val tcamWidth = 436.88
+  val tcamHeight = 90.34
+  val tsetlin = OpenROADTools.IHP.Config(elementsConfig, OpenROADTools.PDKs.IHP.sg13cmos5l, true)
+  tsetlin.dieArea = (0, 0, 522.24, 200.34)
+  tsetlin.coreArea = (22.56, 22.68, 499.68, 177.66)
+  tsetlin.pdnRingWidth = 5.0
+  tsetlin.pdnRingSpace = 2.0
+  tsetlin.placeDensity = 0.8
+  tsetlin.macroHalo = (5, 5)
+  tsetlin.holdSlackMargin = 0.1
+  tsetlin.blockInputMinDelay = 0.5
+  tsetlin.addClock(
+    report.toplevel.soc.clockCtrl.getClockDomainByName("system").clock,
+    report.toplevel.soc.clockCtrl.getClockDomainByName("system").frequency.getValue
+  )
+  // LIT, WDATA and the control pins are on the south edge, MATCH on the west edge, only
+  // power on the top edge: the macro sits in the top right corner of the core.
+  def snapDown(value: Double, grid: Double) = Math.floor(value / grid + 1e-6) * grid
+  tsetlin.addMacro(
+    tsetlinCtrl.ctrl.tiles(0).component.asInstanceOf[MuninnTcam].tcam,
+    snapDown(tsetlin.coreArea._3 - tcamWidth, OpenROADTools.PDKs.IHP.sg13cmos5l.x),
+    snapDown(tsetlin.coreArea._4 - tcamHeight, OpenROADTools.PDKs.IHP.sg13cmos5l.y),
+    "R0",
+    depth = 3,
+    files = Tcam.macroDir(tcam).map(OpenROADTools.MacroFiles.ihp(_, tcam.name))
+  )
+  // TsetlinCtrl stalls bus writes while a row is written, so the write port is stable at
+  // the edge that ends a write; without this, WDATA (0.57 ns hold) gets ~160 hold buffers
+  tsetlinCtrl.ctrl.tiles.map(_.component.asInstanceOf[MuninnTcam].tcam).foreach { array =>
+    tsetlin.setHoldFalsePath(3, array.WDATA, array.A, array.WE)
+  }
+  // all ports on the south edge next to the logic below the macro; the block is rotated
+  // by 180 degrees at chip level, so this edge faces the core
+  tsetlin.setIoPinConstraint(tsetlinCtrl.io.bus, "bottom")
+  tsetlin.setIoPinConstraint(tsetlinCtrl.io.interrupt, "bottom")
+  tsetlin.setIoPinConstraint("system_clk", "bottom")
+  tsetlin.setIoPinConstraint("system_resetn", "bottom")
+  tsetlin.generate("TileLinkTsetlin")
+
   val chip = OpenROADTools.IHP.Config(elementsConfig, OpenROADTools.PDKs.IHP.sg13cmos5l)
   chip.setTopCellName(topCellName)
   scala.util.Properties.envOrElse("FLOORPLAN", "tapeout") match {
     case "tapeout" =>
-      chip.dieArea = (0, 0, 2328.96, 2336.04)
-      chip.coreArea = (394.08, 396.9, 1932.00, 1939.14)
+      chip.dieArea = (0, 0, 2389.44, 2396.52)
+      chip.coreArea = (394.08, 396.9, 1992.48, 1999.62)
+      // Metal4 core stripes without sliver overlaps on the TopMetal1 pad straps and
+      // >= 11 um away from the Tsetlin block's west pin edge
+      chip.pdnChipMetal4Offset = 29.40
     case "relaxed" =>
       SpinalWarning(
         "FLOORPLAN=relaxed: oversized iteration floorplan - utilization/timing/" +
@@ -243,7 +290,7 @@ object SG13CMOS5LGenerate extends ElementsApp {
   val onChipRamSramWidth = 416.64
   val onChipRamSramHeight = 626.7
   val onChipRamSramX = chip.coreArea._3 - onChipRamSramWidth - 20.16
-  val onChipRamSramY = chip.coreArea._4 - onChipRamSramHeight - 34.02
+  val onChipRamSramY = chip.coreArea._4 - onChipRamSramHeight - 30.24
   chip.addMacro(
     report.toplevel.soc.system.onChipRam.ctrl.asInstanceOf[TileLinkOnChipRam].rams(0),
     onChipRamSramX,
@@ -264,7 +311,8 @@ object SG13CMOS5LGenerate extends ElementsApp {
   )
 
   val iCacheTagWidth = 526.03
-  val iCacheTagX = chip.coreArea._1 + 20.16
+  // ~100 um from the core edge, so the fetch logic can reach it from the left as well
+  val iCacheTagX = chip.coreArea._1 + 120.96
   val iCacheTagY = chip.coreArea._2 + 30.24
   chip.addMacro(
     report.toplevel.soc.core.cpu.iCacheTagRams(0),
@@ -272,6 +320,17 @@ object SG13CMOS5LGenerate extends ElementsApp {
     iCacheTagY,
     "MX",
     depth = 3
+  )
+
+  // in the bottom-right core corner: unlike the SRAMs the block gets no PDN ring at chip
+  // level (it has its own), so a gap to the core edge would only leave unusable rows;
+  // rotated so its port edge faces up into the core
+  chip.addBlock(
+    tsetlinCtrl,
+    "TileLinkTsetlin",
+    chip.coreArea._3 - tsetlin.dieArea._3,
+    chip.coreArea._2,
+    "R180"
   )
 
   chip.addClock(report.toplevel.io.clock.PAD, report.toplevel.inputClock.frequency, "clk_main")
