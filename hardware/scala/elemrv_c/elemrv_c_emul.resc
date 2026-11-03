@@ -14,6 +14,7 @@ i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/peripherals/io/gpio/G
 i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/peripherals/com/uart/UartCtrl.cs
 i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/peripherals/pinmux/PinmuxCtrl.cs
 i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/crypto/prng/PrngCtrl.cs
+i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/peripherals/ml/tsetlin/TsetlinCtrl.cs
 i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/system/mtimer/MachineTimerCtrl.cs
 i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/system/plic/PlicCtrl.cs
 i @modules/elements/zibal/ext/nafarr/hardware/scala/nafarr/system/syscon/Syscon.cs

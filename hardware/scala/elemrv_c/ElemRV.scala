@@ -19,20 +19,25 @@ import nafarr.peripherals.com.uart.{TileLinkUart, Uart, UartCtrl}
 import nafarr.peripherals.com.i2c.{TileLinkI2cController, I2c, I2cControllerCtrl}
 import nafarr.peripherals.pinmux.{TileLinkPinmux, Pinmux, PinmuxCtrl}
 import nafarr.crypto.prng.{TileLinkPrng, PrngCtrl}
+import nafarr.peripherals.ml.tsetlin.{TileLinkTsetlin, TsetlinCtrl}
+import nafarr.blackboxes.muninn.Tcam
 
 object ElemRV {
   def apply(parameter: Carbon.Parameter) = ElemRV(parameter)
 
-  case class Parameter(boardParameter: BoardParameter) extends SocParameter(boardParameter) {
+  /** hardTcam: Muninn hard macro for the Tsetlin clause array, else the flop-based model */
+  case class Parameter(boardParameter: BoardParameter, hardTcam: Boolean = true)
+      extends SocParameter(boardParameter) {
     val gpio0 = GpioCtrl.Parameter(Gpio.Parameter(12), 3)
     val i2c0 = I2cControllerCtrl.Parameter.default(1)
     val pio0 = PioCtrl.Parameter.default(3)
     val pwm0 = PwmCtrl.Parameter.default(1)
     val uart0 = UartCtrl.Parameter.full()
     val prng = PrngCtrl.Parameter()
+    val tsetlin = TsetlinCtrl.Parameter(Tcam.Parameter(64, 80, hardTcam), classes = 6)
     val pinmux = PinmuxCtrl.Parameter(Pinmux.Parameter(12), 24, 2)
 
-    override val irqSources = Seq(gpio0, i2c0, pio0, pwm0, uart0)
+    override val irqSources = Seq(gpio0, i2c0, pio0, pwm0, uart0, tsetlin)
     override val errorSources = Seq(pio0, pwm0, uart0, prng)
   }
 
@@ -90,6 +95,11 @@ object ElemRV {
       val prngCtrl = TileLinkPrng(socParameter.prng)
       addPeripheralDevice(prngCtrl.io.bus, 0x5000, 4 kB)
       addError(prngCtrl.io.error)
+
+      /* Machine Learning */
+      val tsetlinCtrl = TileLinkTsetlin(socParameter.tsetlin)
+      addPeripheralDevice(tsetlinCtrl.io.bus, 0x6000, 4 kB)
+      addInterrupt(tsetlinCtrl.io.interrupt)
 
       /* Pin Mapping */
       addPinmuxOption(0, List("gpio0_0", "pwm0_out_0"))
